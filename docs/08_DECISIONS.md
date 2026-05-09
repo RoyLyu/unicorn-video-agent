@@ -89,3 +89,21 @@
 决定：Batch 04 的 `publish-copy.md` 从标题、核心观点、摘要和行业标签派生，不引入新 AI 生成链路。
 
 原因：ProductionPack 当前没有独立发布文案字段；确定性派生能满足导出闭环，同时不越界进入真实 AI。
+
+## D016 - Batch 05 审阅数据独立于 ProductionPack
+
+决定：审阅 checklist、事实核验和人工发布文案写入独立表，不回写 `video_projects.production_pack_json`。
+
+原因：ProductionPack 继续代表生成结果，Review 数据代表人工审阅状态，二者职责分离。
+
+## D017 - Export 不强制拦截下载
+
+决定：Export 页展示审阅风险和完成度，但不阻止下载。
+
+原因：当前是内部 MVP，审阅层用于提示和记录，不引入复杂权限或审批流。
+
+## D018 - 人工发布文案优先
+
+决定：`publish-copy.md` 优先使用 `publish_copies` 中的人工编辑内容，没有人工内容时回退到 Batch 04 派生文案。
+
+原因：让编辑可以覆盖发布文案，同时保留旧项目和未审阅项目的可导出能力。

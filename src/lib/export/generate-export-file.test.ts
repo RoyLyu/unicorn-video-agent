@@ -68,6 +68,23 @@ describe("Batch 04 export generation", () => {
     expect(file?.content).toContain("不构成投资建议");
   });
 
+  it("uses manual publish copy when provided", () => {
+    const file = generateExportFile("publish-copy.md", demoProductionPack, {
+      publishCopy: {
+        coverTitle: "人工封面标题",
+        titleCandidates: ["人工标题 A", "人工标题 B"],
+        publishText: "人工编辑后的发布文案。",
+        tags: ["AI", "审阅"],
+        riskNotice: "不构成投资建议",
+        isManual: true
+      }
+    });
+
+    expect(file?.content).toContain("人工封面标题");
+    expect(file?.content).toContain("人工标题 A");
+    expect(file?.content).toContain("人工编辑后的发布文案。");
+  });
+
   it("returns null for illegal file names", () => {
     expect(generateExportFile("unknown.txt", demoProductionPack)).toBeNull();
   });

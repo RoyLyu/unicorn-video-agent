@@ -1,4 +1,5 @@
 import { getProductionPackByProjectId } from "@/db/repositories/production-pack-repository";
+import { getPublishCopyByProjectId } from "@/db/repositories/publish-copy-repository";
 import { generateExportFile } from "@/lib/export/generate-export-file";
 
 export const runtime = "nodejs";
@@ -17,7 +18,9 @@ export async function GET(
       return Response.json({ error: "Project not found" }, { status: 404 });
     }
 
-    const generatedFile = generateExportFile(fileName, saved.productionPack);
+    const generatedFile = generateExportFile(fileName, saved.productionPack, {
+      publishCopy: getPublishCopyByProjectId(projectId) ?? undefined
+    });
 
     if (!generatedFile) {
       return Response.json({ error: "Export file not found" }, { status: 404 });

@@ -1,5 +1,33 @@
 # 07 Batch Log
 
+## Batch 05 - 导出审阅层 + 发布文案编辑 + 事实核验记录
+
+目标：在本地 SQLite 持久化和文本导出基础上，新增内部审阅工作流。
+
+完成内容：
+
+- `/projects/[projectId]/review`
+- 导出前 checklist
+- 事实核验表
+- 版权复核摘要
+- 发布文案编辑器
+- `publish_copies`、`fact_checks`、`review_checklists` 表
+- Review API
+- Dashboard 和 Export 页展示审阅状态
+- `publish-copy.md` 使用人工编辑文案覆盖
+- review repository 和导出联动测试
+
+明确不做：
+
+- 真实 AI API
+- 素材网站接入
+- 自动下载网络素材
+- 真实图片、视频、音频生成
+- 自动发布视频号
+- 自动成片
+- 云存储
+- 用户登录或复杂权限
+
 ## Batch 04 - 真实 Markdown / CSV / JSON 导出生成
 
 目标：将 planned export manifest 升级为可预览、可复制、可下载的文本导出能力。

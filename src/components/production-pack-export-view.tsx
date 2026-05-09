@@ -11,20 +11,29 @@ import { loadProductionPack } from "@/lib/storage/production-pack-storage";
 import type { ProductionPack } from "@/lib/schemas/production-pack";
 import { DataTable } from "./data-table";
 import { ProductionPackStatus } from "./production-pack-status";
+import { ReviewStatusCard } from "./review-status-card";
 import { StatusBadge } from "./status-badge";
+import type { PublishCopyRecord } from "@/db/repositories/publish-copy-repository";
+import type { ReviewSummary } from "@/db/repositories/review-repository";
 
 export function ProductionPackExportView({
   productionPack,
-  projectId
+  projectId,
+  reviewSummary,
+  publishCopy
 }: {
   productionPack?: ProductionPack;
   projectId?: string;
+  reviewSummary?: ReviewSummary;
+  publishCopy?: PublishCopyRecord;
 }) {
   const [pack] = useState<ProductionPack>(() => productionPack ?? loadProductionPack());
   const [selectedFileName, setSelectedFileName] =
     useState<ExportFileName>("production-pack.md");
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
-  const selectedFile = generateExportFile(selectedFileName, pack);
+  const selectedFile = generateExportFile(selectedFileName, pack, {
+    publishCopy: publishCopy?.isManual ? publishCopy : undefined
+  });
 
   async function handleCopy() {
     if (!selectedFile) {
@@ -42,8 +51,9 @@ export function ProductionPackExportView({
   return (
     <>
       <ProductionPackStatus productionPack={pack} />
+      {reviewSummary ? <ReviewStatusCard summary={reviewSummary} /> : null}
       <div className="notice">
-        Batch 04 导出为文本生产包，不包含真实视频、图片或音频；下载通过 API 即时生成，不写入服务器文件系统。
+        Batch 05 显示审阅状态但不强制禁止下载。若事实、版权或 checklist 未完成，发布前仍需人工复核。
       </div>
       <section className="panel">
         <DataTable

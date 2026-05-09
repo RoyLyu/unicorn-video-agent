@@ -30,9 +30,9 @@
 - 发布文案
 - Markdown / CSV / JSON 导出包
 
-## Batch 04 范围
+## Batch 05 范围
 
-Batch 04 实现从 SQLite 中的 ProductionPack 即时生成 Markdown / CSV / JSON 文本导出。页面可以预览、复制和下载 6 个生产包文件，但不接真实 AI、素材网站、云存储、素材下载、自动成片或视频号发布。
+Batch 05 在 SQLite + ProductionPack + 文本导出基础上新增内部审阅工作流。页面可以记录导出前 checklist、事实核验、版权复核状态和人工发布文案，但不接真实 AI、素材网站、云存储、素材下载、自动成片、登录或视频号发布。
 
 ## 非目标
 

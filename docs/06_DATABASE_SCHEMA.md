@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-Batch 04 继续使用 SQLite + Drizzle 做本地持久化，并从保存的 ProductionPack 即时生成文本导出。数据库只服务本地 mock 闭环，不接云数据库、不做登录、不保存真实素材文件、不保存真实导出文件。
+Batch 05 继续使用 SQLite + Drizzle 做本地持久化，并新增审阅工作流数据。数据库只服务本地 mock 闭环，不接云数据库、不做登录、不保存真实素材文件、不保存真实导出文件。
 
 ## 文件位置
 
@@ -38,6 +38,9 @@ pnpm db:migrate
 - `rights_checks`：版权风险检查，等级限定为 `green`、`yellow`、`red`、`placeholder`。
 - `export_manifests`：导出文件清单；Batch 04 的真实文本内容由 API 即时生成，不落盘保存。
 - `review_logs`：本地 mock 保存和后续人工审阅事件占位。
+- `publish_copies`：人工编辑后的封面标题、标题候选、发布文案、标签和风险提示。
+- `fact_checks`：事实核验记录，状态限定为 `pending`、`verified`、`needs_review`、`rejected`。
+- `review_checklists`：导出前 checklist 的完成状态。
 
 ## 数据读取约定
 
@@ -46,6 +49,9 @@ pnpm db:migrate
 - `GET /api/projects/[projectId]` 返回项目详情和完整 `ProductionPack`。
 - `/projects/[projectId]/*` 动态页面从 SQLite 读取。
 - `/api/projects/[projectId]/exports/[fileName]` 从 SQLite 读取 ProductionPack，并即时返回 Markdown、CSV 或 JSON 下载响应。
+- `/api/projects/[projectId]/review` 读取和保存本地审阅聚合数据。
+- `/api/projects/[projectId]/review/publish-copy` 保存人工发布文案。
+- `/api/projects/[projectId]/review/fact-checks` 保存事实核验记录。
 - `/projects/demo/*` 保留 demo fallback，不作为主存储路径。
 
 ## 不做事项

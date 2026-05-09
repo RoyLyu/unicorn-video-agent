@@ -1,5 +1,15 @@
 # Changelog
 
+## Batch 05 - 导出审阅层 + 发布文案编辑 + 事实核验记录
+
+- 新增 `publish_copies`、`fact_checks`、`review_checklists` 表和 migration。
+- 新增 review repository，支持审阅 summary、导出前 checklist、事实核验和人工发布文案。
+- 新增 `/projects/[projectId]/review` 页面。
+- 新增 `GET/POST /api/projects/[projectId]/review` 和两个 PATCH API。
+- 改造 Dashboard 与 Export 页展示 review 状态并提供进入 Review 入口。
+- 改造 `publish-copy.md`，优先使用人工编辑后的发布文案。
+- 新增 review repository、导出覆盖和 API helper 测试。
+
 ## Batch 04 - 真实 Markdown / CSV / JSON 导出生成
 
 - 新增纯函数导出层，支持 `production-pack.md`、`storyboard.csv`、`project.json`、`rights-check.csv`、`prompt-pack.md`、`publish-copy.md`。

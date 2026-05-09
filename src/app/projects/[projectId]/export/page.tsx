@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 import { PageHeader } from "@/components/page-header";
 import { ProductionPackExportView } from "@/components/production-pack-export-view";
+import { getReviewData } from "@/db/repositories/review-repository";
 import { loadProjectPack } from "@/lib/server/project-pack";
 
 export const runtime = "nodejs";
@@ -14,6 +16,7 @@ export default async function ExportPage({
 }) {
   const { projectId } = await params;
   const saved = loadProjectPack(projectId);
+  const reviewData = getReviewData(projectId);
 
   if (!saved) {
     notFound();
@@ -24,10 +27,17 @@ export default async function ExportPage({
       <PageHeader
         title="导出清单"
         description="从 SQLite 读取 ProductionPack。Batch 04 即时生成文本生产包导出，不包含真实视频、图片或音频。"
+        actions={
+          <Link className="primary-link" href={`/projects/${projectId}/review`}>
+            进入 Review
+          </Link>
+        }
       />
       <ProductionPackExportView
         productionPack={saved.productionPack}
         projectId={projectId}
+        reviewSummary={reviewData?.reviewSummary}
+        publishCopy={reviewData?.publishCopy}
       />
     </main>
   );

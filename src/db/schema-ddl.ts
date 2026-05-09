@@ -97,4 +97,39 @@ CREATE TABLE IF NOT EXISTS review_logs (
   message TEXT NOT NULL,
   created_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS publish_copies (
+  id TEXT PRIMARY KEY NOT NULL,
+  project_id TEXT NOT NULL REFERENCES video_projects(id) ON DELETE CASCADE,
+  cover_title TEXT NOT NULL,
+  title_candidates_json TEXT NOT NULL,
+  publish_text TEXT NOT NULL,
+  tags_json TEXT NOT NULL,
+  risk_notice TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS fact_checks (
+  id TEXT PRIMARY KEY NOT NULL,
+  project_id TEXT NOT NULL REFERENCES video_projects(id) ON DELETE CASCADE,
+  item_type TEXT NOT NULL,
+  label TEXT NOT NULL,
+  value TEXT NOT NULL,
+  source_url TEXT NOT NULL,
+  status TEXT NOT NULL,
+  notes TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS review_checklists (
+  id TEXT PRIMARY KEY NOT NULL,
+  project_id TEXT NOT NULL REFERENCES video_projects(id) ON DELETE CASCADE,
+  item_key TEXT NOT NULL,
+  label TEXT NOT NULL,
+  completed INTEGER NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 `;

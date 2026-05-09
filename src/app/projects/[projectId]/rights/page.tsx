@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 import { PageHeader } from "@/components/page-header";
 import { ProductionPackRightsView } from "@/components/production-pack-rights-view";
@@ -24,6 +25,11 @@ export default async function RightsPage({
       <PageHeader
         title="版权风险"
         description="从 SQLite 读取 rightsChecks，展示 green / yellow / red / placeholder 四级版权风险。"
+        actions={
+          <Link className="primary-link" href={`/projects/${projectId}/review`}>
+            进入 Review
+          </Link>
+        }
       />
       <ProductionPackRightsView productionPack={saved.productionPack} />
     </main>

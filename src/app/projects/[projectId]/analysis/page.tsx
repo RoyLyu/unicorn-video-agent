@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 import { PageHeader } from "@/components/page-header";
 import { ProductionPackAnalysisView } from "@/components/production-pack-analysis-view";
@@ -24,6 +25,11 @@ export default async function AnalysisPage({
       <PageHeader
         title="分析结果"
         description="从 SQLite 读取 ProductionPack，展示 analysis 与 thesis。当前为 Batch 03 / UI Shell + 本地持久化。"
+        actions={
+          <Link className="primary-link" href={`/projects/${projectId}/review`}>
+            进入 Review
+          </Link>
+        }
       />
       <ProductionPackAnalysisView productionPack={saved.productionPack} />
     </main>

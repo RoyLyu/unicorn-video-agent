@@ -7,7 +7,7 @@
 ## 技术约束
 
 - 使用 Next.js App Router、TypeScript、pnpm。
-- Batch 04 使用 SQLite 中的 ProductionPack 即时生成文本导出。
+- Batch 05 使用 SQLite 保存本地审阅、事实核验和人工发布文案。
 - 不安装大型 UI 库。
 - 不接 AI API，除非后续 Batch 明确要求。
 - 不接云数据库，除非后续 Batch 明确要求。
@@ -15,7 +15,7 @@
 - 不自动发布视频号。
 - 不使用未确认版权的新闻图、视频片段、影视片段、音乐和字体。
 
-## Batch 04 约束
+## Batch 05 约束
 
 - 只做本地 mock pipeline，不接真实 AI。
 - 所有 mock agent 必须是纯函数，输入 JSON，输出 JSON。
@@ -25,6 +25,7 @@
 - `/projects/demo/*` 保留为 demo fallback。
 - export 页面可预览、复制、下载文本生产包。
 - 导出 API 只即时返回响应，不写入仓库、`data/` 或服务器文件系统。
+- review 页面只做本地内部审阅，不做登录、权限、自动发布或外部事实核验。
 - localStorage 仅作为 demo fallback，不再作为主存储。
 
 ## 验证命令

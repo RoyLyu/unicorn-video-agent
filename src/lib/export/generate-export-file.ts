@@ -1,6 +1,7 @@
 import type { ProductionPack } from "@/lib/schemas/production-pack";
 import {
   type ExportFileName,
+  type ExportGenerationOptions,
   type GeneratedExportFile,
   isExportFileName
 } from "./export-types";
@@ -22,7 +23,8 @@ const contentTypes: Record<ExportFileName, string> = {
 
 export function generateExportFile(
   fileName: string,
-  productionPack: ProductionPack
+  productionPack: ProductionPack,
+  options: ExportGenerationOptions = {}
 ): GeneratedExportFile | null {
   if (!isExportFileName(fileName)) {
     return null;
@@ -31,11 +33,15 @@ export function generateExportFile(
   return {
     fileName,
     contentType: contentTypes[fileName],
-    content: generateContent(fileName, productionPack)
+    content: generateContent(fileName, productionPack, options)
   };
 }
 
-function generateContent(fileName: ExportFileName, productionPack: ProductionPack) {
+function generateContent(
+  fileName: ExportFileName,
+  productionPack: ProductionPack,
+  options: ExportGenerationOptions
+) {
   switch (fileName) {
     case "production-pack.md":
       return generateProductionPackMarkdown(productionPack);
@@ -48,6 +54,6 @@ function generateContent(fileName: ExportFileName, productionPack: ProductionPac
     case "prompt-pack.md":
       return generatePromptPackMarkdown(productionPack);
     case "publish-copy.md":
-      return generatePublishCopyMarkdown(productionPack);
+      return generatePublishCopyMarkdown(productionPack, options.publishCopy);
   }
 }

@@ -115,5 +115,49 @@ export const reviewLogs = sqliteTable("review_logs", {
   createdAt: text("created_at").notNull()
 });
 
+export const publishCopies = sqliteTable("publish_copies", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => videoProjects.id, { onDelete: "cascade" }),
+  coverTitle: text("cover_title").notNull(),
+  titleCandidatesJson: text("title_candidates_json").notNull(),
+  publishText: text("publish_text").notNull(),
+  tagsJson: text("tags_json").notNull(),
+  riskNotice: text("risk_notice").notNull(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull()
+});
+
+export const factChecks = sqliteTable("fact_checks", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => videoProjects.id, { onDelete: "cascade" }),
+  itemType: text("item_type").notNull(),
+  label: text("label").notNull(),
+  value: text("value").notNull(),
+  sourceUrl: text("source_url").notNull(),
+  status: text("status").notNull(),
+  notes: text("notes").notNull(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull()
+});
+
+export const reviewChecklists = sqliteTable("review_checklists", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => videoProjects.id, { onDelete: "cascade" }),
+  itemKey: text("item_key").notNull(),
+  label: text("label").notNull(),
+  completed: integer("completed", { mode: "boolean" }).notNull(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull()
+});
+
 export type ArticleRow = typeof articles.$inferSelect;
 export type VideoProjectRow = typeof videoProjects.$inferSelect;
+export type PublishCopyRow = typeof publishCopies.$inferSelect;
+export type FactCheckRow = typeof factChecks.$inferSelect;
+export type ReviewChecklistRow = typeof reviewChecklists.$inferSelect;

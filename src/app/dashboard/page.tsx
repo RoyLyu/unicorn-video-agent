@@ -5,6 +5,7 @@ import { MetricCard } from "@/components/metric-card";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
 import { listRecentProjects, type RecentProject } from "@/db/repositories/project-repository";
+import { getReviewData, type ReviewSummary } from "@/db/repositories/review-repository";
 import { dashboardMetrics, exportFiles } from "@/lib/demo-data";
 
 export const runtime = "nodejs";
@@ -36,13 +37,7 @@ export default function DashboardPage() {
         {projects.length > 0 ? (
           <ul className="info-list">
             {projects.map((project) => (
-              <li key={project.id}>
-                <strong>{project.title}</strong>
-                <span>{project.sourceName}</span>
-                <br />
-                <StatusBadge>{project.status}</StatusBadge>{" "}
-                <Link href={`/projects/${project.id}/analysis`}>查看项目</Link>
-              </li>
+              <ProjectListItem key={project.id} project={project} />
             ))}
           </ul>
         ) : (
@@ -77,5 +72,31 @@ function getProjectsSafely(): RecentProject[] {
     return listRecentProjects();
   } catch {
     return [];
+  }
+}
+
+function ProjectListItem({ project }: { project: RecentProject }) {
+  const reviewSummary = getReviewSummarySafely(project.id);
+
+  return (
+    <li>
+      <strong>{project.title}</strong>
+      <span>{project.sourceName}</span>
+      <br />
+      <StatusBadge>{project.status}</StatusBadge>{" "}
+      <StatusBadge tone={reviewSummary?.status === "ready" ? "green" : "placeholder"}>
+        review: {reviewSummary?.status ?? "not_started"}
+      </StatusBadge>{" "}
+      <Link href={`/projects/${project.id}/analysis`}>查看项目</Link>{" "}
+      <Link href={`/projects/${project.id}/review`}>进入 Review</Link>
+    </li>
+  );
+}
+
+function getReviewSummarySafely(projectId: string): ReviewSummary | null {
+  try {
+    return getReviewData(projectId)?.reviewSummary ?? null;
+  } catch {
+    return null;
   }
 }

@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-Batch 04：真实 Markdown / CSV / JSON 导出生成。
+Batch 05：导出审阅层 + 发布文案编辑 + 事实核验记录。
 
 当前仓库提供：
 
@@ -16,6 +16,8 @@ Batch 04：真实 Markdown / CSV / JSON 导出生成。
 - 动态项目页 `/projects/[projectId]/*`
 - 即时生成 Markdown / CSV / JSON 文本导出
 - 导出预览、复制和下载入口
+- 内部审阅页、导出前 checklist、事实核验和发布文案编辑
+- Dashboard 与 Export 页展示审阅状态
 - 纯函数 mock Agent pipeline
 - `localStorage` demo fallback
 - Zod schema 与 pipeline 单元测试
@@ -24,7 +26,7 @@ Batch 04：真实 Markdown / CSV / JSON 导出生成。
 
 ## MVP 范围
 
-第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 04 只做 SQLite 中 ProductionPack 的文本导出生成，不接真实 AI API、不接云数据库、不接素材网站、不下载素材、不生成真实媒体、不发布视频号。
+第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 05 只做本地审阅工作流，不接真实 AI API、不接云数据库、不接素材网站、不下载素材、不生成真实媒体、不做登录、不发布视频号。
 
 ## 启动
 
@@ -47,18 +49,19 @@ pnpm test
 pnpm build
 ```
 
-## Batch 04 验证路径
+## Batch 05 验证路径
 
 1. 打开 `/articles/new`。
 2. 使用默认 demo 输入或手动输入文章信息。
 3. 点击“生成 Mock 生产包”。
 4. 页面跳转到 `/projects/[projectId]/analysis`。
-5. 查看 `/projects/[projectId]/export`。
-6. 依次预览 `production-pack.md`、`storyboard.csv`、`project.json`、`rights-check.csv`、`prompt-pack.md`、`publish-copy.md`。
-7. 复制一个预览内容，并通过下载按钮请求 `/api/projects/[projectId]/exports/[fileName]`。
-8. 确认导出通过 API 即时生成，不向仓库或 `data/` 写入导出文件。
+5. 打开 `/projects/[projectId]/review`。
+6. 勾选导出前 checklist，编辑事实核验状态和发布文案。
+7. 保存审阅记录后打开 `/projects/[projectId]/export`。
+8. 确认 Export 页展示 review summary，`publish-copy.md` 使用人工编辑文案。
+9. 确认导出仍通过 API 即时生成，不向仓库或 `data/` 写入导出文件。
 
-## Batch 04 页面
+## Batch 05 页面
 
 - `/`
 - `/dashboard`
@@ -73,6 +76,7 @@ pnpm build
 - `/projects/[projectId]/scripts`
 - `/projects/[projectId]/shots`
 - `/projects/[projectId]/rights`
+- `/projects/[projectId]/review`
 - `/projects/[projectId]/export`
 - `/settings`
 
@@ -89,12 +93,24 @@ GET /api/projects/[projectId]/exports/publish-copy.md
 
 导出 API 从 SQLite 读取 `ProductionPack`，即时返回文本内容和 `Content-Disposition: attachment`，不写入服务器文件系统。
 
+## Review API
+
+```text
+GET /api/projects/[projectId]/review
+POST /api/projects/[projectId]/review
+PATCH /api/projects/[projectId]/review/publish-copy
+PATCH /api/projects/[projectId]/review/fact-checks
+```
+
+Review API 只保存本地审阅状态、事实核验记录和人工发布文案，不调用外部 API。
+
 ## 数据库
 
 - 数据库文件：`data/unicorn-video-agent.sqlite`
 - 迁移目录：`drizzle/`
 - Schema：`src/db/schema.ts`
 - Drizzle 配置：`drizzle.config.ts`
+- Batch 05 新增表：`publish_copies`、`fact_checks`、`review_checklists`
 
 初始化或迁移：
 

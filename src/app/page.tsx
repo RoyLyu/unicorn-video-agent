@@ -8,8 +8,8 @@ export default function Home() {
   return (
     <main className="content-stack">
       <PageHeader
-        title="Batch 03 SQLite 本地持久化"
-        description="本批实现文章输入到本地 mock ProductionPack，再写入 SQLite 并由动态项目页读取展示；不接 AI、云数据库、真实素材、真实导出或自动发布。"
+        title="Batch 05 审阅工作流"
+        description="本批在本地 SQLite 与文本导出基础上增加导出前 checklist、事实核验、版权复核和发布文案编辑；不接 AI、云数据库、真实素材或自动发布。"
         actions={
           <Link className="primary-link" href="/dashboard">
             进入 Dashboard
@@ -17,7 +17,7 @@ export default function Home() {
         }
       />
 
-      <section className="metric-grid" aria-label="Batch 03 概览指标">
+      <section className="metric-grid" aria-label="Batch 05 概览指标">
         {dashboardMetrics.map((metric) => (
           <MetricCard key={metric.label} {...metric} />
         ))}

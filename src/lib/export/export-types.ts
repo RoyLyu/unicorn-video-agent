@@ -19,6 +19,19 @@ export type GeneratedExportFile = {
 
 export type ExportGenerator = (productionPack: ProductionPack) => string;
 
+export type PublishCopyExportData = {
+  coverTitle: string;
+  titleCandidates: string[];
+  publishText: string;
+  tags: string[];
+  riskNotice: string;
+  isManual?: boolean;
+};
+
+export type ExportGenerationOptions = {
+  publishCopy?: PublishCopyExportData;
+};
+
 export function isExportFileName(fileName: string): fileName is ExportFileName {
   return allowedExportFileNames.includes(fileName as ExportFileName);
 }

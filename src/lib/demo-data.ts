@@ -18,7 +18,7 @@ export const navigationItems: Array<{
   label: string;
   description: string;
 }> = [
-  { href: "/", label: "总览入口", description: "Batch 03 SQLite Mock" },
+  { href: "/", label: "总览入口", description: "Batch 05 Review Workflow" },
   { href: "/dashboard", label: "Dashboard", description: "后台总览" },
   { href: "/articles/new", label: "新建文章", description: "静态输入表单" },
   { href: "/articles/demo", label: "Demo 文章", description: "示例文章状态" },
@@ -51,8 +51,8 @@ export const navigationItems: Array<{
 ];
 
 export const batchStatus = {
-  label: "Batch 03 / SQLite Mock",
-  description: "本地 mock 生产包流程，写入 SQLite；不接 AI、云数据库、素材下载、真实导出或自动发布。"
+  label: "Batch 05 / Review Workflow",
+  description: "本地 mock 生产包流程，写入 SQLite，并支持审阅和文本导出；不接 AI、云数据库、素材下载或自动发布。"
 };
 
 export const dashboardMetrics = [
