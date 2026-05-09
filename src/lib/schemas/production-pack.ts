@@ -1,6 +1,10 @@
 import { z } from "zod";
 
 const NonEmptyString = z.string().trim().min(1);
+const DateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const DateTimeString = z.string().regex(
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/
+);
 
 export const TargetDurationSchema = z.union([z.literal(90), z.literal(180)]);
 export const RightsRiskLevelSchema = z.enum([
@@ -14,7 +18,7 @@ export const ArticleInputSchema = z.object({
   title: NonEmptyString,
   rawText: NonEmptyString,
   sourceUrl: z.url(),
-  publishDate: z.iso.date(),
+  publishDate: DateString,
   sourceName: NonEmptyString,
   industryTags: z.array(NonEmptyString).min(1),
   targetDurations: z.array(TargetDurationSchema).min(1)
@@ -127,7 +131,7 @@ export const ExportManifestSchema = z.object({
 
 export const ProductionPackSchema = z.object({
   id: NonEmptyString,
-  createdAt: z.iso.datetime(),
+  createdAt: DateTimeString,
   mode: z.literal("mock"),
   articleInput: ArticleInputSchema,
   analysis: AnalysisResultSchema,

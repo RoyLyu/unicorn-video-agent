@@ -20,7 +20,20 @@
 - [x] 新增 `/api/mock/production-pack`。
 - [x] 使用 localStorage 保存 ProductionPack 并提供 demo fallback。
 
-## Batch 03 建议
+## Batch 03
+
+- [x] 安装并接入 Drizzle + SQLite 本地依赖。
+- [x] 新增 Drizzle schema、config、migration 和数据库脚本。
+- [x] 建立 articles、video_projects、analysis_runs、scripts、shots、asset_prompts、rights_checks、export_manifests、review_logs 表。
+- [x] 改造 mock 生产包 API，生成后写入 SQLite 并返回 projectId。
+- [x] 新增项目列表和项目详情 API。
+- [x] 新增 `/projects/[projectId]/*` 动态结果页。
+- [x] 改造 `/articles/new` 跳转动态项目页。
+- [x] 改造 `/dashboard` 最近项目列表和空状态。
+- [x] 新增 repository 持久化测试。
+- [x] 新增数据库 schema 文档。
+
+## Batch 04 建议
 
 - [ ] 实现真实 Markdown / CSV / JSON 导出生成，但仍不自动发布。
 - [ ] 增加导出预览和复制下载交互。
@@ -30,7 +43,7 @@
 ## 暂不做
 
 - [ ] AI API 接入。
-- [ ] 数据库接入。
+- [ ] 云数据库接入。
 - [ ] 登录和权限。
 - [ ] 自动素材下载。
 - [ ] 自动发布视频号。

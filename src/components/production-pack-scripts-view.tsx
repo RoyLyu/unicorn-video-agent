@@ -7,12 +7,16 @@ import { loadProductionPack } from "@/lib/storage/production-pack-storage";
 import { ProductionPackStatus } from "./production-pack-status";
 import { ScriptViewer } from "./script-viewer";
 
-export function ProductionPackScriptsView() {
-  const [pack] = useState<ProductionPack>(() => loadProductionPack());
+export function ProductionPackScriptsView({
+  productionPack
+}: {
+  productionPack?: ProductionPack;
+}) {
+  const [pack] = useState<ProductionPack>(() => productionPack ?? loadProductionPack());
 
   return (
     <>
-      <ProductionPackStatus />
+      <ProductionPackStatus productionPack={pack} />
       <ScriptViewer scripts={pack.scripts} />
     </>
   );

@@ -7,6 +7,11 @@ import { demoArticleInput } from "@/lib/mock-pipeline/demo-input";
 import { ArticleInputSchema, type ProductionPack } from "@/lib/schemas/production-pack";
 import { saveProductionPack } from "@/lib/storage/production-pack-storage";
 
+type MockProductionPackResponse = {
+  projectId: string;
+  productionPack: ProductionPack;
+};
+
 export function ArticleInputForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -53,9 +58,9 @@ export function ArticleInputForm() {
         return;
       }
 
-      const productionPack = (await response.json()) as ProductionPack;
-      saveProductionPack(productionPack);
-      router.push("/projects/demo/analysis");
+      const result = (await response.json()) as MockProductionPackResponse;
+      saveProductionPack(result.productionPack);
+      router.push(`/projects/${result.projectId}/analysis`);
     } catch {
       setError("本地 mock 请求失败。");
     } finally {
@@ -66,7 +71,7 @@ export function ArticleInputForm() {
   return (
     <section className="panel">
       <div className="notice">
-        当前为 Batch 02 本地 mock，不接真实 AI，不代表真实生成结果。
+        当前为 Batch 03 本地 mock，会写入 SQLite；不接真实 AI，不代表真实生成结果。
       </div>
       <form className="form-grid" onSubmit={handleSubmit}>
         <div className="field">

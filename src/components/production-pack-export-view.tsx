@@ -8,12 +8,16 @@ import { DataTable } from "./data-table";
 import { ProductionPackStatus } from "./production-pack-status";
 import { StatusBadge } from "./status-badge";
 
-export function ProductionPackExportView() {
-  const [pack] = useState<ProductionPack>(() => loadProductionPack());
+export function ProductionPackExportView({
+  productionPack
+}: {
+  productionPack?: ProductionPack;
+}) {
+  const [pack] = useState<ProductionPack>(() => productionPack ?? loadProductionPack());
 
   return (
     <>
-      <ProductionPackStatus />
+      <ProductionPackStatus productionPack={pack} />
       <section className="panel">
         <DataTable
           caption="ProductionPack export manifest - planned only"
@@ -39,7 +43,7 @@ export function ProductionPackExportView() {
       </section>
       <section className="panel">
         <h2>导出边界</h2>
-        <p>Batch 02 只返回 JSON manifest，不创建、不下载、不写入真实文件。</p>
+        <p>Batch 03 只保存 planned manifest，不创建、不下载、不写入真实导出文件。</p>
       </section>
     </>
   );

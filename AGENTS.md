@@ -7,20 +7,24 @@
 ## 技术约束
 
 - 使用 Next.js App Router、TypeScript、pnpm。
+- Batch 03 使用 SQLite + Drizzle 做本地持久化。
 - 不安装大型 UI 库。
 - 不接 AI API，除非后续 Batch 明确要求。
-- 不接数据库，除非后续 Batch 明确要求。
+- 不接云数据库，除非后续 Batch 明确要求。
 - 不自动下载网络素材。
 - 不自动发布视频号。
 - 不使用未确认版权的新闻图、视频片段、影视片段、音乐和字体。
 
-## Batch 02 约束
+## Batch 03 约束
 
 - 只做本地 mock pipeline，不接真实 AI。
 - 所有 mock agent 必须是纯函数，输入 JSON，输出 JSON。
 - `/articles/new` 可调用本地 API route，但不抓取公众号全文。
-- `/projects/demo/export` 只展示 exportManifest，不生成文件。
-- localStorage 仅用于 Batch 02 临时保存最近一次 ProductionPack。
+- `/api/mock/production-pack` 必须写入本地 SQLite，并返回 `projectId` 与 `ProductionPack`。
+- `/projects/[projectId]/*` 从 SQLite/API 读取展示数据。
+- `/projects/demo/*` 保留为 demo fallback。
+- export 页面只展示 exportManifest，不生成真实文件。
+- localStorage 仅作为 demo fallback，不再作为主存储。
 
 ## 验证命令
 
