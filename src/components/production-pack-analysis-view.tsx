@@ -7,12 +7,16 @@ import type { ProductionPack } from "@/lib/schemas/production-pack";
 import { DataTable } from "./data-table";
 import { ProductionPackStatus } from "./production-pack-status";
 
-export function ProductionPackAnalysisView() {
-  const [pack] = useState<ProductionPack>(() => loadProductionPack());
+export function ProductionPackAnalysisView({
+  productionPack
+}: {
+  productionPack?: ProductionPack;
+}) {
+  const [pack] = useState<ProductionPack>(() => productionPack ?? loadProductionPack());
 
   return (
     <>
-      <ProductionPackStatus />
+      <ProductionPackStatus productionPack={pack} />
       <section className="card-grid">
         <div className="panel">
           <h2>核心观点</h2>

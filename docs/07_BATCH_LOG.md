@@ -1,5 +1,34 @@
 # 07 Batch Log
 
+## Batch 03 - SQLite + Drizzle 本地持久化
+
+目标：实现“文章输入 → mock pipeline → ProductionPack → SQLite → 动态项目页面读取展示”的闭环。
+
+完成内容：
+
+- SQLite + Drizzle 本地数据库层
+- `data/unicorn-video-agent.sqlite` 本地数据库位置
+- `drizzle.config.ts` 和 `drizzle/` 迁移文件
+- `articles`、`video_projects`、`analysis_runs`、`scripts`、`shots`、`asset_prompts`、`rights_checks`、`export_manifests`、`review_logs` 表
+- `db:generate`、`db:migrate`、`db:studio` 脚本
+- `POST /api/mock/production-pack` 写入 SQLite 并返回 `projectId`
+- `GET /api/projects` 和 `GET /api/projects/[projectId]`
+- `/projects/[projectId]/analysis|scripts|shots|rights|export` 动态页面
+- `/dashboard` 最近项目列表和空状态
+- repository 持久化测试
+
+明确不做：
+
+- 真实 AI API
+- 云数据库
+- 用户登录
+- 自动抓取公众号
+- 自动下载网络素材
+- 真实图片、视频、音频生成
+- 真实导出文件生成
+- 自动成片
+- 视频号发布
+
 ## Batch 02 - 本地 Mock 生产包流程
 
 目标：实现“文章输入 → 本地 mock Agent pipeline → ProductionPack JSON → localStorage → 结果页展示”的闭环。

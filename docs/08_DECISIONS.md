@@ -47,3 +47,27 @@
 决定：Batch 02 的 exportManifest 只列出 planned 文件，不生成真实文件。
 
 原因：避免过早进入导出文件格式和下载交互，保持本批范围清晰。
+
+## D009 - Batch 03 使用 SQLite + Drizzle
+
+决定：Batch 03 使用本地 SQLite 文件和 Drizzle ORM 做持久化。
+
+原因：在不接云数据库和登录系统的前提下，先验证项目级数据模型、迁移和动态页面读取。
+
+## D010 - ProductionPack JSON 与结构化表并存
+
+决定：`video_projects` 保存完整 `ProductionPack` JSON，同时拆分写入分析、脚本、分镜、素材 prompt、版权和导出清单表。
+
+原因：完整 JSON 保证页面 readback 与 schema 一致；结构化表为后续筛选、审阅和真实导出预留接口。
+
+## D011 - localStorage 降级为 demo fallback
+
+决定：Batch 03 新项目以 SQLite 为主存储，localStorage 只保留给 `/projects/demo/*` 和浏览器 fallback。
+
+原因：避免 Batch 02 临时状态模型继续成为主数据源，同时不破坏已有 demo 页面。
+
+## D012 - 显式迁移优先
+
+决定：开发者使用 `pnpm db:migrate` 初始化和迁移本地数据库，应用请求不自动改表。
+
+原因：保持数据库变更可追踪，避免 API 请求在未知状态下隐式修改本地数据结构。
