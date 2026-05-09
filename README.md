@@ -4,19 +4,32 @@
 
 ## 当前阶段
 
-Batch 00：项目初始化与文档系统。
+Batch 01：后台 UI Shell 与导航结构。
 
 当前仓库提供：
 
-- Next.js + TypeScript 最小应用骨架
+- Next.js + TypeScript App Router 项目骨架
+- 统一后台 `AppShell`、侧边栏导航和静态页面
+- 10 个 Batch 01 页面路由
+- 集中 demo 假数据 `src/lib/demo-data.ts`
 - 文章输入与视频号生产包的 Zod schema
-- 合法输入与完整输出样例 fixture
-- schema 单元测试
-- MVP、导出结构、版权策略和 prompt 系统边界文档
+- Schema 与 demo data 单元测试
+- 编号版产品、版权、视频号标准、Agent 合同、批次日志和决策文档
 
 ## MVP 范围
 
-第一版只做“文章 → 视频号生产包”，不做自动成片。
+第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 01 只做静态 UI Shell，不接 AI API、不接数据库、不做自动导出、不做自动发布。
+
+编号文档为后续主线：
+
+- `docs/01_MVP_SCOPE.md`
+- `docs/03_COPYRIGHT_POLICY.md`
+- `docs/04_VIDEOHAO_STANDARD.md`
+- `docs/05_AGENT_CONTRACTS.md`
+- `docs/07_BATCH_LOG.md`
+- `docs/08_DECISIONS.md`
+
+Batch 00 原始文档仍保留在 `docs/PRD.md`、`docs/OUTPUT_SCHEMA.md`、`docs/COPYRIGHT_POLICY.md`、`docs/PROMPT_SYSTEM.md`。
 
 ## 启动
 
@@ -30,54 +43,43 @@ pnpm dev
 ## 验证
 
 ```bash
-pnpm test
 pnpm lint
+pnpm typecheck
+pnpm test
 pnpm build
 ```
+
+## Batch 01 页面
+
+- `/`
+- `/dashboard`
+- `/articles/new`
+- `/articles/demo`
+- `/projects/demo/analysis`
+- `/projects/demo/scripts`
+- `/projects/demo/shots`
+- `/projects/demo/rights`
+- `/projects/demo/export`
+- `/settings`
 
 ## 项目结构
 
 ```text
 docs/
-  PRD.md
-  OUTPUT_SCHEMA.md
-  COPYRIGHT_POLICY.md
-  PROMPT_SYSTEM.md
+  01_MVP_SCOPE.md
+  03_COPYRIGHT_POLICY.md
+  04_VIDEOHAO_STANDARD.md
+  05_AGENT_CONTRACTS.md
+  07_BATCH_LOG.md
+  08_DECISIONS.md
 src/
   app/
-    page.tsx
-    layout.tsx
-    globals.css
+  components/
   lib/
+    demo-data.ts
     fixtures/
     schemas/
 ```
-
-## 第一版输入
-
-- 公众号文章标题
-- 公众号文章正文
-- 文章链接
-- 发布日期
-- 来源
-- 行业标签
-- 目标时长：90s / 180s
-
-## 第一版输出
-
-- 核心摘要
-- 核心观点
-- 90s 视频号脚本
-- 180s 视频号脚本
-- 分镜表
-- 图表建议
-- AI 图像 Prompt
-- AI 视频 Prompt
-- 素材搜索线索
-- 版权风险表
-- 封面文案
-- 发布文案
-- Markdown / CSV / JSON 导出包
 
 ## 不做什么
 
@@ -85,4 +87,7 @@ src/
 - 不自动下载网络素材
 - 不自动发布视频号
 - 不自动生成完整成片
+- 不接 AI API
+- 不接数据库
+- 不做登录
 - 不使用未确认版权的新闻图、视频片段、影视片段、音乐和字体
