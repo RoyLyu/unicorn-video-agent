@@ -4,21 +4,37 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { demoArticleInput } from "@/lib/mock-pipeline/demo-input";
-import { ArticleInputSchema, type ProductionPack } from "@/lib/schemas/production-pack";
+import {
+  ArticleInputSchema,
+  type GenerationMode,
+  type ProductionPack
+} from "@/lib/schemas/production-pack";
 import { saveProductionPack } from "@/lib/storage/production-pack-storage";
 
 type MockProductionPackResponse = {
   projectId: string;
   productionPack: ProductionPack;
+  fallbackUsed?: boolean;
+  generationMode?: GenerationMode;
 };
 
-export function ArticleInputForm() {
+export function ArticleInputForm({
+  defaultGenerationMode = "mock"
+}: {
+  defaultGenerationMode?: GenerationMode;
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [generationMode, setGenerationMode] =
+    useState<GenerationMode>(defaultGenerationMode);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>,
+    overrideMode?: GenerationMode
+  ) {
     event.preventDefault();
+    const selectedMode = overrideMode ?? generationMode;
     setError(null);
     setIsSubmitting(true);
 
@@ -47,14 +63,22 @@ export function ArticleInputForm() {
     }
 
     try {
-      const response = await fetch("/api/mock/production-pack", {
+      const endpoint =
+        selectedMode === "ai"
+          ? "/api/ai/production-pack"
+          : "/api/mock/production-pack";
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsed.data)
       });
 
       if (!response.ok) {
-        setError("Mock 生产包生成失败，请检查输入。");
+        setError(
+          selectedMode === "ai"
+            ? "AI Agent 生成失败。可以改用 Mock 生成，保证 demo 流程不中断。"
+            : "Mock 生产包生成失败，请检查输入。"
+        );
         return;
       }
 
@@ -62,18 +86,62 @@ export function ArticleInputForm() {
       saveProductionPack(result.productionPack);
       router.push(`/projects/${result.projectId}/analysis`);
     } catch {
-      setError("本地 mock 请求失败。");
+      setError(
+        selectedMode === "ai"
+          ? "AI Agent 请求失败。可以改用 Mock 生成。"
+          : "本地 mock 请求失败。"
+      );
     } finally {
       setIsSubmitting(false);
     }
   }
 
+  function handleMockFallback(event: React.MouseEvent<HTMLButtonElement>) {
+    const form = event.currentTarget.form;
+
+    if (!form) {
+      return;
+    }
+
+    handleSubmit(
+      {
+        preventDefault: () => undefined,
+        currentTarget: form
+      } as React.FormEvent<HTMLFormElement>,
+      "mock"
+    );
+  }
+
   return (
     <section className="panel">
       <div className="notice">
-        当前为 Batch 06 本地 mock，会写入 SQLite；不接真实 AI，不代表真实生成结果。
+        当前为 Batch 08：Mock 会使用本地 deterministic pipeline；AI Agent 会调用 server-side
+        OpenAI 文本生成，并在失败时 fallback 到 Mock。不生成图片、视频、音频或真实素材。
       </div>
       <form className="form-grid" onSubmit={handleSubmit}>
+        <fieldset className="field fieldset field--full">
+          <legend>生成模式</legend>
+          <label>
+            <input
+              name="generationMode"
+              type="radio"
+              value="mock"
+              checked={generationMode === "mock"}
+              onChange={() => setGenerationMode("mock")}
+            />
+            Mock
+          </label>
+          <label>
+            <input
+              name="generationMode"
+              type="radio"
+              value="ai"
+              checked={generationMode === "ai"}
+              onChange={() => setGenerationMode("ai")}
+            />
+            AI Agent
+          </label>
+        </fieldset>
         <div className="field">
           <label htmlFor="title">公众号文章标题</label>
           <input id="title" name="title" defaultValue={demoArticleInput.title} />
@@ -143,8 +211,24 @@ export function ArticleInputForm() {
         {error ? <p className="form-error">{error}</p> : null}
         <div className="form-actions">
           <button className="primary-link" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "生成中..." : "生成 Mock 生产包"}
+            {isSubmitting
+              ? generationMode === "ai"
+                ? "AI Agent 生成中..."
+                : "Mock 生成中..."
+              : generationMode === "ai"
+                ? "AI Agent 生成"
+                : "生成 Mock 生产包"}
           </button>
+          {error && generationMode === "ai" ? (
+            <button
+              className="ghost-button"
+              type="button"
+              disabled={isSubmitting}
+              onClick={handleMockFallback}
+            >
+              改用 Mock 生成
+            </button>
+          ) : null}
         </div>
       </form>
     </section>

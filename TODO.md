@@ -77,14 +77,28 @@
 
 ## Batch 08 建议
 
+- [x] 安装 OpenAI SDK。
+- [x] 新增 `.env.example`。
+- [x] 新增 server-side AI config、client、structured output 和 error 类型。
+- [x] 新增 7 个 AI Agent prompt template。
+- [x] 新增 AI output schema。
+- [x] 新增 `runAiPipeline`，支持 Zod 校验和 mock fallback。
+- [x] 新增 `POST /api/ai/production-pack`。
+- [x] `/articles/new` 支持 Mock / AI Agent 模式选择。
+- [x] Analysis 和 Agent Runs 展示 generation mode / fallback 状态。
+- [x] 新增 Batch 08 测试。
+
+## Batch 09 建议
+
+- [ ] 增加 prompt 版本管理和 prompt diff。
+- [ ] 增加真实 AI 输出质量评分和人工批准开关。
 - [ ] 增加浏览器端流程测试。
 - [ ] 增加审阅历史和审阅人字段。
 - [ ] 增加导出前事实核验 checklist 的锁定/确认流程。
-- [ ] 评估真实 AI 接入前的 prompt 版本管理。
 
 ## 暂不做
 
-- [ ] AI API 接入。
+- [x] AI API 文本生成接入。
 - [ ] 云数据库接入。
 - [ ] 登录和权限。
 - [ ] 自动素材下载。

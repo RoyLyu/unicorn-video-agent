@@ -146,7 +146,7 @@ function ProjectListItem({ project }: { project: ProjectWithAgentRun }) {
         checklist: {Math.round((reviewSummary?.checklistCompletion ?? 0) * 100)}%
       </StatusBadge>{" "}
       <StatusBadge tone="green">export: ready</StatusBadge>{" "}
-      <StatusBadge tone={project.latestAgentRun?.status === "completed" ? "green" : "placeholder"}>
+      <StatusBadge tone={agentRunTone(project.latestAgentRun?.status)}>
         agent: {project.latestAgentRun?.status ?? "not_started"}
       </StatusBadge>{" "}
       <div className="action-row">
@@ -165,6 +165,22 @@ function getLatestAgentRunSafely(projectId: string): AgentRunSummary | null {
   } catch {
     return null;
   }
+}
+
+function agentRunTone(status: AgentRunSummary["status"] | undefined) {
+  if (status === "completed") {
+    return "green" as const;
+  }
+
+  if (status === "completed_with_fallback") {
+    return "yellow" as const;
+  }
+
+  if (status === "failed") {
+    return "red" as const;
+  }
+
+  return "placeholder" as const;
 }
 
 function getReviewSummarySafely(projectId: string): ReviewSummary | null {

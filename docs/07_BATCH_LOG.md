@@ -1,5 +1,34 @@
 # 07 Batch Log
 
+## Batch 08 - Real AI Production Pack Pipeline
+
+目标：跑通真实 AI 文本 Agent 生产包生成，同时保留 mock fallback，保证 demo 稳定。
+
+完成内容：
+
+- OpenAI SDK 和 `.env.example`
+- server-side AI config、client、structured output 和 error 处理
+- 7 个 AI Agent prompt template
+- AI Agent output schema
+- `runAiPipeline`
+- `POST /api/ai/production-pack`
+- `/articles/new` Mock / AI Agent 模式选择
+- AI 配置缺失或单步失败 fallback 到 mock
+- ProductionPack `mode: mock | ai`
+- Agent Run/Step `completed_with_fallback`
+- Analysis、Dashboard、Agent Runs 展示 generation mode / fallback 状态
+
+明确不做：
+
+- AI 生图
+- AI 生视频
+- TTS
+- 自动下载网络素材
+- 自动发布视频号
+- 自动成片
+- Postgres 迁移
+- 公网部署
+
 ## Batch 07 - Agent Management Layer
 
 目标：把现有 mock pipeline 背后的 Agent 升级为可展示、可审阅、可追踪的本地 Agent 管理层。

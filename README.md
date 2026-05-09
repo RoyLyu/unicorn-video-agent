@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-Batch 07：Agent Management Layer。
+Batch 08：Real AI Production Pack Pipeline。
 
 当前仓库提供：
 
@@ -22,6 +22,8 @@ Batch 07：Agent Management Layer。
 - 两个公开安全模拟项目、Demo Mode 标识和 Demo reset API
 - Agent 注册表、Agent 运行日志、上下文快照和 deterministic QA summary
 - Agent 管理页面与项目 Agent Runs 页面
+- 真实 AI 文本生产包生成路径：`POST /api/ai/production-pack`
+- AI Agent 生成失败时自动 fallback 到 mock pipeline
 - 纯函数 mock Agent pipeline
 - `localStorage` demo fallback
 - Zod schema 与 pipeline 单元测试
@@ -30,7 +32,20 @@ Batch 07：Agent Management Layer。
 
 ## MVP 范围
 
-第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 07 只做 Agent 管理与本地运行追踪，不接真实 AI API、不接云数据库、不接素材网站、不下载素材、不生成真实媒体、不做登录、不发布视频号、不做云部署。
+第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 08 只接入真实 AI 文本生产包生成，不做 AI 生图、生视频、TTS、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
+
+## 环境变量
+
+复制 `.env.example` 到本地 `.env.local` 后填写：
+
+```bash
+OPENAI_API_KEY=
+AI_PROVIDER=openai
+AI_MODEL=
+GENERATION_MODE=mock
+```
+
+`AI_MODEL` 必须从环境变量读取，业务逻辑不写默认模型。缺少 `OPENAI_API_KEY` 或 `AI_MODEL` 时，AI 生成会记录 fallback 并使用 mock pipeline 继续完成生产包。
 
 ## 启动
 
@@ -53,17 +68,17 @@ pnpm test
 pnpm build
 ```
 
-## Batch 07 验证路径
+## Batch 08 验证路径
 
-1. 打开 `/agents`，确认 7 个 Agent 均显示 Mock Ready / Real AI Pending。
-2. 打开 `/articles/new` 创建一个普通 mock 项目。
-3. 确认 API 返回 `agentRunId`，页面跳转到 `/projects/[projectId]/analysis`。
-4. 打开 `/projects/[projectId]/agent-runs`，确认出现 completed agent run。
-5. 打开 `/projects/[projectId]/agent-runs/[runId]`，确认 7 个 step、input/output 摘要、context snapshot 和 QA result。
-6. 打开 `/dashboard`，确认 demo 项目和普通项目都展示最近 agent run 状态和 Agent Runs 入口。
-7. 打开 `/demo` 并重置 Demo 数据，确认 demo 项目同样生成 agent run。
+1. 打开 `/articles/new`，选择 `Mock`，确认仍走 `/api/mock/production-pack`。
+2. 选择 `AI Agent`，在已配置 OpenAI 环境变量时调用 `/api/ai/production-pack`。
+3. 未配置 `OPENAI_API_KEY` 或 `AI_MODEL` 时，确认仍生成项目，并返回 `fallbackUsed: true`、`generationMode: mock`。
+4. 打开 `/projects/[projectId]/analysis`，确认显示 AI / Mock / fallback 状态。
+5. 打开 `/projects/[projectId]/agent-runs`，确认可见 `completed` 或 `completed_with_fallback`。
+6. 打开 Agent Run Detail，确认 7 个 step、input/output 摘要、context snapshot 和 fallback error。
+7. 打开 `/demo` 并重置 Demo 数据，确认公开 demo 仍走 mock，不调用真实 AI。
 
-## Batch 07 页面
+## Batch 08 页面
 
 - `/`
 - `/demo`
@@ -119,6 +134,14 @@ POST /api/demo/reset
 
 Demo reset API 只删除并重建 `is_demo = true` 的公开演示项目，返回两个 demo `projectId`。普通 mock 项目不会被删除。
 
+## AI API
+
+```text
+POST /api/ai/production-pack
+```
+
+AI API 接收 `ArticleInput`，使用 OpenAI Responses API structured output 生成文本 ProductionPack，写入 SQLite，返回 `projectId`、`productionPack`、`agentRunId`、`fallbackUsed` 和 `generationMode`。所有 AI 输出必须通过 Zod schema 校验；失败时记录 Agent Run step 并 fallback 到 mock。
+
 ## Agent Management
 
 Batch 07 新增本地 Agent 管理层：
@@ -131,7 +154,7 @@ Batch 07 新增本地 Agent 管理层：
 - `Asset Finder`
 - `QA Agent`
 
-每次 mock pipeline 会创建 `agent_run`，并记录 7 个 `agent_run_step`、上下文快照和 QA summary。所有 Agent 当前模式均为 `mock`，未来模式为 `real_ai_pending`。
+每次 mock 或 AI pipeline 会创建 `agent_run`，并记录 7 个 `agent_run_step`、上下文快照和 QA summary。Batch 08 的真实 AI 只生成文本结构化输出；失败时 step/run 会显示 `completed_with_fallback`。
 
 ## 数据库
 
@@ -191,10 +214,10 @@ src/
 - 不自动下载网络素材
 - 不自动发布视频号
 - 不自动生成完整成片
-- 不接真实 AI API
 - 不接云数据库
 - 不做登录
 - 不做云部署
 - 不生成真实图片、视频、音频
+- 不做 AI 生图、生视频或 TTS
 - 不把导出文件写入仓库或 data 目录
 - 不使用未确认版权的新闻图、视频片段、影视片段、音乐和字体

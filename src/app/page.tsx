@@ -8,9 +8,9 @@ export default function Home() {
   return (
     <main className="content-stack">
       <PageHeader
-        eyebrow="Batch 07 / Agent Management"
-        title="Agent Management Layer"
-        description="本批把本地 mock pipeline 升级为可展示、可审阅、可追踪的 Agent 管理层：Agent 注册表、运行日志、上下文快照和 QA summary。"
+        eyebrow="Batch 08 / Real AI Pipeline"
+        title="Real AI Production Pack Pipeline"
+        description="本批新增真实 AI 文本生产包生成路径，保留 mock fallback，并继续记录 Agent Run、上下文快照和 QA summary。"
         actions={
           <div className="action-row">
             <Link className="primary-link" href="/agents">
@@ -23,7 +23,7 @@ export default function Home() {
         }
       />
 
-      <section className="metric-grid" aria-label="Batch 06 概览指标">
+      <section className="metric-grid" aria-label="Batch 08 概览指标">
         {dashboardMetrics.map((metric) => (
           <MetricCard key={metric.label} {...metric} />
         ))}

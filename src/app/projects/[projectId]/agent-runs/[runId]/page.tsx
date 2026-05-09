@@ -32,7 +32,7 @@ export default async function AgentRunDetailPage({
     <main className="content-stack">
       {saved.project.isDemo ? <DemoModeBanner /> : null}
       <PageHeader
-        eyebrow="Batch 07 / Agent Run Detail"
+        eyebrow="Batch 08 / Agent Run Detail"
         title="Agent Run Detail"
         description="逐步展示 pipeline step、input/output 摘要、context snapshot 和错误信息。"
         actions={
@@ -45,7 +45,7 @@ export default async function AgentRunDetailPage({
       <section className="panel">
         <h2>Run Summary</h2>
         <p>{detail.run.id}</p>
-        <StatusBadge tone={detail.run.status === "completed" ? "green" : "red"}>
+        <StatusBadge tone={statusTone(detail.run.status)}>
           {detail.run.status}
         </StatusBadge>
         {detail.run.errorMessage ? <p>{detail.run.errorMessage}</p> : null}
@@ -61,7 +61,13 @@ export default async function AgentRunDetailPage({
               header: "Agent",
               render: (row) => <Link href={`/agents/${row.agentSlug}`}>{row.agentSlug}</Link>
             },
-            { key: "status", header: "状态", render: (row) => row.status },
+            {
+              key: "status",
+              header: "状态",
+              render: (row) => (
+                <StatusBadge tone={statusTone(row.status)}>{row.status}</StatusBadge>
+              )
+            },
             { key: "input", header: "Input 摘要", render: (row) => row.inputSummary },
             { key: "output", header: "Output 摘要", render: (row) => row.outputSummary },
             {
@@ -99,4 +105,16 @@ function getQaResultSafely(runId: string) {
   } catch {
     return null;
   }
+}
+
+function statusTone(status: string) {
+  if (status === "completed") {
+    return "green" as const;
+  }
+
+  if (status === "completed_with_fallback") {
+    return "yellow" as const;
+  }
+
+  return "red" as const;
 }

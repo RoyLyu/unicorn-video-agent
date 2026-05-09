@@ -1,5 +1,17 @@
 # Changelog
 
+## Batch 08 - Real AI Production Pack Pipeline
+
+- 新增 `openai` SDK 与 `.env.example`，支持 `OPENAI_API_KEY`、`AI_PROVIDER`、`AI_MODEL`、`GENERATION_MODE`。
+- 新增 server-side AI config、OpenAI client、structured output 封装和 AI error 类型。
+- 新增 7 个 AI Agent prompt template 与 AI output schema。
+- 新增 `runAiPipeline`，按 Agent 顺序调用真实 AI 文本生成，并在配置缺失或单步失败时 fallback 到 mock 输出。
+- 新增 `POST /api/ai/production-pack`，返回 `projectId`、`productionPack`、`agentRunId`、`fallbackUsed` 和 `generationMode`。
+- 扩展 `ProductionPack.mode` 为 `mock | ai`，扩展 Agent Run/Step 状态为 `completed_with_fallback`。
+- 改造 `/articles/new`，支持 Mock / AI Agent 模式选择。
+- Analysis、Dashboard 和 Agent Runs 页面展示 AI / Mock / fallback 状态。
+- 新增 AI pipeline、AI schema、AI API 和客户端凭据隔离测试。
+
 ## Batch 07 - Agent Management Layer
 
 - 新增 7 个本地 mock Agent 定义：Article Analyst、Thesis Agent、Script Writer、Storyboard Agent、Prompt Generator、Asset Finder、QA Agent。

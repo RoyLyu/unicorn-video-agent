@@ -29,7 +29,7 @@ export default async function ExportPage({
       {saved.project.isDemo ? <DemoModeBanner /> : null}
       <PageHeader
         title="导出清单"
-        description="从 SQLite 读取 ProductionPack。Batch 06 即时生成文本生产包导出，不包含真实视频、图片或音频。"
+        description="从 SQLite 读取 ProductionPack。Batch 08 即时生成文本生产包导出，不包含真实视频、图片或音频。"
         actions={
           <Link className="primary-link" href={`/projects/${projectId}/review`}>
             进入 Review

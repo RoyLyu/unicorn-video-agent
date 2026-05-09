@@ -53,11 +53,11 @@ export function ProductionPackExportView({
       <ProductionPackStatus productionPack={pack} />
       {reviewSummary ? <ReviewStatusCard summary={reviewSummary} /> : null}
       <div className="notice">
-        Batch 06 显示 Demo 与审阅状态但不强制禁止下载。若事实、版权或 checklist 未完成，发布前仍需人工复核。
+        Batch 08 显示 Demo、AI/fallback 与审阅状态但不强制禁止下载。若事实、版权或 checklist 未完成，发布前仍需人工复核。
       </div>
       <section className="panel">
         <DataTable
-          caption="Batch 06 export files"
+          caption="Batch 08 export files"
           rows={allowedExportFileNames.map((fileName) => {
             const manifest = pack.exportManifest.files.find(
               (file) => file.filename === fileName
@@ -66,7 +66,7 @@ export function ProductionPackExportView({
             return {
               filename: fileName,
               format: manifest?.format ?? formatForFile(fileName),
-              purpose: manifest?.purpose ?? "Batch 06 文本导出",
+              purpose: manifest?.purpose ?? "Batch 08 文本导出",
               status: fileName === selectedFileName ? "selected" : "ready"
             };
           })}

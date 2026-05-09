@@ -8,8 +8,12 @@ export type AgentSlug =
   | "qa-agent";
 
 export type AgentMode = "mock" | "real_ai_pending";
-export type AgentRunStatus = "running" | "completed" | "failed";
-export type AgentStepStatus = "completed" | "failed";
+export type AgentRunStatus =
+  | "running"
+  | "completed"
+  | "completed_with_fallback"
+  | "failed";
+export type AgentStepStatus = "completed" | "completed_with_fallback" | "failed";
 
 export type AgentDefinition = {
   slug: AgentSlug;

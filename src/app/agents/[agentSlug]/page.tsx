@@ -28,7 +28,7 @@ export default async function AgentDetailPage({
   return (
     <main className="content-stack">
       <PageHeader
-        eyebrow="Batch 07 / Agent Management"
+        eyebrow="Batch 08 / Agent Management"
         title={agent.name}
         description={agent.description}
         actions={

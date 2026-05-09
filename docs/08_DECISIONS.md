@@ -143,3 +143,21 @@
 决定：QA Agent 只统计本地 ProductionPack 结构和版权风险，不做外部事实核验。
 
 原因：Batch 07 仍不接真实 AI、搜索或素材网站；QA 结果只能作为审阅提示，不代表事实或法律确认。
+
+## D025 - Batch 08 真实 AI 只做文本 structured output
+
+决定：真实 AI pipeline 只调用 OpenAI 文本 structured output，不做 AI 生图、生视频、TTS、素材下载或自动成片。
+
+原因：当前产品合同是文章到 ProductionPack，媒体生成和剪辑应在文本包稳定后单独进入后续批次。
+
+## D026 - AI_MODEL 只从环境变量读取
+
+决定：业务逻辑不硬编码默认模型；`AI_MODEL` 为空时记录清晰错误并 fallback mock。
+
+原因：模型选择可能随账号、成本和能力变化，不能把临时默认值固化进业务流程。
+
+## D027 - AI 失败不阻断 demo
+
+决定：AI 配置缺失、单步调用失败或 schema 校验失败时，Agent Run/Step 标记 `completed_with_fallback` 并使用 mock 输出继续。
+
+原因：公开 demo 和内部审阅流程必须稳定；AI 质量和可用性问题应被记录，而不是让生成闭环中断。

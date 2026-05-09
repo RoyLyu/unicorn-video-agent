@@ -183,10 +183,14 @@ export function bindAgentRunToProject(
     .run();
 }
 
-export function completeAgentRun(runId: string, client: DbClient = getDbClient()) {
+export function completeAgentRun(
+  runId: string,
+  client: DbClient = getDbClient(),
+  status: Extract<AgentRunStatus, "completed" | "completed_with_fallback"> = "completed"
+) {
   client.db
     .update(agentRuns)
-    .set({ status: "completed", completedAt: new Date().toISOString() })
+    .set({ status, completedAt: new Date().toISOString() })
     .where(eq(agentRuns.id, runId))
     .run();
 }

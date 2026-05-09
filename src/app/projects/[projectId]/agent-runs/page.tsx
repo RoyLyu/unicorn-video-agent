@@ -30,9 +30,9 @@ export default async function ProjectAgentRunsPage({
     <main className="content-stack">
       {saved.project.isDemo ? <DemoModeBanner /> : null}
       <PageHeader
-        eyebrow="Batch 07 / Agent Runs"
+        eyebrow="Batch 08 / Agent Runs"
         title="Agent Runs"
-        description="展示项目的 mock pipeline 运行记录。当前仅记录本地 deterministic agent 执行，不接真实 AI。"
+        description="展示项目的 Mock / AI pipeline 运行记录、fallback 状态和错误信息。"
       />
       <ProjectNav projectId={projectId} />
       <section className="panel">
@@ -53,7 +53,7 @@ export default async function ProjectAgentRunsPage({
               key: "status",
               header: "状态",
               render: (row) => (
-                <StatusBadge tone={row.status === "completed" ? "green" : "red"}>
+                <StatusBadge tone={statusTone(row.status)}>
                   {row.status}
                 </StatusBadge>
               )
@@ -74,4 +74,16 @@ function getRunsSafely(projectId: string) {
   } catch {
     return [];
   }
+}
+
+function statusTone(status: string) {
+  if (status === "completed") {
+    return "green" as const;
+  }
+
+  if (status === "completed_with_fallback") {
+    return "yellow" as const;
+  }
+
+  return "red" as const;
 }

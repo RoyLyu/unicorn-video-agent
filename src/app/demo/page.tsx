@@ -19,7 +19,7 @@ export default function PublicDemoPage() {
       <PageHeader
         eyebrow="Batch 06 / Public Demo"
         title="独角兽早知道 Video Agent Demo"
-        description="将公众号财经文章转化为视频号生产包：文章输入、mock pipeline、人工审阅和文本导出。当前仅展示本地模拟数据。"
+        description="将公众号财经文章转化为视频号生产包：文章输入、mock pipeline、人工审阅和文本导出。公开 demo 仅展示本地模拟数据。"
         actions={
           <div className="action-row">
             <Link className="primary-link" href="/dashboard">
@@ -85,7 +85,7 @@ export default function PublicDemoPage() {
       <section className="panel">
         <h2>当前限制</h2>
         <ul className="info-list">
-          <li>不接真实 AI API，不代表真实投研或公司分析。</li>
+          <li>公开 demo 不调用真实 AI，不代表真实投研或公司分析。</li>
           <li>不抓取文章、不下载素材、不生成图片、视频或音频。</li>
           <li>不自动发布视频号，不做云部署、登录或权限。</li>
         </ul>

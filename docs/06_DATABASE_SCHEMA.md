@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-Batch 07 继续使用 SQLite + Drizzle 做本地持久化，并新增 Agent 管理与运行追踪表。数据库只服务本地 mock 闭环、公开受控演示和 Agent run 审阅，不接云数据库、不做登录、不保存真实素材文件、不保存真实导出文件。
+Batch 08 继续使用 SQLite + Drizzle 做本地持久化。数据库服务本地 mock 闭环、真实 AI 文本 ProductionPack、公开受控演示和 Agent run 审阅；不接云数据库、不做登录、不保存真实素材文件、不保存真实导出文件。
 
 ## 文件位置
 
@@ -42,7 +42,7 @@ pnpm db:migrate
 - `fact_checks`：事实核验记录，状态限定为 `pending`、`verified`、`needs_review`、`rejected`。
 - `review_checklists`：导出前 checklist 的完成状态。
 - `agent_definitions`：Agent 注册表快照，代码定义为 source of truth。
-- `agent_runs`：一次 mock pipeline 运行摘要，包括项目、状态、时间和错误信息。
+- `agent_runs`：一次 mock 或 AI pipeline 运行摘要，包括项目、状态、时间和错误信息。
 - `agent_run_steps`：每个 Agent step 的顺序、状态、输入输出 JSON 和摘要。
 - `agent_context_snapshots`：每个 Agent step 的上下文快照。
 - `qa_results`：deterministic QA summary，包括 red rights risk 数量。
@@ -50,6 +50,7 @@ pnpm db:migrate
 ## 数据读取约定
 
 - `POST /api/mock/production-pack` 接收 `ArticleInput`，运行 mock pipeline，写入 SQLite，返回 `projectId` 和 `ProductionPack`。
+- `POST /api/ai/production-pack` 接收 `ArticleInput`，运行 OpenAI 文本 structured output pipeline，失败时 fallback 到 mock，写入 SQLite 并返回 `projectId`、`ProductionPack`、`agentRunId`、`fallbackUsed` 和 `generationMode`。
 - `GET /api/projects` 返回最近项目列表。
 - `GET /api/projects/[projectId]` 返回项目详情和完整 `ProductionPack`。
 - `/projects/[projectId]/*` 动态页面从 SQLite 读取。
@@ -64,7 +65,7 @@ pnpm db:migrate
 
 ## 不做事项
 
-- 不接真实 AI API。
+- 不做 AI 生图、生视频或 TTS。
 - 不接云数据库。
 - 不做用户登录。
 - 不自动抓取公众号。

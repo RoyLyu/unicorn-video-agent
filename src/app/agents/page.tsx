@@ -13,9 +13,9 @@ export default function AgentsPage() {
   return (
     <main className="content-stack">
       <PageHeader
-        eyebrow="Batch 07 / Agent Management"
+        eyebrow="Batch 08 / Agent Management"
         title="Agent 管理"
-        description="展示 mock Agent 注册表、职责、模式和最近运行状态。当前不接真实 AI API。"
+        description="展示 Agent 注册表、职责、模式和最近运行状态。Batch 08 的 AI 生产包生成仍保留 mock fallback。"
       />
       <section className="panel">
         <DataTable
@@ -37,7 +37,7 @@ export default function AgentsPage() {
               render: () => (
                 <>
                   <StatusBadge tone="green">Mock Ready</StatusBadge>{" "}
-                  <StatusBadge tone="placeholder">Real AI Pending</StatusBadge>
+                  <StatusBadge tone="yellow">AI Text Ready</StatusBadge>
                 </>
               )
             },
