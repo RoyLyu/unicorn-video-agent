@@ -14,13 +14,13 @@
 - 不自动发布视频号。
 - 不使用未确认版权的新闻图、视频片段、影视片段、音乐和字体。
 
-## Batch 01 约束
+## Batch 02 约束
 
-- 只做静态 UI Shell 与导航结构。
-- 所有业务内容来自 `src/lib/demo-data.ts`。
-- `/articles/new` 只展示静态表单，不提交数据。
-- `/projects/demo/export` 只展示未来导出文件清单，不生成文件。
-- 所有页面必须明确标注 Batch 01 / UI Shell。
+- 只做本地 mock pipeline，不接真实 AI。
+- 所有 mock agent 必须是纯函数，输入 JSON，输出 JSON。
+- `/articles/new` 可调用本地 API route，但不抓取公众号全文。
+- `/projects/demo/export` 只展示 exportManifest，不生成文件。
+- localStorage 仅用于 Batch 02 临时保存最近一次 ProductionPack。
 
 ## 验证命令
 

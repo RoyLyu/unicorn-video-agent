@@ -11,7 +11,7 @@ export default function DashboardPage() {
     <main className="content-stack">
       <PageHeader
         title="Dashboard"
-        description="内部后台总览。当前展示均为 Batch 01 静态占位数据，用于确认导航结构和页面信息架构。"
+        description="内部后台总览。当前展示 Batch 02 本地 mock 生产包状态，用于确认闭环流程。"
         actions={
           <Link className="primary-link" href="/articles/new">
             新建文章

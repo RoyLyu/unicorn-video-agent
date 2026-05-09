@@ -9,7 +9,7 @@ export default function DemoArticlePage() {
     <main className="content-stack">
       <PageHeader
         title="Demo 文章"
-        description="示例文章只用于后台 UI 展示，不代表真实新闻、真实公司或真实融资事件。"
+        description="示例文章用于 Batch 02 mock pipeline fallback，不代表真实新闻、真实公司或真实融资事件。"
         actions={
           <Link className="primary-link" href="/projects/demo/analysis">
             查看分析结果

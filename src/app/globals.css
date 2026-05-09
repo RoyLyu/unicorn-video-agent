@@ -148,6 +148,36 @@ select {
   white-space: nowrap;
 }
 
+.pack-status,
+.notice {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  padding: 14px;
+}
+
+.pack-status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pack-status span {
+  font-weight: 800;
+}
+
+.pack-status small {
+  color: var(--muted);
+}
+
+.notice {
+  margin-bottom: 18px;
+  color: var(--accent-strong);
+  font-weight: 700;
+  line-height: 1.65;
+}
+
 .content-stack {
   display: grid;
   gap: 22px;
@@ -362,6 +392,29 @@ select {
   font-weight: 700;
 }
 
+.fieldset {
+  align-content: start;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  margin: 0;
+  padding: 12px;
+}
+
+.fieldset legend {
+  padding: 0 6px;
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.fieldset label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 12px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .field input,
 .field textarea,
 .field select {
@@ -382,6 +435,13 @@ select {
   display: flex;
   justify-content: flex-end;
   grid-column: 1 / -1;
+}
+
+.form-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--red-text);
+  font-weight: 700;
 }
 
 .table-wrap {
