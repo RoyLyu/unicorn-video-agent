@@ -63,7 +63,19 @@
 - [x] 新增 Public Demo Guide。
 - [x] 新增 demo seed/reset/banner/dashboard 测试。
 
-## Batch 07 建议
+## Batch 07
+
+- [x] 新增 Agent 定义层和 7 个 mock Agent。
+- [x] 新增 Agent run、step、context snapshot 和 QA result 数据表。
+- [x] 新增 tracked mock pipeline。
+- [x] `/api/mock/production-pack` 返回 `agentRunId`。
+- [x] Demo reset 生成 agent run 记录。
+- [x] 新增 `/agents` 和 `/agents/[agentSlug]`。
+- [x] 新增项目 Agent Runs 页面。
+- [x] Dashboard 展示最近 agent run 状态。
+- [x] 新增 Agent registry、tracked pipeline、QA 和 dashboard helper 测试。
+
+## Batch 08 建议
 
 - [ ] 增加浏览器端流程测试。
 - [ ] 增加审阅历史和审阅人字段。

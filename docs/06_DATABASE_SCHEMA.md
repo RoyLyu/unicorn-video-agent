@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-Batch 06 继续使用 SQLite + Drizzle 做本地持久化，并新增公开 demo 项目标记。数据库只服务本地 mock 闭环和公开受控演示，不接云数据库、不做登录、不保存真实素材文件、不保存真实导出文件。
+Batch 07 继续使用 SQLite + Drizzle 做本地持久化，并新增 Agent 管理与运行追踪表。数据库只服务本地 mock 闭环、公开受控演示和 Agent run 审阅，不接云数据库、不做登录、不保存真实素材文件、不保存真实导出文件。
 
 ## 文件位置
 
@@ -41,6 +41,11 @@ pnpm db:migrate
 - `publish_copies`：人工编辑后的封面标题、标题候选、发布文案、标签和风险提示。
 - `fact_checks`：事实核验记录，状态限定为 `pending`、`verified`、`needs_review`、`rejected`。
 - `review_checklists`：导出前 checklist 的完成状态。
+- `agent_definitions`：Agent 注册表快照，代码定义为 source of truth。
+- `agent_runs`：一次 mock pipeline 运行摘要，包括项目、状态、时间和错误信息。
+- `agent_run_steps`：每个 Agent step 的顺序、状态、输入输出 JSON 和摘要。
+- `agent_context_snapshots`：每个 Agent step 的上下文快照。
+- `qa_results`：deterministic QA summary，包括 red rights risk 数量。
 
 ## 数据读取约定
 
@@ -53,6 +58,8 @@ pnpm db:migrate
 - `/api/projects/[projectId]/review/publish-copy` 保存人工发布文案。
 - `/api/projects/[projectId]/review/fact-checks` 保存事实核验记录。
 - `/api/demo/reset` 只删除并重建 `video_projects.is_demo = true` 的公开 demo 项目。
+- `/projects/[projectId]/agent-runs` 读取项目 agent run。
+- `/agents` 和 `/agents/[agentSlug]` 读取 Agent 注册表和最近运行。
 - `/projects/demo/*` 保留 demo fallback，不作为主存储路径。
 
 ## 不做事项

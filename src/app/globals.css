@@ -555,6 +555,38 @@ select {
   gap: 10px;
 }
 
+.project-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 10px;
+  box-shadow: var(--shadow);
+}
+
+.project-nav a {
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+
+.json-preview {
+  max-height: 420px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #101917;
+  color: #e8f1ed;
+  padding: 16px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.65;
+}
+
 td input,
 td select {
   width: 100%;

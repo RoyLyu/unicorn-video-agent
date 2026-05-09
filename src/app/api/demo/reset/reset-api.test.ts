@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createTestDbClient } from "@/db/test-utils";
+import { getLatestAgentRunForProject } from "@/db/repositories/agent-run-repository";
 import { resetPublicDemo } from "./reset-demo";
 
 describe("POST /api/demo/reset helper", () => {
@@ -13,6 +14,11 @@ describe("POST /api/demo/reset helper", () => {
       expect(result.projectIds).toHaveLength(2);
       expect(result.projects).toHaveLength(2);
       expect(result.projects.every((project) => project.isDemo)).toBe(true);
+      expect(
+        result.projectIds.every((projectId) =>
+          Boolean(getLatestAgentRunForProject(projectId, client))
+        )
+      ).toBe(true);
     } finally {
       client.close();
     }

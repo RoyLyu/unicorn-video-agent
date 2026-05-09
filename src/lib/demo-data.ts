@@ -18,7 +18,7 @@ export const navigationItems: Array<{
   label: string;
   description: string;
 }> = [
-  { href: "/", label: "总览入口", description: "Batch 06 Public Demo" },
+  { href: "/", label: "总览入口", description: "Batch 07 Agent Management" },
   { href: "/dashboard", label: "Dashboard", description: "后台总览" },
   { href: "/articles/new", label: "新建文章", description: "静态输入表单" },
   { href: "/articles/demo", label: "Demo 文章", description: "示例文章状态" },
@@ -51,8 +51,8 @@ export const navigationItems: Array<{
 ];
 
 export const batchStatus = {
-  label: "Batch 06 / Public Demo",
-  description: "本地公开演示模式，使用安全模拟数据、Review 和文本导出；不接 AI、云数据库、素材下载或自动发布。"
+  label: "Batch 07 / Agent Management",
+  description: "本地 mock Agent 管理层，记录运行日志、上下文快照和 QA summary；不接 AI、云数据库、素材下载或自动发布。"
 };
 
 export const dashboardMetrics = [
@@ -62,9 +62,9 @@ export const dashboardMetrics = [
     detail: "公开安全模拟项目"
   },
   {
-    label: "输出模块",
-    value: "8",
-    detail: "分析、脚本、分镜、版权、导出等"
+    label: "Mock Agent",
+    value: "7",
+    detail: "注册表、运行日志和 QA"
   },
   {
     label: "版权等级",

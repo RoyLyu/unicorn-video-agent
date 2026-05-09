@@ -30,9 +30,9 @@
 - 发布文案
 - Markdown / CSV / JSON 导出包
 
-## Batch 06 范围
+## Batch 07 范围
 
-Batch 06 在 SQLite + ProductionPack + Review + 文本导出基础上新增公开受控 Demo。页面提供 `/demo` 入口、公开安全模拟项目、Demo Mode 标识和 demo reset；仍不接真实 AI、素材网站、云存储、素材下载、自动成片、登录、云部署或视频号发布。
+Batch 07 在 SQLite + ProductionPack + Review + 文本导出 + Public Demo 基础上新增 Agent Management Layer。页面提供 Agent 注册表、Agent 详情、项目 Agent Runs、step 日志、上下文快照和 deterministic QA summary；仍不接真实 AI、素材网站、云存储、素材下载、自动成片、登录、云部署或视频号发布。
 
 ## 非目标
 

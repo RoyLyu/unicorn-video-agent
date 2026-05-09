@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { DemoModeBanner } from "@/components/demo-mode-banner";
 import { PageHeader } from "@/components/page-header";
+import { ProjectNav } from "@/components/project-nav";
 import { ProductionPackAnalysisView } from "@/components/production-pack-analysis-view";
 import { loadProjectPack } from "@/lib/server/project-pack";
 
@@ -33,6 +34,7 @@ export default async function AnalysisPage({
           </Link>
         }
       />
+      <ProjectNav projectId={projectId} />
       <ProductionPackAnalysisView productionPack={saved.productionPack} />
     </main>
   );

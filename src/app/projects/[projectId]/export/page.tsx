@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { DemoModeBanner } from "@/components/demo-mode-banner";
 import { PageHeader } from "@/components/page-header";
+import { ProjectNav } from "@/components/project-nav";
 import { ProductionPackExportView } from "@/components/production-pack-export-view";
 import { getReviewData } from "@/db/repositories/review-repository";
 import { loadProjectPack } from "@/lib/server/project-pack";
@@ -35,6 +36,7 @@ export default async function ExportPage({
           </Link>
         }
       />
+      <ProjectNav projectId={projectId} />
       <ProductionPackExportView
         productionPack={saved.productionPack}
         projectId={projectId}

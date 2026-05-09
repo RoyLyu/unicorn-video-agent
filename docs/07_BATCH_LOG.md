@@ -1,5 +1,33 @@
 # 07 Batch Log
 
+## Batch 07 - Agent Management Layer
+
+目标：把现有 mock pipeline 背后的 Agent 升级为可展示、可审阅、可追踪的本地 Agent 管理层。
+
+完成内容：
+
+- 7 个 Agent 定义
+- Agent registry 页面
+- Agent detail 页面
+- 项目 Agent Runs 页面
+- Agent run detail 页面
+- `agent_definitions`、`agent_runs`、`agent_run_steps`、`agent_context_snapshots`、`qa_results` 表
+- tracked mock pipeline
+- deterministic QA summary
+- Dashboard 最近 agent run 状态
+- Demo reset 生成 agent run
+
+明确不做：
+
+- 真实 AI API
+- 素材网站接入
+- 自动下载网络素材
+- 真实图片、视频、音频生成
+- 自动发布视频号
+- 自动成片
+- 用户登录
+- 云部署
+
 ## Batch 06 - Public Demo Hardening
 
 目标：把内部 MVP 打磨成可外部受控展示的本地公开 Demo。

@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { DemoModeBanner } from "@/components/demo-mode-banner";
 import { PageHeader } from "@/components/page-header";
+import { ProjectNav } from "@/components/project-nav";
 import { ProductionPackRightsView } from "@/components/production-pack-rights-view";
 import { loadProjectPack } from "@/lib/server/project-pack";
 
@@ -33,6 +34,7 @@ export default async function RightsPage({
           </Link>
         }
       />
+      <ProjectNav projectId={projectId} />
       <ProductionPackRightsView productionPack={saved.productionPack} />
     </main>
   );

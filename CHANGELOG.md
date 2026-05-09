@@ -1,5 +1,15 @@
 # Changelog
 
+## Batch 07 - Agent Management Layer
+
+- 新增 7 个本地 mock Agent 定义：Article Analyst、Thesis Agent、Script Writer、Storyboard Agent、Prompt Generator、Asset Finder、QA Agent。
+- 新增 `agent_definitions`、`agent_runs`、`agent_run_steps`、`agent_context_snapshots`、`qa_results` 表和 migration。
+- 新增 tracked mock pipeline，记录每次生成的 agent run、step input/output、context snapshot 和 deterministic QA summary。
+- 改造 `POST /api/mock/production-pack`，返回兼容字段 `agentRunId`。
+- 改造 Demo reset，公开 demo 项目也会生成 agent run 记录。
+- 新增 `/agents`、`/agents/[agentSlug]`、`/projects/[projectId]/agent-runs`、`/projects/[projectId]/agent-runs/[runId]`。
+- Dashboard 和动态项目页增加 Agent Runs 入口和最近 agent run 状态。
+
 ## Batch 06 - Public Demo Hardening
 
 - 新增 `/demo` 公开演示首页，展示产品流程、公开安全样例、当前能力和限制。

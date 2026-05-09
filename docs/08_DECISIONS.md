@@ -125,3 +125,21 @@
 决定：`/demo`、Dashboard 和 demo 项目详情页显示 Demo Mode Banner。
 
 原因：受控外部展示必须明确说明内容为模拟数据，不构成投资建议，不代表真实公司分析。
+
+## D022 - Agent 定义以代码注册表为 source of truth
+
+决定：Batch 07 的 Agent definitions 先在 `src/lib/agents/agent-definitions.ts` 中维护，并同步快照到 SQLite。
+
+原因：当前不做后台编辑 Agent 配置；代码注册表更稳定，也便于测试和未来接入真实 AI 前做版本管理。
+
+## D023 - 纯函数 mock pipeline 保留，追踪层外包
+
+决定：继续保留 `runMockPipeline` 和各 mock agent 纯函数，新增 tracked runner 负责记录运行日志。
+
+原因：避免把数据库副作用塞进纯函数，让旧测试、demo fallback 和未来真实 Agent 替换路径更清晰。
+
+## D024 - QA Agent 只做 deterministic summary
+
+决定：QA Agent 只统计本地 ProductionPack 结构和版权风险，不做外部事实核验。
+
+原因：Batch 07 仍不接真实 AI、搜索或素材网站；QA 结果只能作为审阅提示，不代表事实或法律确认。

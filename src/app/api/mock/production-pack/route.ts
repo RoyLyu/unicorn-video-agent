@@ -1,7 +1,6 @@
 import { ZodError } from "zod";
 
-import { saveProductionPack } from "@/db/repositories/production-pack-repository";
-import { runMockPipeline } from "@/lib/mock-pipeline/run-mock-pipeline";
+import { runTrackedMockPipeline } from "@/lib/agents/tracked-mock-pipeline";
 import { ArticleInputSchema } from "@/lib/schemas/production-pack";
 
 export const runtime = "nodejs";
@@ -10,12 +9,12 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const articleInput = ArticleInputSchema.parse(body);
-    const productionPack = runMockPipeline(articleInput);
-    const saved = saveProductionPack(productionPack);
+    const result = runTrackedMockPipeline(articleInput);
 
     return Response.json({
-      projectId: saved.project.id,
-      productionPack: saved.productionPack
+      projectId: result.saved.project.id,
+      productionPack: result.saved.productionPack,
+      agentRunId: result.agentRunId
     });
   } catch (error) {
     if (error instanceof ZodError) {

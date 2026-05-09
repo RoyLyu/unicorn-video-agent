@@ -8,13 +8,13 @@ export default function Home() {
   return (
     <main className="content-stack">
       <PageHeader
-        eyebrow="Batch 06 / Public Demo"
-        title="Public Demo Hardening"
-        description="本批把内部 MVP 打磨成可外部受控展示的本地 Demo：公开安全样例、Demo Mode、重置入口、审阅状态和文本导出。"
+        eyebrow="Batch 07 / Agent Management"
+        title="Agent Management Layer"
+        description="本批把本地 mock pipeline 升级为可展示、可审阅、可追踪的 Agent 管理层：Agent 注册表、运行日志、上下文快照和 QA summary。"
         actions={
           <div className="action-row">
-            <Link className="primary-link" href="/demo">
-              打开 Public Demo
+            <Link className="primary-link" href="/agents">
+              打开 Agents
             </Link>
             <Link className="ghost-button" href="/dashboard">
               进入 Dashboard

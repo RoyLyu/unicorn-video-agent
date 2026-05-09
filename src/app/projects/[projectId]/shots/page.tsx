@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { DemoModeBanner } from "@/components/demo-mode-banner";
 import { PageHeader } from "@/components/page-header";
+import { ProjectNav } from "@/components/project-nav";
 import { ProductionPackStoryboardView } from "@/components/production-pack-storyboard-view";
 import { loadProjectPack } from "@/lib/server/project-pack";
 
@@ -33,6 +34,7 @@ export default async function ShotsPage({
           </Link>
         }
       />
+      <ProjectNav projectId={projectId} />
       <ProductionPackStoryboardView productionPack={saved.productionPack} />
     </main>
   );

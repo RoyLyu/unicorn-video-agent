@@ -6,11 +6,15 @@ import { MetricCard } from "@/components/metric-card";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
 import {
+  getLatestAgentRunForProject,
+  type AgentRunSummary
+} from "@/db/repositories/agent-run-repository";
+import {
   listDemoProjects,
-  listRecentProjects,
-  type RecentProject
+  listRecentProjects
 } from "@/db/repositories/project-repository";
 import { getReviewData, type ReviewSummary } from "@/db/repositories/review-repository";
+import { attachLatestAgentRunStatus, type ProjectWithAgentRun } from "@/lib/agents/dashboard-agent-runs";
 import { splitDashboardProjects } from "@/lib/demo-public/dashboard-projects";
 import { dashboardMetrics, exportFiles } from "@/lib/demo-data";
 
@@ -32,6 +36,9 @@ export default function DashboardPage() {
             </Link>
             <Link className="ghost-button" href="/demo">
               Public Demo
+            </Link>
+            <Link className="ghost-button" href="/agents">
+              Agents
             </Link>
           </div>
         }
@@ -98,20 +105,31 @@ export default function DashboardPage() {
 }
 
 function getDashboardProjectsSafely(): {
-  demoProjects: RecentProject[];
-  recentProjects: RecentProject[];
+  demoProjects: ProjectWithAgentRun[];
+  recentProjects: ProjectWithAgentRun[];
 } {
   try {
-    return splitDashboardProjects(
+    const split = splitDashboardProjects(
       listDemoProjects(10),
       listRecentProjects(10, { includeDemo: false })
     );
+
+    return {
+      demoProjects: attachLatestAgentRunStatus(
+        split.demoProjects,
+        getLatestAgentRunSafely
+      ),
+      recentProjects: attachLatestAgentRunStatus(
+        split.recentProjects,
+        getLatestAgentRunSafely
+      )
+    };
   } catch {
     return { demoProjects: [], recentProjects: [] };
   }
 }
 
-function ProjectListItem({ project }: { project: RecentProject }) {
+function ProjectListItem({ project }: { project: ProjectWithAgentRun }) {
   const reviewSummary = getReviewSummarySafely(project.id);
 
   return (
@@ -128,13 +146,25 @@ function ProjectListItem({ project }: { project: RecentProject }) {
         checklist: {Math.round((reviewSummary?.checklistCompletion ?? 0) * 100)}%
       </StatusBadge>{" "}
       <StatusBadge tone="green">export: ready</StatusBadge>{" "}
+      <StatusBadge tone={project.latestAgentRun?.status === "completed" ? "green" : "placeholder"}>
+        agent: {project.latestAgentRun?.status ?? "not_started"}
+      </StatusBadge>{" "}
       <div className="action-row">
         <Link href={`/projects/${project.id}/analysis`}>Analysis</Link>
+        <Link href={`/projects/${project.id}/agent-runs`}>Agent Runs</Link>
         <Link href={`/projects/${project.id}/review`}>Review</Link>
         <Link href={`/projects/${project.id}/export`}>Export</Link>
       </div>
     </li>
   );
+}
+
+function getLatestAgentRunSafely(projectId: string): AgentRunSummary | null {
+  try {
+    return getLatestAgentRunForProject(projectId);
+  } catch {
+    return null;
+  }
 }
 
 function getReviewSummarySafely(projectId: string): ReviewSummary | null {

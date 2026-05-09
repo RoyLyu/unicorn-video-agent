@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { DemoModeBanner } from "@/components/demo-mode-banner";
 import { PageHeader } from "@/components/page-header";
+import { ProjectNav } from "@/components/project-nav";
 import { ProductionPackReviewView } from "@/components/production-pack-review-view";
 import { getReviewData } from "@/db/repositories/review-repository";
 
@@ -34,6 +35,7 @@ export default async function ReviewPage({
           </Link>
         }
       />
+      <ProjectNav projectId={projectId} />
       <ProductionPackReviewView
         initialReviewData={reviewData}
         projectId={projectId}

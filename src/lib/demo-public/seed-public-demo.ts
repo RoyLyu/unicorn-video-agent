@@ -3,9 +3,8 @@ import {
   listDemoProjects,
   type RecentProject
 } from "@/db/repositories/project-repository";
-import { saveProductionPack } from "@/db/repositories/production-pack-repository";
 import type { DbClient } from "@/db/index";
-import { runMockPipeline } from "@/lib/mock-pipeline/run-mock-pipeline";
+import { runTrackedMockPipeline } from "@/lib/agents/tracked-mock-pipeline";
 
 import { publicDemoArticles } from "./public-demo-articles";
 
@@ -18,13 +17,15 @@ export function seedPublicDemoProjects(client?: DbClient): PublicDemoSeedResult 
   deleteDemoProjects(client);
 
   const projectIds = publicDemoArticles.map((articleInput) => {
-    const productionPack = runMockPipeline(articleInput);
-    const saved = saveProductionPack(productionPack, client, {
-      isDemo: true,
-      status: "public_demo"
+    const result = runTrackedMockPipeline(articleInput, {
+      client,
+      saveOptions: {
+        isDemo: true,
+        status: "public_demo"
+      }
     });
 
-    return saved.project.id;
+    return result.saved.project.id;
   });
 
   return {
