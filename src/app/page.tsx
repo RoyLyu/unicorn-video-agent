@@ -8,16 +8,22 @@ export default function Home() {
   return (
     <main className="content-stack">
       <PageHeader
-        title="Batch 05 审阅工作流"
-        description="本批在本地 SQLite 与文本导出基础上增加导出前 checklist、事实核验、版权复核和发布文案编辑；不接 AI、云数据库、真实素材或自动发布。"
+        eyebrow="Batch 06 / Public Demo"
+        title="Public Demo Hardening"
+        description="本批把内部 MVP 打磨成可外部受控展示的本地 Demo：公开安全样例、Demo Mode、重置入口、审阅状态和文本导出。"
         actions={
-          <Link className="primary-link" href="/dashboard">
-            进入 Dashboard
-          </Link>
+          <div className="action-row">
+            <Link className="primary-link" href="/demo">
+              打开 Public Demo
+            </Link>
+            <Link className="ghost-button" href="/dashboard">
+              进入 Dashboard
+            </Link>
+          </div>
         }
       />
 
-      <section className="metric-grid" aria-label="Batch 05 概览指标">
+      <section className="metric-grid" aria-label="Batch 06 概览指标">
         {dashboardMetrics.map((metric) => (
           <MetricCard key={metric.label} {...metric} />
         ))}

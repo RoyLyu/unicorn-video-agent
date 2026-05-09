@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-Batch 05 继续使用 SQLite + Drizzle 做本地持久化，并新增审阅工作流数据。数据库只服务本地 mock 闭环，不接云数据库、不做登录、不保存真实素材文件、不保存真实导出文件。
+Batch 06 继续使用 SQLite + Drizzle 做本地持久化，并新增公开 demo 项目标记。数据库只服务本地 mock 闭环和公开受控演示，不接云数据库、不做登录、不保存真实素材文件、不保存真实导出文件。
 
 ## 文件位置
 
@@ -30,7 +30,7 @@ pnpm db:migrate
 ## 表结构
 
 - `articles`：文章输入，包括标题、正文、链接、发布日期、来源、行业标签和目标时长。
-- `video_projects`：视频项目元数据，保存 `projectId`、状态和完整 `ProductionPack` JSON。
+- `video_projects`：视频项目元数据，保存 `projectId`、状态、`is_demo` 和完整 `ProductionPack` JSON。
 - `analysis_runs`：分析摘要、关键事实、行业数据、风险点和核心观点。
 - `scripts`：90s / 180s mock 脚本。
 - `shots`：分镜表。
@@ -52,6 +52,7 @@ pnpm db:migrate
 - `/api/projects/[projectId]/review` 读取和保存本地审阅聚合数据。
 - `/api/projects/[projectId]/review/publish-copy` 保存人工发布文案。
 - `/api/projects/[projectId]/review/fact-checks` 保存事实核验记录。
+- `/api/demo/reset` 只删除并重建 `video_projects.is_demo = true` 的公开 demo 项目。
 - `/projects/demo/*` 保留 demo fallback，不作为主存储路径。
 
 ## 不做事项

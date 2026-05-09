@@ -18,7 +18,7 @@ export const navigationItems: Array<{
   label: string;
   description: string;
 }> = [
-  { href: "/", label: "总览入口", description: "Batch 05 Review Workflow" },
+  { href: "/", label: "总览入口", description: "Batch 06 Public Demo" },
   { href: "/dashboard", label: "Dashboard", description: "后台总览" },
   { href: "/articles/new", label: "新建文章", description: "静态输入表单" },
   { href: "/articles/demo", label: "Demo 文章", description: "示例文章状态" },
@@ -51,15 +51,15 @@ export const navigationItems: Array<{
 ];
 
 export const batchStatus = {
-  label: "Batch 05 / Review Workflow",
-  description: "本地 mock 生产包流程，写入 SQLite，并支持审阅和文本导出；不接 AI、云数据库、素材下载或自动发布。"
+  label: "Batch 06 / Public Demo",
+  description: "本地公开演示模式，使用安全模拟数据、Review 和文本导出；不接 AI、云数据库、素材下载或自动发布。"
 };
 
 export const dashboardMetrics = [
   {
     label: "Demo 项目",
-    value: "1",
-    detail: "仅用于 UI Shell 展示"
+    value: "2",
+    detail: "公开安全模拟项目"
   },
   {
     label: "输出模块",
@@ -246,5 +246,5 @@ export const settings = [
   { label: "栏目名", value: "独角兽早知道" },
   { label: "视频号标准", value: "财经解释型竖屏短视频，90s / 180s 双版本" },
   { label: "版权策略", value: "只使用自制、授权或人工确认可用素材" },
-  { label: "Agent 模式", value: "UI Shell Only，未接入真实 AI" }
+  { label: "Agent 模式", value: "Public Demo Mock，未接入真实 AI" }
 ];

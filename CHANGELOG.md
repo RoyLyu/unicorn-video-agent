@@ -1,5 +1,15 @@
 # Changelog
 
+## Batch 06 - Public Demo Hardening
+
+- 新增 `/demo` 公开演示首页，展示产品流程、公开安全样例、当前能力和限制。
+- 新增公开安全 demo 数据，使用虚构消费品牌和虚构家庭医疗公司，不使用真实公司、Logo、新闻图或财务数据。
+- 新增 `video_projects.is_demo` 字段和 migration，用于区分 demo 项目与普通项目。
+- 新增 `POST /api/demo/reset`，只重置 `is_demo = true` 的公开 demo 项目。
+- 新增 Demo Mode Banner，并在 demo、Dashboard 和动态项目页展示模拟数据提示。
+- 改造 Dashboard，分开展示公开 Demo 项目和最近普通项目，并提供 Analysis / Review / Export 快捷入口。
+- 新增 Public Demo Guide 文档。
+
 ## Batch 05 - 导出审阅层 + 发布文案编辑 + 事实核验记录
 
 - 新增 `publish_copies`、`fact_checks`、`review_checklists` 表和 migration。

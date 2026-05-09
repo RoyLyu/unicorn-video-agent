@@ -1,5 +1,32 @@
 # 07 Batch Log
 
+## Batch 06 - Public Demo Hardening
+
+目标：把内部 MVP 打磨成可外部受控展示的本地公开 Demo。
+
+完成内容：
+
+- `/demo` 公开演示首页
+- 两份公开安全模拟文章
+- `video_projects.is_demo` 字段和 migration
+- `POST /api/demo/reset`
+- Demo Mode Banner
+- Dashboard 的公开 Demo 项目区和最近项目区
+- 动态项目页 demo 标识
+- Public Demo Guide
+- demo seed/reset/banner/dashboard 测试
+
+明确不做：
+
+- 真实 AI API
+- 素材网站接入
+- 自动下载网络素材
+- 真实图片、视频、音频生成
+- 自动发布视频号
+- 自动成片
+- 用户登录
+- 云部署
+
 ## Batch 05 - 导出审阅层 + 发布文案编辑 + 事实核验记录
 
 目标：在本地 SQLite 持久化和文本导出基础上，新增内部审阅工作流。

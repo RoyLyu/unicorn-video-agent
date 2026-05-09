@@ -15,7 +15,7 @@ export function ProductionPackStatus({
 
   return (
     <div className="pack-status">
-      <StatusBadge>Batch 03 / SQLite Mock</StatusBadge>
+      <StatusBadge>Batch 06 / SQLite Demo</StatusBadge>
       <span>{pack.articleInput.title}</span>
       <small>mode: {pack.mode}</small>
     </div>

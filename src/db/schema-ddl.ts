@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS video_projects (
   title TEXT NOT NULL,
   source_name TEXT NOT NULL,
   status TEXT NOT NULL,
+  is_demo INTEGER NOT NULL DEFAULT 0,
   production_pack_json TEXT NOT NULL,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL

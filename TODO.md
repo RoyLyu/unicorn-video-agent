@@ -51,7 +51,19 @@
 - [x] Dashboard 与 Export 页展示审阅状态。
 - [x] `publish-copy.md` 优先使用人工编辑文案。
 
-## Batch 06 建议
+## Batch 06
+
+- [x] 新增 `/demo` 公开演示首页。
+- [x] 新增两份公开安全模拟文章和 demo seed。
+- [x] 新增 Demo Mode Banner。
+- [x] 新增 `POST /api/demo/reset`。
+- [x] 为 `video_projects` 增加 `is_demo` 标记。
+- [x] Dashboard 区分公开 Demo 项目和最近普通项目。
+- [x] 动态项目页对 demo 项目展示 Demo Mode Banner。
+- [x] 新增 Public Demo Guide。
+- [x] 新增 demo seed/reset/banner/dashboard 测试。
+
+## Batch 07 建议
 
 - [ ] 增加浏览器端流程测试。
 - [ ] 增加审阅历史和审阅人字段。

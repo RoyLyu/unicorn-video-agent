@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-Batch 05：导出审阅层 + 发布文案编辑 + 事实核验记录。
+Batch 06：Public Demo Hardening。
 
 当前仓库提供：
 
@@ -18,6 +18,8 @@ Batch 05：导出审阅层 + 发布文案编辑 + 事实核验记录。
 - 导出预览、复制和下载入口
 - 内部审阅页、导出前 checklist、事实核验和发布文案编辑
 - Dashboard 与 Export 页展示审阅状态
+- 公开 Demo 首页 `/demo`
+- 两个公开安全模拟项目、Demo Mode 标识和 Demo reset API
 - 纯函数 mock Agent pipeline
 - `localStorage` demo fallback
 - Zod schema 与 pipeline 单元测试
@@ -26,7 +28,7 @@ Batch 05：导出审阅层 + 发布文案编辑 + 事实核验记录。
 
 ## MVP 范围
 
-第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 05 只做本地审阅工作流，不接真实 AI API、不接云数据库、不接素材网站、不下载素材、不生成真实媒体、不做登录、不发布视频号。
+第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 06 只做本地公开演示加固，不接真实 AI API、不接云数据库、不接素材网站、不下载素材、不生成真实媒体、不做登录、不发布视频号、不做云部署。
 
 ## 启动
 
@@ -49,21 +51,20 @@ pnpm test
 pnpm build
 ```
 
-## Batch 05 验证路径
+## Batch 06 验证路径
 
-1. 打开 `/articles/new`。
-2. 使用默认 demo 输入或手动输入文章信息。
-3. 点击“生成 Mock 生产包”。
-4. 页面跳转到 `/projects/[projectId]/analysis`。
-5. 打开 `/projects/[projectId]/review`。
-6. 勾选导出前 checklist，编辑事实核验状态和发布文案。
-7. 保存审阅记录后打开 `/projects/[projectId]/export`。
-8. 确认 Export 页展示 review summary，`publish-copy.md` 使用人工编辑文案。
-9. 确认导出仍通过 API 即时生成，不向仓库或 `data/` 写入导出文件。
+1. 打开 `/demo`。
+2. 点击“重置 Demo 数据”，确认生成两个公开安全 demo 项目。
+3. 分别进入 demo 项目的 Analysis / Review / Export。
+4. 确认 Demo Mode Banner 显示：内容为模拟数据、不构成投资建议、不代表真实公司分析。
+5. 打开 `/dashboard`，确认公开 Demo 项目与最近项目分区展示，普通项目不被 reset 删除。
+6. 在 `/articles/new` 创建一个普通 mock 项目，确认它进入最近项目区而不是 Demo 项目区。
+7. 确认导出仍通过 API 即时生成，不向仓库或 `data/` 写入导出文件。
 
-## Batch 05 页面
+## Batch 06 页面
 
 - `/`
+- `/demo`
 - `/dashboard`
 - `/articles/new`
 - `/articles/demo`
@@ -104,6 +105,14 @@ PATCH /api/projects/[projectId]/review/fact-checks
 
 Review API 只保存本地审阅状态、事实核验记录和人工发布文案，不调用外部 API。
 
+## Demo API
+
+```text
+POST /api/demo/reset
+```
+
+Demo reset API 只删除并重建 `is_demo = true` 的公开演示项目，返回两个 demo `projectId`。普通 mock 项目不会被删除。
+
 ## 数据库
 
 - 数据库文件：`data/unicorn-video-agent.sqlite`
@@ -111,6 +120,7 @@ Review API 只保存本地审阅状态、事实核验记录和人工发布文案
 - Schema：`src/db/schema.ts`
 - Drizzle 配置：`drizzle.config.ts`
 - Batch 05 新增表：`publish_copies`、`fact_checks`、`review_checklists`
+- Batch 06 新增字段：`video_projects.is_demo`
 
 初始化或迁移：
 
@@ -139,7 +149,9 @@ drizzle/
 src/
   app/
     api/mock/production-pack/route.ts
+    api/demo/reset/route.ts
     api/projects/
+    demo/
     projects/[projectId]/
   components/
   db/
@@ -159,6 +171,7 @@ src/
 - 不接真实 AI API
 - 不接云数据库
 - 不做登录
+- 不做云部署
 - 不生成真实图片、视频、音频
 - 不把导出文件写入仓库或 data 目录
 - 不使用未确认版权的新闻图、视频片段、影视片段、音乐和字体

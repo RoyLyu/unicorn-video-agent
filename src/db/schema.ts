@@ -20,6 +20,7 @@ export const videoProjects = sqliteTable("video_projects", {
   title: text("title").notNull(),
   sourceName: text("source_name").notNull(),
   status: text("status").notNull(),
+  isDemo: integer("is_demo", { mode: "boolean" }).notNull().default(false),
   productionPackJson: text("production_pack_json").notNull(),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull()

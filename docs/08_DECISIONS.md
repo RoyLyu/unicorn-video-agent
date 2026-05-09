@@ -107,3 +107,21 @@
 决定：`publish-copy.md` 优先使用 `publish_copies` 中的人工编辑内容，没有人工内容时回退到 Batch 04 派生文案。
 
 原因：让编辑可以覆盖发布文案，同时保留旧项目和未审阅项目的可导出能力。
+
+## D019 - Public Demo 使用 is_demo 明确标记
+
+决定：Batch 06 在 `video_projects` 增加 `is_demo` 字段，而不是复用 `status` 或模板名称。
+
+原因：Demo reset 必须只处理公开演示项目，清晰字段能避免误删普通 mock 项目。
+
+## D020 - Demo reset 只重建本地公开样例
+
+决定：`POST /api/demo/reset` 只删除并重建 `is_demo = true` 的两个公开安全项目。
+
+原因：外部演示需要稳定入口，但不能影响用户手动创建的普通项目。
+
+## D021 - Demo Mode 明示模拟数据
+
+决定：`/demo`、Dashboard 和 demo 项目详情页显示 Demo Mode Banner。
+
+原因：受控外部展示必须明确说明内容为模拟数据，不构成投资建议，不代表真实公司分析。

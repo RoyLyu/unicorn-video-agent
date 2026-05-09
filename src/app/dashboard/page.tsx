@@ -1,28 +1,39 @@
 import Link from "next/link";
 
 import { DataTable } from "@/components/data-table";
+import { DemoModeBanner } from "@/components/demo-mode-banner";
 import { MetricCard } from "@/components/metric-card";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
-import { listRecentProjects, type RecentProject } from "@/db/repositories/project-repository";
+import {
+  listDemoProjects,
+  listRecentProjects,
+  type RecentProject
+} from "@/db/repositories/project-repository";
 import { getReviewData, type ReviewSummary } from "@/db/repositories/review-repository";
+import { splitDashboardProjects } from "@/lib/demo-public/dashboard-projects";
 import { dashboardMetrics, exportFiles } from "@/lib/demo-data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export default function DashboardPage() {
-  const projects = getProjectsSafely();
+  const { demoProjects, recentProjects } = getDashboardProjectsSafely();
 
   return (
     <main className="content-stack">
       <PageHeader
         title="Dashboard"
-        description="内部后台总览。当前展示 Batch 03 SQLite 本地持久化项目状态。"
+        description="内部后台总览。当前展示 Batch 06 Demo 项目、普通项目、审阅完成度和导出状态。"
         actions={
-          <Link className="primary-link" href="/articles/new">
-            新建文章
-          </Link>
+          <div className="action-row">
+            <Link className="primary-link" href="/articles/new">
+              新建文章
+            </Link>
+            <Link className="ghost-button" href="/demo">
+              Public Demo
+            </Link>
+          </div>
         }
       />
 
@@ -33,10 +44,29 @@ export default function DashboardPage() {
       </section>
 
       <section className="panel">
-        <h2>最近项目</h2>
-        {projects.length > 0 ? (
+        <h2>公开 Demo 项目</h2>
+        <DemoModeBanner />
+        {demoProjects.length > 0 ? (
           <ul className="info-list">
-            {projects.map((project) => (
+            {demoProjects.map((project) => (
+              <ProjectListItem key={project.id} project={project} />
+            ))}
+          </ul>
+        ) : (
+          <div className="empty-state">
+            <p>当前没有公开 demo 项目。请从 `/demo` 重置公开演示数据。</p>
+            <Link className="primary-link" href="/demo">
+              打开 Public Demo
+            </Link>
+          </div>
+        )}
+      </section>
+
+      <section className="panel">
+        <h2>最近项目</h2>
+        {recentProjects.length > 0 ? (
+          <ul className="info-list">
+            {recentProjects.map((project) => (
               <ProjectListItem key={project.id} project={project} />
             ))}
           </ul>
@@ -53,7 +83,7 @@ export default function DashboardPage() {
       <section className="panel">
         <h2>未来导出文件</h2>
         <DataTable
-          caption="Batch 01 仅展示导出计划，不生成文件。"
+          caption="Batch 06 展示文本导出清单，不生成真实媒体文件。"
           rows={[...exportFiles]}
           columns={[
             { key: "filename", header: "文件名", render: (row) => row.filename },
@@ -67,11 +97,17 @@ export default function DashboardPage() {
   );
 }
 
-function getProjectsSafely(): RecentProject[] {
+function getDashboardProjectsSafely(): {
+  demoProjects: RecentProject[];
+  recentProjects: RecentProject[];
+} {
   try {
-    return listRecentProjects();
+    return splitDashboardProjects(
+      listDemoProjects(10),
+      listRecentProjects(10, { includeDemo: false })
+    );
   } catch {
-    return [];
+    return { demoProjects: [], recentProjects: [] };
   }
 }
 
@@ -84,11 +120,19 @@ function ProjectListItem({ project }: { project: RecentProject }) {
       <span>{project.sourceName}</span>
       <br />
       <StatusBadge>{project.status}</StatusBadge>{" "}
+      {project.isDemo ? <StatusBadge tone="placeholder">Demo Mode</StatusBadge> : null}{" "}
       <StatusBadge tone={reviewSummary?.status === "ready" ? "green" : "placeholder"}>
         review: {reviewSummary?.status ?? "not_started"}
       </StatusBadge>{" "}
-      <Link href={`/projects/${project.id}/analysis`}>查看项目</Link>{" "}
-      <Link href={`/projects/${project.id}/review`}>进入 Review</Link>
+      <StatusBadge tone="green">
+        checklist: {Math.round((reviewSummary?.checklistCompletion ?? 0) * 100)}%
+      </StatusBadge>{" "}
+      <StatusBadge tone="green">export: ready</StatusBadge>{" "}
+      <div className="action-row">
+        <Link href={`/projects/${project.id}/analysis`}>Analysis</Link>
+        <Link href={`/projects/${project.id}/review`}>Review</Link>
+        <Link href={`/projects/${project.id}/export`}>Export</Link>
+      </div>
     </li>
   );
 }

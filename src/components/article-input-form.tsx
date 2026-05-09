@@ -71,7 +71,7 @@ export function ArticleInputForm() {
   return (
     <section className="panel">
       <div className="notice">
-        当前为 Batch 03 本地 mock，会写入 SQLite；不接真实 AI，不代表真实生成结果。
+        当前为 Batch 06 本地 mock，会写入 SQLite；不接真实 AI，不代表真实生成结果。
       </div>
       <form className="form-grid" onSubmit={handleSubmit}>
         <div className="field">

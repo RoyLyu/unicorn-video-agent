@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-Batch 05 不接真实 Agent，不接 AI API。本文件定义本地 mock Agent、ProductionPack、文本导出、审阅记录和后续真实 Agent 的输入输出边界。
+Batch 06 不接真实 Agent，不接 AI API。本文件定义本地 mock Agent、ProductionPack、文本导出、审阅记录、公开 demo 数据和后续真实 Agent 的输入输出边界。
 
 ## Article Input Contract
 
@@ -39,3 +39,7 @@ Batch 05 的生成源数据仍应符合 `ProductionPackSchema`，包括：
 ## Review Contract
 
 审阅记录只来自人工编辑和本地表单提交。`fact_checks.status` 只能是 `pending`、`verified`、`needs_review`、`rejected`。发布文案导出优先使用 `publish_copies` 中的人工编辑内容，没有人工内容时回退到确定性派生文案。
+
+## Public Demo Contract
+
+公开 demo 数据必须来自虚构文章输入，项目写入 SQLite 时必须标记 `is_demo = true`。Demo reset 只允许删除并重建 demo 项目，不允许删除普通 mock 项目，不调用外部 API，不生成真实素材。
