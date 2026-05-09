@@ -444,6 +444,38 @@ select {
   font-weight: 700;
 }
 
+.export-preview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.export-preview-header h2,
+.export-preview-header p {
+  margin: 0;
+}
+
+.export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.export-preview {
+  max-height: 560px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #101917;
+  color: #e8f1ed;
+  padding: 16px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.65;
+}
+
 .table-wrap {
   overflow-x: auto;
   border: 1px solid var(--line);
@@ -556,7 +588,8 @@ td {
   }
 
   .topbar,
-  .page-header {
+  .page-header,
+  .export-preview-header {
     display: grid;
   }
 

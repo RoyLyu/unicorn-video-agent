@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-Batch 03 使用 SQLite + Drizzle 做本地持久化。数据库只服务本地 mock 闭环，不接云数据库、不做登录、不保存真实素材文件、不生成真实导出文件。
+Batch 04 继续使用 SQLite + Drizzle 做本地持久化，并从保存的 ProductionPack 即时生成文本导出。数据库只服务本地 mock 闭环，不接云数据库、不做登录、不保存真实素材文件、不保存真实导出文件。
 
 ## 文件位置
 
@@ -36,7 +36,7 @@ pnpm db:migrate
 - `shots`：分镜表。
 - `asset_prompts`：AI 图像 prompt、AI 视频 prompt 和素材搜索线索。
 - `rights_checks`：版权风险检查，等级限定为 `green`、`yellow`、`red`、`placeholder`。
-- `export_manifests`：planned 导出文件清单，不代表真实文件已生成。
+- `export_manifests`：导出文件清单；Batch 04 的真实文本内容由 API 即时生成，不落盘保存。
 - `review_logs`：本地 mock 保存和后续人工审阅事件占位。
 
 ## 数据读取约定
@@ -45,6 +45,7 @@ pnpm db:migrate
 - `GET /api/projects` 返回最近项目列表。
 - `GET /api/projects/[projectId]` 返回项目详情和完整 `ProductionPack`。
 - `/projects/[projectId]/*` 动态页面从 SQLite 读取。
+- `/api/projects/[projectId]/exports/[fileName]` 从 SQLite 读取 ProductionPack，并即时返回 Markdown、CSV 或 JSON 下载响应。
 - `/projects/demo/*` 保留 demo fallback，不作为主存储路径。
 
 ## 不做事项
@@ -55,5 +56,5 @@ pnpm db:migrate
 - 不自动抓取公众号。
 - 不自动下载网络素材。
 - 不生成真实图片、视频、音频。
-- 不生成真实 Markdown、CSV、JSON 文件。
+- 不把 Markdown、CSV、JSON 导出文件写入仓库、`data/` 或服务器文件系统。
 - 不自动成片或发布视频号。

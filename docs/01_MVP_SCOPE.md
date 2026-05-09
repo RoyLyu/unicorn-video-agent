@@ -30,9 +30,9 @@
 - 发布文案
 - Markdown / CSV / JSON 导出包
 
-## Batch 03 范围
+## Batch 04 范围
 
-Batch 03 实现文章输入到本地 mock ProductionPack，再写入 SQLite，并由动态项目页面读取展示的闭环。页面可以调用本地 API route 和本地 SQLite，但不接真实 AI、云数据库、素材下载或真实导出。
+Batch 04 实现从 SQLite 中的 ProductionPack 即时生成 Markdown / CSV / JSON 文本导出。页面可以预览、复制和下载 6 个生产包文件，但不接真实 AI、素材网站、云存储、素材下载、自动成片或视频号发布。
 
 ## 非目标
 

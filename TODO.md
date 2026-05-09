@@ -33,12 +33,20 @@
 - [x] 新增 repository 持久化测试。
 - [x] 新增数据库 schema 文档。
 
-## Batch 04 建议
+## Batch 04
 
-- [ ] 实现真实 Markdown / CSV / JSON 导出生成，但仍不自动发布。
-- [ ] 增加导出预览和复制下载交互。
-- [ ] 为 ProductionPack 增加更完整的 fixture 覆盖。
+- [x] 实现真实 Markdown / CSV / JSON 文本导出生成，但仍不自动发布。
+- [x] 支持 6 个导出文件：production-pack、storyboard、project、rights-check、prompt-pack、publish-copy。
+- [x] 新增导出 API，按 projectId 从 SQLite 即时生成并下载。
+- [x] 增加导出预览、复制和下载交互。
+- [x] 新增导出纯函数测试。
+
+## Batch 05 建议
+
 - [ ] 增加浏览器端流程测试。
+- [ ] 增加导出内容编辑和审阅状态。
+- [ ] 增加导出前事实核验 checklist。
+- [ ] 评估真实 AI 接入前的 prompt 版本管理。
 
 ## 暂不做
 

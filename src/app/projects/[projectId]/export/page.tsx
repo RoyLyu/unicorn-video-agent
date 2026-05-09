@@ -23,9 +23,12 @@ export default async function ExportPage({
     <main className="content-stack">
       <PageHeader
         title="导出清单"
-        description="从 SQLite 读取 exportManifest。Batch 03 仍只展示计划，不生成 Markdown、CSV 或 JSON 文件。"
+        description="从 SQLite 读取 ProductionPack。Batch 04 即时生成文本生产包导出，不包含真实视频、图片或音频。"
       />
-      <ProductionPackExportView productionPack={saved.productionPack} />
+      <ProductionPackExportView
+        productionPack={saved.productionPack}
+        projectId={projectId}
+      />
     </main>
   );
 }

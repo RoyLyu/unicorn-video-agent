@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-Batch 03：SQLite + Drizzle 本地持久化。
+Batch 04：真实 Markdown / CSV / JSON 导出生成。
 
 当前仓库提供：
 
@@ -14,6 +14,8 @@ Batch 03：SQLite + Drizzle 本地持久化。
 - `POST /api/mock/production-pack` 本地 API route，返回 `projectId` 与 `ProductionPack`
 - SQLite + Drizzle 本地持久化，数据库文件位于 `data/unicorn-video-agent.sqlite`
 - 动态项目页 `/projects/[projectId]/*`
+- 即时生成 Markdown / CSV / JSON 文本导出
+- 导出预览、复制和下载入口
 - 纯函数 mock Agent pipeline
 - `localStorage` demo fallback
 - Zod schema 与 pipeline 单元测试
@@ -22,7 +24,7 @@ Batch 03：SQLite + Drizzle 本地持久化。
 
 ## MVP 范围
 
-第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 03 只做本地 SQLite 持久化，不接真实 AI API、不接云数据库、不抓取公众号、不下载素材、不生成真实媒体、不生成真实导出文件、不发布视频号。
+第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 04 只做 SQLite 中 ProductionPack 的文本导出生成，不接真实 AI API、不接云数据库、不接素材网站、不下载素材、不生成真实媒体、不发布视频号。
 
 ## 启动
 
@@ -45,17 +47,18 @@ pnpm test
 pnpm build
 ```
 
-## Batch 03 验证路径
+## Batch 04 验证路径
 
 1. 打开 `/articles/new`。
 2. 使用默认 demo 输入或手动输入文章信息。
 3. 点击“生成 Mock 生产包”。
 4. 页面跳转到 `/projects/[projectId]/analysis`。
-5. 查看 `/projects/[projectId]/scripts`、`/projects/[projectId]/shots`、`/projects/[projectId]/rights`、`/projects/[projectId]/export`。
-6. 确认导出页只展示 manifest，不创建或下载真实文件。
-7. 打开 `/dashboard`，确认最近项目可进入动态项目页。
+5. 查看 `/projects/[projectId]/export`。
+6. 依次预览 `production-pack.md`、`storyboard.csv`、`project.json`、`rights-check.csv`、`prompt-pack.md`、`publish-copy.md`。
+7. 复制一个预览内容，并通过下载按钮请求 `/api/projects/[projectId]/exports/[fileName]`。
+8. 确认导出通过 API 即时生成，不向仓库或 `data/` 写入导出文件。
 
-## Batch 03 页面
+## Batch 04 页面
 
 - `/`
 - `/dashboard`
@@ -72,6 +75,19 @@ pnpm build
 - `/projects/[projectId]/rights`
 - `/projects/[projectId]/export`
 - `/settings`
+
+## 导出 API
+
+```text
+GET /api/projects/[projectId]/exports/production-pack.md
+GET /api/projects/[projectId]/exports/storyboard.csv
+GET /api/projects/[projectId]/exports/project.json
+GET /api/projects/[projectId]/exports/rights-check.csv
+GET /api/projects/[projectId]/exports/prompt-pack.md
+GET /api/projects/[projectId]/exports/publish-copy.md
+```
+
+导出 API 从 SQLite 读取 `ProductionPack`，即时返回文本内容和 `Content-Disposition: attachment`，不写入服务器文件系统。
 
 ## 数据库
 
@@ -112,6 +128,7 @@ src/
   components/
   db/
   lib/
+    export/
     mock-pipeline/
     schemas/
     storage/
@@ -127,5 +144,5 @@ src/
 - 不接云数据库
 - 不做登录
 - 不生成真实图片、视频、音频
-- 不生成真实导出文件
+- 不把导出文件写入仓库或 data 目录
 - 不使用未确认版权的新闻图、视频片段、影视片段、音乐和字体

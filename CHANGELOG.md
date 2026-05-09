@@ -1,5 +1,13 @@
 # Changelog
 
+## Batch 04 - 真实 Markdown / CSV / JSON 导出生成
+
+- 新增纯函数导出层，支持 `production-pack.md`、`storyboard.csv`、`project.json`、`rights-check.csv`、`prompt-pack.md`、`publish-copy.md`。
+- 新增 `GET /api/projects/[projectId]/exports/[fileName]`，从 SQLite 读取 ProductionPack 并即时返回附件下载。
+- 改造 `/projects/[projectId]/export`，支持选择文件、预览、复制和下载。
+- 保留 `/projects/demo/export` fallback，不破坏 Batch 01/02 demo 页面。
+- 新增导出测试，覆盖 Markdown、CSV、JSON、风险等级和非法文件名。
+
 ## Batch 03 - SQLite + Drizzle 本地持久化
 
 - 新增 SQLite + Drizzle 本地数据库层，数据库文件位于 `data/unicorn-video-agent.sqlite`。

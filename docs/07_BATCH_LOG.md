@@ -1,5 +1,33 @@
 # 07 Batch Log
 
+## Batch 04 - 真实 Markdown / CSV / JSON 导出生成
+
+目标：将 planned export manifest 升级为可预览、可复制、可下载的文本导出能力。
+
+完成内容：
+
+- 纯函数导出序列化层
+- `production-pack.md`
+- `storyboard.csv`
+- `project.json`
+- `rights-check.csv`
+- `prompt-pack.md`
+- `publish-copy.md`
+- `GET /api/projects/[projectId]/exports/[fileName]`
+- `/projects/[projectId]/export` 预览、复制和下载交互
+- 导出纯函数测试
+
+明确不做：
+
+- 真实 AI API
+- 素材网站接入
+- 自动下载网络素材
+- 真实图片、视频、音频生成
+- 自动发布视频号
+- 自动成片
+- 云存储
+- 将导出文件写入仓库或 `data/` 目录
+
 ## Batch 03 - SQLite + Drizzle 本地持久化
 
 目标：实现“文章输入 → mock pipeline → ProductionPack → SQLite → 动态项目页面读取展示”的闭环。
