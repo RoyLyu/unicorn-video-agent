@@ -30,9 +30,9 @@
 - 发布文案
 - Markdown / CSV / JSON 导出包
 
-## Batch 01 范围
+## Batch 02 范围
 
-Batch 01 只建立后台 UI Shell 与导航结构。页面可展示静态假数据，但不触发真实业务生成。
+Batch 02 实现文章输入到本地 mock ProductionPack 的闭环。页面可以调用本地 API route、保存到 localStorage，并展示 mock 结果，但不接真实 AI、数据库、素材下载或真实导出。
 
 ## 非目标
 

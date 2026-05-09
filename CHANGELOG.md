@@ -1,5 +1,15 @@
 # Changelog
 
+## Batch 02 - 本地 Mock 生产包流程
+
+- 新增 Batch 02 `ProductionPackSchema`、`ArticleInputSchema` 和相关结果 schema。
+- 新增纯函数 mock Agent pipeline，覆盖文章分析、观点、脚本、分镜、Prompt、版权风险和导出 manifest。
+- 新增 `POST /api/mock/production-pack`。
+- 改造 `/articles/new` 为可交互 mock 表单，生成后保存到 localStorage 并跳转分析页。
+- 改造结果页从 ProductionPack 读取 analysis、scripts、storyboard、rightsChecks 和 exportManifest。
+- 新增 ProductionPack 展示组件和 localStorage 工具。
+- 新增 schema/pipeline 测试，覆盖脚本、版权等级和导出 manifest。
+
 ## Batch 01 - 后台 UI Shell 与导航结构
 
 - 新增统一后台 `AppShell`、`SidebarNav`、`PageHeader`、`StatusBadge`、`MetricCard`、`DataTable`。

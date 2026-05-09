@@ -4,32 +4,22 @@
 
 ## 当前阶段
 
-Batch 01：后台 UI Shell 与导航结构。
+Batch 02：本地 Mock 生产包流程。
 
 当前仓库提供：
 
 - Next.js + TypeScript App Router 项目骨架
 - 统一后台 `AppShell`、侧边栏导航和静态页面
-- 10 个 Batch 01 页面路由
-- 集中 demo 假数据 `src/lib/demo-data.ts`
-- 文章输入与视频号生产包的 Zod schema
-- Schema 与 demo data 单元测试
+- 文章输入到本地 mock `ProductionPack` 的闭环
+- `POST /api/mock/production-pack` 本地 API route
+- 纯函数 mock Agent pipeline
+- `localStorage` 临时保存和 demo fallback
+- Zod schema 与 pipeline 单元测试
 - 编号版产品、版权、视频号标准、Agent 合同、批次日志和决策文档
 
 ## MVP 范围
 
-第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 01 只做静态 UI Shell，不接 AI API、不接数据库、不做自动导出、不做自动发布。
-
-编号文档为后续主线：
-
-- `docs/01_MVP_SCOPE.md`
-- `docs/03_COPYRIGHT_POLICY.md`
-- `docs/04_VIDEOHAO_STANDARD.md`
-- `docs/05_AGENT_CONTRACTS.md`
-- `docs/07_BATCH_LOG.md`
-- `docs/08_DECISIONS.md`
-
-Batch 00 原始文档仍保留在 `docs/PRD.md`、`docs/OUTPUT_SCHEMA.md`、`docs/COPYRIGHT_POLICY.md`、`docs/PROMPT_SYSTEM.md`。
+第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 02 只做本地 mock pipeline，不接真实 AI API、不接数据库、不抓取公众号、不下载素材、不生成真实媒体、不生成真实导出文件、不发布视频号。
 
 ## 启动
 
@@ -49,7 +39,16 @@ pnpm test
 pnpm build
 ```
 
-## Batch 01 页面
+## Batch 02 验证路径
+
+1. 打开 `/articles/new`。
+2. 使用默认 demo 输入或手动输入文章信息。
+3. 点击“生成 Mock 生产包”。
+4. 页面跳转到 `/projects/demo/analysis`。
+5. 查看 `/projects/demo/scripts`、`/projects/demo/shots`、`/projects/demo/rights`、`/projects/demo/export`。
+6. 确认导出页只展示 manifest，不创建或下载真实文件。
+
+## Batch 02 页面
 
 - `/`
 - `/dashboard`
@@ -74,11 +73,12 @@ docs/
   08_DECISIONS.md
 src/
   app/
+    api/mock/production-pack/route.ts
   components/
   lib/
-    demo-data.ts
-    fixtures/
+    mock-pipeline/
     schemas/
+    storage/
 ```
 
 ## 不做什么
@@ -87,7 +87,9 @@ src/
 - 不自动下载网络素材
 - 不自动发布视频号
 - 不自动生成完整成片
-- 不接 AI API
+- 不接真实 AI API
 - 不接数据库
 - 不做登录
+- 不生成真实图片、视频、音频
+- 不生成真实导出文件
 - 不使用未确认版权的新闻图、视频片段、影视片段、音乐和字体
