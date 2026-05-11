@@ -130,6 +130,17 @@ pnpm audit:real-run -- --title "新消费品牌上市背后：中国品牌全球
 - Showcase 顶部显示 `Prompt 字段完整性：pass` 与 `报告字段完整性：pass`。
 - 如果出现“需要重跑 / 人工修正：报告字段缺失”，不要锁版；优先检查 export serializer 和 report completeness gate，而不是重新生成 AI。
 
+## Batch 13C Enum Canonicalization 检查
+
+真实审计如果因为 MiniMax 输出了自然语言 enum 而失败，先查看 failed report 中的 Canonicalization / Schema Diagnostics：
+
+- `canonicalizationChangedFields` 表示系统已把可识别变体规范化为 schema enum，例如 `硬切` 到 `hard_cut`。
+- `unknownEnumFields` 表示无法确定的 enum，必须让 strict audit 失败，不允许静默猜测。
+- `schemaFailurePaths` 与 `invalidEnumValues` 用来定位仍未通过 Zod 的字段。
+- 成功审计报告应显示 `canonicalizationChangedCount` 和 `unknownEnumFields: 0`。
+
+Batch 13C 只允许 deterministic enum canonicalization，不放宽 `ProductionPackSchema`，也不允许 fallback/mock 成为正式成功。
+
 ## 推荐 5 个标题
 
 1. 新消费品牌上市背后：中国品牌全球化的第二轮机会来了

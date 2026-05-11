@@ -1,5 +1,13 @@
 # Changelog
 
+## Batch 13C - AI Output Canonicalization Gate
+
+- 新增 AI raw output enum canonicalization，在 JSON.parse 后、`ProductionPackSchema` 严格校验前规范化常见自然语言 enum。
+- 支持 `cutType`、`rollType`、`pace`、`shotFunction`、`productionMethod`、`copyrightRisk` / `rightsLevel` / `riskLevel` 等字段的中文、英文、空格和 display label 变体。
+- unknown enum 不会被静默修正，会保留原值并进入 `unknownEnumFields`，strict mode 继续返回 422。
+- single-pack pipeline 成功和失败都携带 safe canonicalization report；Agent Run step、API response 和 audit failed report 可追踪 changed / unknown enum 字段。
+- single-pack prompt 增加紧凑 enum table，明确禁止中文 enum、human-readable enum 和空格形式 enum。
+
 ## Batch 13B-Hotfix - Full AIGC Production Report Export
 
 - `production-pack.md` 从压缩分镜概览升级为主生产报告，新增中文完整章节：AIGC 制作总控、视觉风格 Bible、连续性 Bible、逐镜头 AIGC 制作表。

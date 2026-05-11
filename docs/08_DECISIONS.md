@@ -335,3 +335,21 @@
 决定：如果 `production-pack.md` 缺少 AIGC 制作总控、视觉风格 Bible、连续性 Bible、逐镜头 AIGC 制作表或关键 shot/prompt 字段，Production Studio、Showcase 和 real-run audit 必须显示“需要重跑 / 人工修正”。
 
 原因：报告缺字段不是模型质量小问题，而是生产交付无法执行。即使 ProductionPack JSON 内部有数据，导出层漏出字段也不能被视为 ready 成品。
+
+## D057 - 真实 AI 输出允许 deterministic enum canonicalization
+
+决定：Batch 13C 起，真实 AI raw JSON 可以在 `ProductionPackSchema` 校验前执行确定性 enum canonicalization，把已知自然语言变体映射为合法 enum，但不放宽 schema。
+
+原因：MiniMax 会输出接近 schema 的 JSON，但常把 `hard_cut`、`a_roll`、`fast` 等 enum 写成自然语言或中文标签。确定性映射能消除格式噪音，同时保留 strict real output 边界。
+
+## D058 - unknown enum 必须触发 strict failure
+
+决定：canonicalization 只处理显式映射表中的值。未知 enum 保留原值，写入 `unknownEnumFields`，并由 Zod 严格失败；不得静默替换为默认值。
+
+原因：未知 enum 可能代表模型生成了新的制作语义，系统无法安全猜测。静默替换会掩盖真实输出质量问题，并污染 audit 结果。
+
+## D059 - canonicalization report 是审计证据
+
+决定：canonicalization report 记录 changedFields、unknownEnumFields 和 warnings，可进入 Agent Run、API safe response 与 audit failed report，但不得包含 API key、baseURL 或敏感环境配置。
+
+原因：团队需要知道模型原始输出被怎样规范化，也需要定位 strict schema 失败原因；该报告是审计证据，不是配置日志。

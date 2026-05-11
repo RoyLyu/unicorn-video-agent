@@ -1,5 +1,30 @@
 # 07 Batch Log
 
+## Batch 13C - AI Output Canonicalization Gate
+
+目标：修复 MiniMax 真实输出中自然语言 enum 导致 strict schema 失败的问题，在不放宽 `ProductionPackSchema` 的前提下增加 deterministic canonicalization。
+
+完成内容：
+
+- 新增 AI raw output canonicalization 层。
+- 在 JSON.parse 后、ProductionPack schema parse 前规范化 cutType、rollType、pace、shotFunction、productionMethod 和 rights risk 等 enum。
+- 对未知 enum 保留原值并记录 `unknownEnumFields`，让 strict schema fail loudly。
+- single-pack pipeline 将 canonicalization report 写入 Agent Run step 和 API diagnostics。
+- failed audit report 输出 schemaFailurePaths、invalidEnumValues、canonicalizationChangedFields 和 unknownEnumFields。
+- single-pack prompt 增加 enum table，禁止中文 enum、human-readable enum 和空格形式 enum。
+
+明确不做：
+
+- 放宽 ProductionPackSchema
+- 允许 fallback/mock 冒充正式成功
+- AI 生图
+- AI 生视频
+- TTS
+- Remotion
+- 公网部署
+- 抓取或素材下载
+- 用户系统
+
 ## Batch 13B-Hotfix - Full AIGC Production Report Export
 
 目标：修复 Export / Report / Gate 层，让 `production-pack.md` 成为交给编导和 AIGC 制作人的主生产报告，而不是压缩分镜摘要。

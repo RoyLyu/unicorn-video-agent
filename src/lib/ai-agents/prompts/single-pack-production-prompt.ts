@@ -6,6 +6,8 @@ export const visualStyleLock =
 export const requiredNegativePrompt =
   "fake logo, unreadable text, distorted Chinese characters, artificial face, excessive cyberpunk";
 
+const enumOutputTable = `Enum 输出表：cutType 只能是 hard_cut / dissolve / wipe / match_cut / graphic_match / push / zoom_cut；rollType 只能是 a_roll / b_roll / graphic_roll / transition_roll；pace 只能是 fast / medium / slow；shotFunction 只能是 hook_shot / context_shot / evidence_shot / concept_shot / transition_shot / emotional_shot / data_shot / risk_shot / summary_shot / cta_shot；productionMethod 只能是 text_to_video / image_to_video / text_to_image_edit / motion_graphics / stock_footage / manual_design / compositing；copyrightRisk 和 rightsLevel 只能是 green / yellow / red / placeholder。不要输出中文 enum，不要输出 human-readable enum，不要输出空格形式。`;
+
 export function singlePackProductionPrompt(densityProfile: ShotDensityProfile = "standard") {
   const density = getShotDensitySpec(densityProfile);
   const source90 = Math.min(12, Math.max(8, Math.ceil(density.min90s / 3)));
@@ -19,6 +21,7 @@ export function singlePackProductionPrompt(densityProfile: ShotDensityProfile = 
 - 输出必须是可展示生产包，不允许出现内部模板痕迹、批次名、演示数据名或占位补全话术。
 - 不编造真实融资金额、真实投资方、真实客户、真实收入或真实上市进度；标题输入不足时，写成“待人工核验”的行业分析表达。
 - 所有发布和结尾风险提示必须包含“不构成投资建议”。
+- ${enumOutputTable}
 
 结构要求：
 - mode 必须是 "ai"。
@@ -74,6 +77,7 @@ export function compactSinglePackProductionPrompt(densityProfile: ShotDensityPro
 - 不编造真实融资金额、真实投资方、真实客户、真实收入或真实上市进度；标题信息不足时写“待人工核验”。
 - 不输出内部模板痕迹、批次名、演示数据名或占位补全话术。
 - 必须包含“不构成投资建议”。
+- ${enumOutputTable}
 
 必须输出这些顶层字段：
 - analysis：summary 80 字内，keyFacts 3 条，industryData 2 条，risks 2 条。

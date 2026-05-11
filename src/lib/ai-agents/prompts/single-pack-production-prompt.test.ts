@@ -25,4 +25,24 @@ describe("single-pack production prompt", () => {
     expect(prompt).not.toContain("后续会补齐");
     expect(prompt).not.toContain("系统会补齐");
   });
+
+  it("contains strict enum tables and rejects human-readable enum output", () => {
+    const prompt = singlePackProductionPrompt();
+
+    expect(prompt).toContain("cutType");
+    expect(prompt).toContain("hard_cut");
+    expect(prompt).toContain("rollType");
+    expect(prompt).toContain("graphic_roll");
+    expect(prompt).toContain("pace");
+    expect(prompt).toContain("fast");
+    expect(prompt).toContain("shotFunction");
+    expect(prompt).toContain("hook_shot");
+    expect(prompt).toContain("productionMethod");
+    expect(prompt).toContain("text_to_video");
+    expect(prompt).toContain("copyrightRisk");
+    expect(prompt).toContain("placeholder");
+    expect(prompt).toContain("不要输出中文 enum");
+    expect(prompt).toContain("不要输出 human-readable enum");
+    expect(prompt).toContain("不要输出空格形式");
+  });
 });

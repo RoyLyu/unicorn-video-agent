@@ -203,6 +203,9 @@
 
 ## Batch 13B 后续建议
 
+- [x] Batch 13C：新增 AI raw output enum canonicalization gate。
+- [x] Batch 13C：unknown enum 保留原值并触发 strict schema failure。
+- [x] Batch 13C：audit failed report 输出 schemaFailurePaths、invalidEnumValues、canonicalizationChangedFields 和 unknownEnumFields。
 - [x] Batch 13B-Hotfix：`production-pack.md` 输出完整逐镜头 AIGC 制作表。
 - [x] Batch 13B-Hotfix：`prompt-pack.md`、`storyboard.csv`、`rights-check.csv` 输出 production contract 字段。
 - [x] Batch 13B-Hotfix：新增 report completeness gate，并接入 Production Studio、Showcase 和 real-run audit。

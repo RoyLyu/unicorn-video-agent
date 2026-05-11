@@ -142,6 +142,57 @@ describe("POST /api/ai/production-pack", () => {
     }
   });
 
+  it("returns canonicalization diagnostics for unknown enum strict failures", async () => {
+    const client = createTestDbClient();
+
+    try {
+      const response = await handleAiProductionPackRequest(
+        new Request("http://localhost/api/ai/production-pack", {
+          method: "POST",
+          body: JSON.stringify(cleanArticleInput)
+        }),
+        {
+          client,
+          env: {
+            AI_PROVIDER: "minimax",
+            AI_MODEL: "MiniMax-M2.7",
+            MINIMAX_API_KEY: "test-key",
+            MINIMAX_BASE_URL: "https://api.minimaxi.com/v1"
+          },
+          chatCompletionExecutor: async () =>
+            JSON.stringify({
+              ...demoProductionPack,
+              mode: "ai",
+              articleInput: cleanArticleInput,
+              storyboard: {
+                shots: demoProductionPack.storyboard.shots.slice(0, 1).map((shot) => ({
+                  ...shot,
+                  shotFunction: "mystery shot",
+                  editing: {
+                    ...shot.editing,
+                    cutType: "spiral morph"
+                  }
+                }))
+              }
+            })
+        }
+      );
+      const body = await response.json();
+
+      expect(response.status).toBe(422);
+      expect(body.projectId).toBeUndefined();
+      expect(body.failureReason).toBe("schema");
+      expect(body.schemaFailurePaths).toContain("storyboard.shots.0.shotFunction");
+      expect(body.unknownEnumFields[0]).toMatchObject({
+        path: "storyboard.shots.0.shotFunction",
+        originalValue: "mystery shot"
+      });
+      expect(JSON.stringify(body)).not.toContain("test-key");
+    } finally {
+      client.close();
+    }
+  });
+
   it("returns 400 for invalid ArticleInput", async () => {
     const client = createTestDbClient();
 

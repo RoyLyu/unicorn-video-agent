@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-Batch 13B-Hotfix：Full AIGC Production Report Export。
+Batch 13C：AI Output Canonicalization Gate。
 
 当前仓库提供：
 
@@ -36,6 +36,7 @@ Batch 13B-Hotfix：Full AIGC Production Report Export。
 - AIGC Creative Direction、Visual Style Bible、Continuity Bible
 - shot-level production contract：shotFunction、productionMethod、editing metadata 和 8 类 prompt 信息
 - `production-pack.md` 完整逐镜头 AIGC 制作表、Prompt/Report completeness gate
+- AI raw output enum canonicalization gate：在严格 schema 校验前规范化常见自然语言 enum，未知 enum 仍 fail loudly
 - 冻结成功 Demo 项目和版权风险替代方案展示
 - fallback/mock 成品门禁：Showcase、Export 和 real-run audit 不再把 fallback 当作成功成品
 - 纯函数 mock Agent pipeline
@@ -46,7 +47,7 @@ Batch 13B-Hotfix：Full AIGC Production Report Export。
 
 ## MVP 范围
 
-第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 13B-Hotfix 只修复导出报告和 deterministic gate：`production-pack.md` 作为主生产报告必须输出完整逐镜头 AIGC 制作字段，Prompt completeness 与 Report completeness 分开校验；不调用 AI 重新生成，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
+第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 13C 只修复真实 AI 输出进入 schema 前的 enum 规范化：允许把 `hard cut`、`硬切`、`A-roll`、`Motion Graphics` 等常见自然语言 enum 确定性映射为 schema enum；不放宽 `ProductionPackSchema`，不允许未知 enum 静默通过，不调用 AI 重新生成，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
 
 ## 环境变量
 
