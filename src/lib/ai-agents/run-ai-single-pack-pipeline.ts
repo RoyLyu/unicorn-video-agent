@@ -408,7 +408,7 @@ function coerceAiProductionPack(rawOutput: unknown, articleInput: ArticleInput):
       assetType: normalizeAssetType(item.assetType, index),
       rightsLevel: normalizeRightsLevel(item.rightsLevel),
       versionType: normalizeVersionType(item.versionType),
-      shotNumber: Number(item.shotNumber ?? index + 1),
+      shotNumber: parseProviderShotNumber(item.shotNumber, index + 1),
       beat: item.beat ? String(item.beat) : undefined,
       duration: item.duration ? String(item.duration) : undefined,
       voiceover: item.voiceover ? String(item.voiceover) : undefined,
@@ -595,7 +595,10 @@ function coerceAssetPrompts(
         const bundle = isRecord(item) ? item : {};
         const shot = shots[index] ?? {};
         const versionType = normalizeVersionType(bundle.versionType ?? shot.versionType) ?? "90s";
-        const shotNumber = Number(bundle.shotNumber ?? shot.shotNumber ?? index + 1);
+        const shotNumber = parseProviderShotNumber(
+          bundle.shotNumber ?? shot.shotNumber,
+          index + 1
+        );
         const shotId = String(bundle.shotId ?? bundle.sceneRef ?? shot.id ?? `S${String(index + 1).padStart(2, "0")}`);
 
         return {
@@ -765,6 +768,31 @@ function normalizeRightsLevel(value: unknown) {
 
 function normalizeVersionType(value: unknown) {
   return value === "90s" || value === "180s" ? value : undefined;
+}
+
+function parseProviderShotNumber(value: unknown, fallback: number) {
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    const direct = Number(trimmed);
+
+    if (Number.isFinite(direct) && direct > 0) {
+      return direct;
+    }
+
+    const digitGroups = [...trimmed.matchAll(/\d+/g)].map((match) => match[0]);
+    const lastGroup = digitGroups.at(-1);
+    const parsed = Number(lastGroup);
+
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+
+  return fallback;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

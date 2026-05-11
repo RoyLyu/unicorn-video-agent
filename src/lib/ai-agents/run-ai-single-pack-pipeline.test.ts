@@ -134,4 +134,57 @@ describe("runAiSinglePackPipeline", () => {
       client.close();
     }
   });
+
+  it("coerces provider shotNumber strings into numeric shot numbers", async () => {
+    const client = createTestDbClient();
+    const compactPack = {
+      ...demoProductionPack,
+      mode: "ai",
+      storyboard: {
+        shots: demoProductionPack.storyboard.shots.slice(0, 2).map((shot, index) => ({
+          ...shot,
+          id: `S90-0${index + 1}`,
+          versionType: "90s",
+          shotNumber: `S90-0${index + 1}`
+        }))
+      },
+      assetPrompts: {
+        ...demoProductionPack.assetPrompts,
+        promptBundles: demoProductionPack.storyboard.shots.slice(0, 2).map((shot, index) => ({
+          versionType: "90s",
+          shotNumber: `90s-0${index + 1}`,
+          shotId: `S90-0${index + 1}`,
+          imagePrompt: `${shot.visual} image`,
+          videoPrompt: `${shot.visual} video`,
+          negativePrompt: "fake logo, unreadable text, distorted Chinese characters, artificial face, excessive cyberpunk",
+          styleLock: "cinematic business documentary style, Bloomberg-inspired, dark navy and silver color palette, realistic footage, low saturation, soft contrast, natural lighting, premium consulting video",
+          aspectRatio: "9:16",
+          usageWarning: "不得生成真实 Logo、新闻图、创始人肖像、招股书截图或可读品牌文字。"
+        }))
+      }
+    };
+
+    try {
+      const result = await runAiSinglePackPipeline(demoArticleInput, {
+        client,
+        env: {
+          AI_PROVIDER: "minimax",
+          AI_MODEL: "MiniMax-M2.7",
+          MINIMAX_API_KEY: "test-key",
+          MINIMAX_BASE_URL: "https://api.minimaxi.com/v1",
+          AI_BANNED_OUTPUT_TERMS: "forbidden-only"
+        },
+        chatCompletionExecutor: async () => JSON.stringify(compactPack)
+      });
+
+      expect(isAiSinglePackFailure(result)).toBe(false);
+      if (isAiSinglePackFailure(result)) {
+        throw new Error(result.safeErrorSummary);
+      }
+      expect(result.productionPack.storyboard.shots[0].shotNumber).toBe(1);
+      expect(result.productionPack.assetPrompts.promptBundles?.[0].shotNumber).toBe(1);
+    } finally {
+      client.close();
+    }
+  });
 });

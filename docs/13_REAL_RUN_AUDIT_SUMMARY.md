@@ -6,14 +6,14 @@
 
 ## 成功项目
 
-- projectId: `b3bb3742-101a-4c60-b211-e1697084738e`
-- agentRunId: `c48b27d4-cce7-4cd9-aca4-1b0833841286`
+- projectId: `eefb58cb-b82a-41ee-af3f-2944f53eded7`
+- agentRunId: `a65695f6-5f6e-4b33-89d1-a0c02c6c27a0`
 - generationMode: `ai`
 - fallbackUsed: `false`
 - Demo-ready: yes
-- Showcase: `/projects/b3bb3742-101a-4c60-b211-e1697084738e/showcase`
-- Production Studio: `/projects/b3bb3742-101a-4c60-b211-e1697084738e/production-studio`
-- production-pack.md: `/api/projects/b3bb3742-101a-4c60-b211-e1697084738e/exports/production-pack.md`
+- Showcase: `/projects/eefb58cb-b82a-41ee-af3f-2944f53eded7/showcase`
+- Production Studio: `/projects/eefb58cb-b82a-41ee-af3f-2944f53eded7/production-studio`
+- production-pack.md: `/api/projects/eefb58cb-b82a-41ee-af3f-2944f53eded7/exports/production-pack.md`
 
 ## Scores
 
