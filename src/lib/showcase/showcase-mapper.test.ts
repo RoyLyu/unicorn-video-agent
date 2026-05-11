@@ -57,6 +57,20 @@ describe("showcase mapper", () => {
 
     expect(viewModel.generation.generationModeLabel).toBe("Mock");
     expect(viewModel.generation.fallbackUsed).toBe(true);
+    expect(viewModel.fallbackWarning).toContain("当前使用 fallback 结果");
+  });
+
+  it("does not show a fallback warning for clean AI output", () => {
+    const viewModel = mapShowcaseViewModel({
+      project,
+      productionPack: { ...demoProductionPack, mode: "ai" },
+      reviewData: null,
+      latestAgentRun: completedRun,
+      latestAgentRunDetail: createRunDetail(completedRun)
+    });
+
+    expect(viewModel.generation.fallbackUsed).toBe(false);
+    expect(viewModel.fallbackWarning).toBeNull();
   });
 
   it("falls back to deterministic publish copy and download link", () => {

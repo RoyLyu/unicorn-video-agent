@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { DemoModeBanner } from "@/components/demo-mode-banner";
 import { DemoResetButton } from "@/components/demo-reset-button";
+import { FinalDemoPath } from "@/components/final-demo-path";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
 import { listDemoProjects } from "@/db/repositories/project-repository";
@@ -45,6 +46,8 @@ export default function PublicDemoPage() {
           ))}
         </div>
       </section>
+
+      <FinalDemoPath />
 
       <section className="panel">
         <div className="section-heading">

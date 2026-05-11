@@ -107,6 +107,16 @@
 - [x] Showcase 对 `Title-only Demo` 来源项目显示事实核验提示。
 - [x] 新增 Quick Demo helper、导航和 Showcase warning 测试。
 
+## Batch 10B
+
+- [x] Quick Demo fallback 时显示“当前使用 fallback 结果”。
+- [x] AI 配置缺失时提示检查 `.env.local`，超时时提示可改用短标题或稍后重试。
+- [x] AI fallback API response 增加安全摘要和 fallback reason，不展示 API key。
+- [x] Showcase fallback 时显示黄色风险提示。
+- [x] Dashboard 和 `/demo` 展示最终演示路径。
+- [x] 新增 `docs/12_FINAL_DEMO_RUNBOOK.md`。
+- [x] 新增最终演示 QA 测试。
+
 ## Batch 10 建议
 
 - [ ] 增加 prompt 版本管理和 prompt diff。

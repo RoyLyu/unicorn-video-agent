@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { DataTable } from "@/components/data-table";
 import { DemoModeBanner } from "@/components/demo-mode-banner";
+import { FinalDemoPath } from "@/components/final-demo-path";
 import { MetricCard } from "@/components/metric-card";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
@@ -52,6 +53,8 @@ export default function DashboardPage() {
           <MetricCard key={metric.label} {...metric} />
         ))}
       </section>
+
+      <FinalDemoPath />
 
       <section className="panel">
         <h2>公开 Demo 项目</h2>

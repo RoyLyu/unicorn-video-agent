@@ -358,6 +358,14 @@ select {
   text-align: center;
 }
 
+.flow-step span {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
 .section-heading,
 .action-row,
 .demo-reset {
@@ -490,6 +498,14 @@ select {
   margin: 0;
   color: var(--red-text);
   font-weight: 700;
+}
+
+.form-status {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--yellow-text);
+  font-weight: 800;
+  line-height: 1.7;
 }
 
 .export-preview-header {
@@ -712,6 +728,12 @@ td {
   color: var(--accent-strong);
   font-weight: 800;
   line-height: 1.7;
+}
+
+.showcase-warning--fallback {
+  border-left-color: var(--yellow-text);
+  background: var(--yellow-bg);
+  color: var(--yellow-text);
 }
 
 .showcase-cta {

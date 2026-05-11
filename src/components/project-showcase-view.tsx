@@ -34,6 +34,11 @@ export function ProjectShowcaseView({
           <div className="showcase-warning">
             当前为视频号生产包展示，不是最终成片视频。{showcase.disclaimer}
           </div>
+          {showcase.fallbackWarning ? (
+            <div className="showcase-warning showcase-warning--fallback">
+              {showcase.fallbackWarning}
+            </div>
+          ) : null}
           {showcase.titleOnlyWarning ? (
             <div className="showcase-warning showcase-warning--title-only">
               {showcase.titleOnlyWarning}

@@ -16,4 +16,10 @@ describe("Dashboard showcase links", () => {
     expect(source).toContain("/quick-demo");
     expect(source).toContain("Quick Demo");
   });
+
+  it("shows the final demo path on the dashboard", () => {
+    const source = readFileSync("src/app/dashboard/page.tsx", "utf8");
+
+    expect(source).toContain("FinalDemoPath");
+  });
 });

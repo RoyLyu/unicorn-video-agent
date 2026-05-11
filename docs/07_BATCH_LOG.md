@@ -1,5 +1,31 @@
 # 07 Batch Log
 
+## Batch 10B - Final Demo QA and Demo Runbook
+
+目标：为 `/quick-demo → AI Agent → Showcase → Export` 建立最终演示验收、错误提示、演示说明和最小浏览器流程测试基础。
+
+完成内容：
+
+- Quick Demo fallback 状态提示
+- AI 配置缺失时提示检查 `.env.local`
+- AI 请求超时时提示可改用短标题或稍后重试
+- `/api/ai/production-pack` fallback 响应增加 `safeErrorSummary` 与 `fallbackReason`
+- Showcase fallback 黄色风险提示
+- Dashboard 和 `/demo` 最终演示路径提示
+- `docs/12_FINAL_DEMO_RUNBOOK.md`
+- fallback 分类、Showcase 状态、最终演示路径和 Runbook 测试
+
+明确不做：
+
+- AI 生图
+- AI 生视频
+- TTS
+- 自动剪辑
+- 部署
+- 权限系统
+- 修改 AI pipeline 主逻辑
+- Batch 11 功能
+
 ## Batch 10A - Title-only Fast Demo
 
 目标：新增一个极简演示入口，只输入标题即可生成 AI 视频号生产包，并直接进入 Showcase。

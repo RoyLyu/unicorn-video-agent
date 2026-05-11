@@ -1,5 +1,14 @@
 # Changelog
 
+## Batch 10B - Final Demo QA and Demo Runbook
+
+- 增强 `/quick-demo` 的 AI fallback 提示，配置缺失提示检查 `.env.local`，超时提示可改用短标题或稍后重试。
+- `POST /api/ai/production-pack` 在 fallback 时新增安全摘要字段 `safeErrorSummary` 与 `fallbackReason`，不暴露 API key。
+- Showcase 顶部在 fallback 时显示黄色风险提示，并继续展示 generationMode、fallbackUsed 和 Title-only 事实核验提示。
+- Dashboard 和 `/demo` 增加最终演示路径：Quick Demo → AI Generate → Showcase → Export。
+- 新增 `docs/12_FINAL_DEMO_RUNBOOK.md`，覆盖演示前检查、环境变量检查、启动命令、标准路径、推荐标题、出错处理、展示话术和不可承诺事项。
+- 新增最终演示 QA 测试，覆盖 fallback 分类、Showcase 状态、下载链接和演示路径提示。
+
 ## Batch 10A - Title-only Fast Demo
 
 - 新增 `/quick-demo` 极简演示入口，只输入标题、内容类型和可选行业标签即可生成 AI 视频号生产包。

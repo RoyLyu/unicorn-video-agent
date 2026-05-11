@@ -88,6 +88,7 @@ export type ShowcaseViewModel = {
   isDemo: boolean;
   isTitleOnlyDemo: boolean;
   titleOnlyWarning: string | null;
+  fallbackWarning: string | null;
   generation: ShowcaseGenerationSummary;
   agentSummary: ShowcaseAgentSummary;
   coreSummary: string;

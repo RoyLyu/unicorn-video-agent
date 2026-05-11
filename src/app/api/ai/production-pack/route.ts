@@ -1,8 +1,11 @@
 import { ZodError } from "zod";
 
 import type { DbClient } from "@/db";
+import { getAgentRunDetail } from "@/db/repositories/agent-run-repository";
 import { runAiPipeline } from "@/lib/ai-agents/run-ai-pipeline";
 import { ArticleInputSchema } from "@/lib/schemas/production-pack";
+
+import { classifyAiFallbackReason } from "./fallback-summary";
 
 export const runtime = "nodejs";
 
@@ -24,13 +27,19 @@ export async function handleAiProductionPackRequest(
     const result = await runAiPipeline(articleInput, {
       client: options.client
     });
+    const fallbackSummary = result.fallbackUsed
+      ? classifyAiFallbackReason(
+          getAgentRunErrorMessage(result.agentRunId, options.client)
+        )
+      : null;
 
     return Response.json({
       projectId: result.projectId,
       productionPack: result.productionPack,
       agentRunId: result.agentRunId,
       fallbackUsed: result.fallbackUsed,
-      generationMode: result.generationMode
+      generationMode: result.generationMode,
+      ...(fallbackSummary ?? {})
     });
   } catch (error) {
     if (error instanceof ZodError) {
@@ -50,5 +59,21 @@ export async function handleAiProductionPackRequest(
       { error: "AI pipeline or SQLite persistence failed" },
       { status: 500 }
     );
+  }
+}
+
+function getAgentRunErrorMessage(agentRunId: string, client?: DbClient) {
+  try {
+    const detail = getAgentRunDetail(agentRunId, client);
+
+    if (!detail) {
+      return null;
+    }
+
+    const stepError = detail.steps.find((step) => step.errorMessage)?.errorMessage;
+
+    return detail.run.errorMessage ?? stepError ?? null;
+  } catch {
+    return null;
   }
 }

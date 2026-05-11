@@ -185,3 +185,9 @@
 决定：Batch 10A 的快速演示项目通过 `sourceName = "Title-only Demo"` 识别，不新增数据库字段或 API。
 
 原因：本批只做外部展示用快速入口；复用现有 ArticleInput、AI API、SQLite 和 Showcase 数据流，可以避免扩大 schema 变更，同时让 Showcase 明确提示标题生成项目需要人工核验事实。
+
+## D032 - Final Demo QA 只增强提示层
+
+决定：Batch 10B 不修改 AI pipeline 主逻辑，只在 API response、Quick Demo、Showcase、Dashboard、Public Demo 和 Runbook 中增加最终演示提示、fallback 摘要和验收路径。
+
+原因：今天的目标是外部展示稳定性；生成质量和 prompt 版本管理应留给后续批次，避免在演示前引入高风险逻辑变更。

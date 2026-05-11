@@ -41,6 +41,7 @@ export function mapShowcaseViewModel({
   const isTitleOnlyDemo =
     project.sourceName === TITLE_ONLY_DEMO_SOURCE_NAME ||
     productionPack.articleInput.sourceName === TITLE_ONLY_DEMO_SOURCE_NAME;
+  const generation = mapGenerationSummary(project, productionPack, latestAgentRun);
 
   return {
     projectId: project.id,
@@ -49,7 +50,10 @@ export function mapShowcaseViewModel({
     isDemo: project.isDemo,
     isTitleOnlyDemo,
     titleOnlyWarning: isTitleOnlyDemo ? TITLE_ONLY_WARNING : null,
-    generation: mapGenerationSummary(project, productionPack, latestAgentRun),
+    fallbackWarning: generation.fallbackUsed
+      ? "当前使用 fallback 结果：该生产包为降级输出，演示时请说明真实 AI 生成未完全成功。"
+      : null,
+    generation,
     agentSummary: mapAgentSummary(latestAgentRun, latestAgentRunDetail),
     coreSummary: productionPack.analysis.summary,
     coreViewpoints: productionPack.thesis.coreTheses,

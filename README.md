@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-Batch 10A：Title-only Fast Demo。
+Batch 10B：Final Demo QA and Demo Runbook。
 
 当前仓库提供：
 
@@ -26,6 +26,7 @@ Batch 10A：Title-only Fast Demo。
 - AI Agent 生成失败时自动 fallback 到 mock pipeline
 - 面向外部展示、录屏和讲解的 `/projects/[projectId]/showcase`
 - 只输入标题即可生成并跳转 Showcase 的 `/quick-demo`
+- 最终演示路径提示、fallback 风险提示和 `docs/12_FINAL_DEMO_RUNBOOK.md`
 - 纯函数 mock Agent pipeline
 - `localStorage` demo fallback
 - Zod schema 与 pipeline 单元测试
@@ -34,7 +35,7 @@ Batch 10A：Title-only Fast Demo。
 
 ## MVP 范围
 
-第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 10A 只新增标题快速演示入口，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
+第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 10B 只做最终演示稳定性、错误提示、演示路径提示和 Runbook，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
 
 ## 环境变量
 
@@ -76,16 +77,16 @@ pnpm test
 pnpm build
 ```
 
-## Batch 10A 验证路径
+## Batch 10B 最终演示验收路径
 
-1. 打开 `/quick-demo`，输入标题，选择内容类型，可选填写行业标签。
-2. 点击生成，确认调用 `/api/ai/production-pack`，成功后跳转 `/projects/[projectId]/showcase`。
-3. 在 Showcase 顶部确认出现“该项目由标题生成，事实信息需要人工核验。”提示。
-4. 打开 `/articles/new`，确认完整文章输入流程未被破坏。
-5. 打开 `/dashboard` 和 `/demo`，确认都有 Quick Demo 入口。
-6. 点击 Showcase 页的 `production-pack.md` 下载、Review、Export、Agent Runs 入口。
+1. 打开 `/dashboard` 或 `/demo`，确认展示最终演示路径：Quick Demo → AI Generate → Showcase → Export。
+2. 打开 `/quick-demo`，输入标题，选择内容类型，可选填写行业标签。
+3. 点击生成，确认调用 `/api/ai/production-pack`，成功后跳转 `/projects/[projectId]/showcase`。
+4. 在 Showcase 顶部确认 generationMode、fallbackUsed、Title-only 事实核验提示和必要的 fallback 风险提示。
+5. 点击 Showcase 页的 `production-pack.md` 下载、Review、Export、Agent Runs 入口。
+6. 对照 `docs/12_FINAL_DEMO_RUNBOOK.md` 完成演示前检查、推荐标题和异常处理预案。
 
-## Batch 10A 页面
+## Batch 10B 页面
 
 - `/`
 - `/demo`
@@ -198,6 +199,8 @@ docs/
   06_DATABASE_SCHEMA.md
   07_BATCH_LOG.md
   08_DECISIONS.md
+  11_PUBLIC_DEMO_GUIDE.md
+  12_FINAL_DEMO_RUNBOOK.md
 drizzle/
 src/
   app/

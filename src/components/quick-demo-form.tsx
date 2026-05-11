@@ -17,6 +17,8 @@ type AiProductionPackResponse = {
   agentRunId?: string;
   fallbackUsed?: boolean;
   generationMode?: GenerationMode;
+  fallbackReason?: "ai_config" | "timeout" | "schema" | "provider" | "unknown";
+  safeErrorSummary?: string;
 };
 
 export function QuickDemoForm() {
@@ -24,11 +26,13 @@ export function QuickDemoForm() {
   const [contentType, setContentType] =
     useState<QuickDemoContentType>("ipo");
   const [error, setError] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    setStatusMessage(null);
     setIsSubmitting(true);
 
     const formData = new FormData(event.currentTarget);
@@ -52,7 +56,15 @@ export function QuickDemoForm() {
       }
 
       const result = (await response.json()) as AiProductionPackResponse;
-      router.push(buildQuickDemoShowcaseUrl(result.projectId));
+      const showcaseUrl = buildQuickDemoShowcaseUrl(result.projectId);
+
+      if (result.fallbackUsed) {
+        setStatusMessage(createFallbackMessage(result));
+        window.setTimeout(() => router.push(showcaseUrl), 1200);
+        return;
+      }
+
+      router.push(showcaseUrl);
     } catch {
       setError("请填写标题。行业标签可留空，系统会按内容类型使用默认标签。");
     } finally {
@@ -101,6 +113,7 @@ export function QuickDemoForm() {
           />
         </div>
         {error ? <p className="form-error">{error}</p> : null}
+        {statusMessage ? <p className="form-status">{statusMessage}</p> : null}
         <div className="form-actions">
           <button className="primary-link" type="submit" disabled={isSubmitting}>
             {isSubmitting ? "AI Agent 生成中..." : "生成并进入 Showcase"}
@@ -109,4 +122,18 @@ export function QuickDemoForm() {
       </form>
     </section>
   );
+}
+
+function createFallbackMessage(result: AiProductionPackResponse) {
+  if (result.fallbackReason === "ai_config") {
+    return "当前使用 fallback 结果。请检查 .env.local 中的 AI provider、model、服务端 API key 和 baseURL 配置。";
+  }
+
+  if (result.fallbackReason === "timeout") {
+    return "当前使用 fallback 结果。AI 请求超时，可改用短标题或稍后重试。";
+  }
+
+  return result.safeErrorSummary
+    ? `当前使用 fallback 结果。${result.safeErrorSummary}`
+    : "当前使用 fallback 结果。系统将继续进入 Showcase，演示时请说明这是降级生产包。";
 }

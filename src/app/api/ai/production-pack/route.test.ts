@@ -25,6 +25,9 @@ describe("POST /api/ai/production-pack", () => {
       expect(body.fallbackUsed).toBe(true);
       expect(body.generationMode).toBe("mock");
       expect(body.productionPack.mode).toBe("mock");
+      expect(body.fallbackReason).toBe("ai_config");
+      expect(body.safeErrorSummary).toContain(".env.local");
+      expect(JSON.stringify(body)).not.toContain("MINIMAX_API_KEY=");
     } finally {
       client.close();
     }
