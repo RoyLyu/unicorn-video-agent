@@ -12,7 +12,8 @@ const header = [
   "wechatVideoAllowed",
   "needsAttribution",
   "reviewStatus",
-  "notes"
+  "notes",
+  "replacementPlan"
 ];
 
 export function generateRightsCheckCsv(productionPack: ProductionPack) {
@@ -30,7 +31,8 @@ export function generateRightsCheckCsv(productionPack: ProductionPack) {
       risk.level === "green",
       risk.level === "yellow",
       risk.level === "green" ? "ready" : "needs_review",
-      `${risk.reason} ${risk.action}`
+      `${risk.reason} ${risk.action}`,
+      risk.replacementPlan ?? ""
     ]);
   });
 

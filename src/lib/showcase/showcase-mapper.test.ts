@@ -171,8 +171,9 @@ describe("showcase mapper", () => {
       latestAgentRunDetail: createRunDetail(completedRun)
     });
 
-    expect(viewModel.productionStudioGate.shotCount90s).toBeGreaterThanOrEqual(30);
-    expect(viewModel.productionStudioGate.shotCount180s).toBeGreaterThanOrEqual(60);
+    expect(viewModel.productionStudioGate.shotCount90s).toBeGreaterThanOrEqual(24);
+    expect(viewModel.productionStudioGate.shotCount180s).toBeGreaterThanOrEqual(48);
+    expect(viewModel.productionStudioGate.densityProfile).toBe("standard");
     expect(viewModel.productionStudioGate.alignment).toBe("pass");
     expect(viewModel.links.productionStudio).toBe("/projects/project-1/production-studio");
   });

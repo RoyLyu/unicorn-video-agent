@@ -32,6 +32,7 @@ import { createOpenAiClient } from "@/lib/ai/openai-client";
 import { scanOutputContamination } from "@/lib/ai/output-contamination";
 import { parseAiJsonObject } from "@/lib/ai/structured-output";
 import { runMockPipeline } from "@/lib/mock-pipeline/run-mock-pipeline";
+import { readShotDensityProfile } from "@/lib/production-studio/density-profile";
 import {
   ArticleInputSchema,
   ProductionPackSchema,
@@ -126,6 +127,7 @@ export async function runAiSinglePackPipeline(
   const client = options.client;
   const config = readAiConfig(options.env);
   const policy = readAiPolicy(options.env);
+  const densityProfile = readShotDensityProfile(options.env);
   const generationProfile = options.generationProfile ?? "real_output";
   const allowMockFallback = shouldAllowMockFallback({
     policy,
@@ -161,12 +163,12 @@ export async function runAiSinglePackPipeline(
     const rawText = options.chatCompletionExecutor
       ? await options.chatCompletionExecutor({
           config,
-          systemPrompt: singlePackProductionPrompt(),
+          systemPrompt: singlePackProductionPrompt(densityProfile),
           userInput: { articleInput }
         })
-      : await requestChatCompletionJson(config, { articleInput });
+      : await requestChatCompletionJson(config, { articleInput }, densityProfile);
     const parsedPack = coerceAiProductionPack(parseAiJsonObject(rawText), articleInput);
-    const productionPack = normalizeProductionPack(parsedPack);
+    const productionPack = normalizeProductionPack(parsedPack, densityProfile);
     const contamination = scanOutputContamination(
       productionPack,
       policy.bannedOutputTerms
@@ -305,7 +307,8 @@ function failureReasonFromErrorCode(
 
 async function requestChatCompletionJson(
   config: Extract<AiConfig, { ok: true }>,
-  userInput: unknown
+  userInput: unknown,
+  densityProfile = readShotDensityProfile()
 ) {
   const client = createOpenAiClient(config);
   const response = await withTimeout(
@@ -313,7 +316,7 @@ async function requestChatCompletionJson(
       {
         model: config.model,
         messages: [
-          { role: "system", content: singlePackProductionPrompt() },
+        { role: "system", content: singlePackProductionPrompt(densityProfile) },
           { role: "user", content: JSON.stringify(userInput) }
         ],
         temperature: 0.2,

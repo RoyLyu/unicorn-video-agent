@@ -2,6 +2,7 @@ import { getProductionPackByProjectId } from "@/db/repositories/production-pack-
 import { getPublishCopyByProjectId } from "@/db/repositories/publish-copy-repository";
 import { readAiPolicy } from "@/lib/ai/ai-policy";
 import { generateExportFile } from "@/lib/export/generate-export-file";
+import { getProductionStudioPayload } from "@/lib/server/production-studio-service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,9 +36,21 @@ export async function GET(
       );
     }
 
-    const generatedFile = generateExportFile(fileName, saved.productionPack, {
+    const studioPayload = getProductionStudioPayload(projectId);
+    const exportPack = studioPayload?.effectiveProductionPack ?? saved.productionPack;
+    const generatedFile = generateExportFile(fileName, exportPack, {
       publishCopy: getPublishCopyByProjectId(projectId) ?? undefined,
-      fallbackWarning: fileName === "production-pack.md" && isFallback
+      fallbackWarning: fileName === "production-pack.md" && isFallback,
+      productionStudio: studioPayload
+        ? {
+            densityProfile: studioPayload.densityProfile,
+            lockStatus: studioPayload.lock?.locked ? "locked" : "unlocked",
+            latestGateStatus: studioPayload.latestGateRun?.status ?? "not_run",
+            editedCount: studioPayload.editedCount,
+            summary: studioPayload.summary,
+            originalProductionPack: studioPayload.originalProductionPack
+          }
+        : undefined
     });
 
     if (!generatedFile) {

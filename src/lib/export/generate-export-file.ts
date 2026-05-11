@@ -45,12 +45,13 @@ function generateContent(
   switch (fileName) {
     case "production-pack.md":
       return generateProductionPackMarkdown(productionPack, {
-        fallbackWarning: options.fallbackWarning
+        fallbackWarning: options.fallbackWarning,
+        productionStudio: options.productionStudio
       });
     case "storyboard.csv":
       return generateStoryboardCsv(productionPack);
     case "project.json":
-      return generateProjectJson(productionPack);
+      return generateProjectJson(productionPack, options.productionStudio);
     case "rights-check.csv":
       return generateRightsCheckCsv(productionPack);
     case "prompt-pack.md":

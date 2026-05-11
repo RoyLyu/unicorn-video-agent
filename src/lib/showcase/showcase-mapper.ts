@@ -13,6 +13,7 @@ import {
 import { formatRightsRiskDisplay } from "@/lib/rights/rights-display";
 import { analyzeShotPromptAlignment } from "@/lib/production-studio/shot-prompt-alignment";
 import type { ProductionPack, RightsRiskLevel } from "@/lib/schemas/production-pack";
+import type { ProductionStudioState } from "@/db/repositories/production-studio-repository";
 
 import type {
   ShowcaseAgentSummary,
@@ -29,6 +30,7 @@ type MapShowcaseInput = {
   reviewData: ReviewData | null;
   latestAgentRun: AgentRunSummary | null;
   latestAgentRunDetail?: AgentRunDetail | null;
+  productionStudioState?: ProductionStudioState;
 };
 
 export function mapShowcaseViewModel({
@@ -36,7 +38,8 @@ export function mapShowcaseViewModel({
   productionPack,
   reviewData,
   latestAgentRun,
-  latestAgentRunDetail
+  latestAgentRunDetail,
+  productionStudioState
 }: MapShowcaseInput): ShowcaseViewModel {
   const publishCopy =
     reviewData?.publishCopy ?? derivePublishCopy(productionPack);
@@ -44,7 +47,10 @@ export function mapShowcaseViewModel({
     project.sourceName === TITLE_ONLY_DEMO_SOURCE_NAME ||
     productionPack.articleInput.sourceName === TITLE_ONLY_DEMO_SOURCE_NAME;
   const generation = mapGenerationSummary(project, productionPack, latestAgentRun);
-  const productionStudioSummary = analyzeShotPromptAlignment(productionPack);
+  const productionStudioSummary = analyzeShotPromptAlignment(
+    productionPack,
+    productionStudioState?.densityProfile
+  );
 
   return {
     projectId: project.id,
@@ -65,6 +71,10 @@ export function mapShowcaseViewModel({
     blockProductionDownload: generation.fallbackUsed,
     regenerateUrl: "/articles/new",
     productionStudioGate: {
+      densityProfile: productionStudioSummary.densityProfile,
+      lockStatus: productionStudioState?.lock?.locked ? "locked" : "unlocked",
+      latestGateStatus: productionStudioState?.latestGateRun?.status ?? "not_run",
+      editedCount: productionStudioState?.edits.length ?? 0,
       shotCount90s: productionStudioSummary.shotCount90s,
       shotCount180s: productionStudioSummary.shotCount180s,
       promptCount: productionStudioSummary.promptCount90s + productionStudioSummary.promptCount180s,

@@ -56,6 +56,10 @@ export type ShowcasePromptSummary = {
 };
 
 export type ShowcaseProductionStudioGate = {
+  densityProfile: string;
+  lockStatus: string;
+  latestGateStatus: string;
+  editedCount: number;
   shotCount90s: number;
   shotCount180s: number;
   promptCount: number;

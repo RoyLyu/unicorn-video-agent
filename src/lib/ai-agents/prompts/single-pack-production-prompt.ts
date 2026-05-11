@@ -1,10 +1,14 @@
+import { getShotDensitySpec, type ShotDensityProfile } from "@/lib/production-studio/density-profile";
+
 export const visualStyleLock =
   "cinematic business documentary style, Bloomberg-inspired, dark navy and silver color palette, realistic footage, low saturation, soft contrast, natural lighting, premium consulting video";
 
 export const requiredNegativePrompt =
   "fake logo, unreadable text, distorted Chinese characters, artificial face, excessive cyberpunk";
 
-export function singlePackProductionPrompt() {
+export function singlePackProductionPrompt(densityProfile: ShotDensityProfile = "standard") {
+  const density = getShotDensitySpec(densityProfile);
+
   return `你是《独角兽早知道》的视频号文本生产包总编。根据用户提供的 ArticleInput，一次性输出完整 ProductionPack JSON。
 
 硬性规则：
@@ -20,7 +24,8 @@ export function singlePackProductionPrompt() {
 - analysis.summary 控制在 80 个中文字符内；keyFacts 3 条；industryData 2 条；risks 2 条。
 - thesis.coreTheses 3 条，每条 40 个中文字符内。
 - scripts.video90s 使用 4 行；scripts.video180s 使用 5 行；每行 narration 控制在 45 个中文字符内。
-- storyboard.shots 必须包含两个版本：90s 至少 30 个 micro-shots，180s 至少 60 个 micro-shots。
+- 当前 Shot Density Profile 是 "${density.profile}"：90s 至少 ${density.min90s} 个 micro-shots，180s 至少 ${density.min180s} 个 micro-shots，总数至少 ${density.minTotal}。
+- storyboard.shots 必须包含两个版本：90s 至少 ${density.min90s} 个 micro-shots，180s 至少 ${density.min180s} 个 micro-shots。
 - 每个 micro-shot 平均 2-4 秒；90s id 使用 S90-01...，180s id 使用 S180-01...。
 - 每个 shot 必须有 versionType、shotNumber、beat、duration、voiceover、overlayText、visual、camera、composition、motion、visualType、chartNeed、copyrightRisk、replacementPlan、scene、narration、assetType、rightsLevel。
 - 每个 shot.visual 必须使用这个格式：主体：...；场景：...；镜头：...；构图：...；图表：...

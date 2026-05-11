@@ -17,7 +17,7 @@ describe("normalizeProductionPack", () => {
       }
     });
 
-    expect(normalized.storyboard.shots.length).toBeGreaterThanOrEqual(90);
+    expect(normalized.storyboard.shots.length).toBeGreaterThanOrEqual(72);
     for (const shot of normalized.storyboard.shots) {
       expect(shot.visual).toContain("主体：");
       expect(shot.visual).toContain("场景：");
@@ -53,13 +53,13 @@ describe("normalizeProductionPack", () => {
     }
   });
 
-  it("expands production studio micro-shots to 30 for 90s and 60 for 180s", () => {
+  it("expands production studio micro-shots to standard 24 for 90s and 48 for 180s by default", () => {
     const normalized = normalizeProductionPack(demoProductionPack);
     const shots90 = normalized.storyboard.shots.filter((shot) => shot.versionType === "90s");
     const shots180 = normalized.storyboard.shots.filter((shot) => shot.versionType === "180s");
 
-    expect(shots90.length).toBeGreaterThanOrEqual(30);
-    expect(shots180.length).toBeGreaterThanOrEqual(60);
+    expect(shots90.length).toBeGreaterThanOrEqual(24);
+    expect(shots180.length).toBeGreaterThanOrEqual(48);
     expect(shots90[0]).toMatchObject({
       versionType: "90s",
       shotNumber: 1
@@ -68,6 +68,13 @@ describe("normalizeProductionPack", () => {
       versionType: "180s",
       shotNumber: 1
     });
+  });
+
+  it("keeps dense 30/60 profile available for high-density editing", () => {
+    const normalized = normalizeProductionPack(demoProductionPack, "dense");
+
+    expect(normalized.storyboard.shots.filter((shot) => shot.versionType === "90s")).toHaveLength(30);
+    expect(normalized.storyboard.shots.filter((shot) => shot.versionType === "180s")).toHaveLength(60);
   });
 
   it("creates one prompt bundle per shot and keeps legacy prompt arrays aligned", () => {

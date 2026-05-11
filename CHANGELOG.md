@@ -1,5 +1,15 @@
 # Changelog
 
+## Batch 13A - Production Studio Edit / Density Profile / Revalidate / Lock
+
+- 新增 Shot Density Profile：`lite`、`standard`、`dense`，默认 `standard`，并让 prompt、normalization、Production Studio gate 和 audit 接收 profile。
+- 新增 `production_studio_edits`、`production_studio_gate_runs`、`production_studio_locks` 三张表和 migration，人工编辑不覆盖原始 AI ProductionPack。
+- 新增 effective ProductionPack resolver，Showcase、Export、Production Studio 和 project JSON 使用 edits overlay 后的 effective 版本。
+- Production Studio 从只读检查页升级为编辑台：支持编辑 shot、prompt、replacementPlan，批量保存、重新校验 Gate、锁定和解除锁定。
+- 新增 Production Studio API：GET state、PATCH edits、POST revalidate、POST lock、POST unlock。
+- Showcase、Export 和 Dashboard 展示 density profile、gate status、lock status、edited count 和 needsFix 状态。
+- Export 增加 Production Studio summary，`storyboard.csv`、`prompt-pack.md`、`rights-check.csv` 使用 effective ProductionPack。
+
 ## Batch 12B - Shot / Prompt Volume Gate and Production Studio Core
 
 - 扩展 ProductionPack schema，支持 90s / 180s micro-shots、shotNumber、camera、composition、motion、copyrightRisk、replacementPlan 和 canonical `promptBundles`。

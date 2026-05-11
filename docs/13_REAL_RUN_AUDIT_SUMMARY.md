@@ -6,14 +6,14 @@
 
 ## 成功项目
 
-- projectId: `eefb58cb-b82a-41ee-af3f-2944f53eded7`
-- agentRunId: `a65695f6-5f6e-4b33-89d1-a0c02c6c27a0`
+- projectId: `ede23f3a-a414-4d9b-8d7d-db2e970b1a6c`
+- agentRunId: `685fb6d4-ef62-4331-a650-4e8fbe7bab01`
 - generationMode: `ai`
 - fallbackUsed: `false`
 - Demo-ready: yes
-- Showcase: `/projects/eefb58cb-b82a-41ee-af3f-2944f53eded7/showcase`
-- Production Studio: `/projects/eefb58cb-b82a-41ee-af3f-2944f53eded7/production-studio`
-- production-pack.md: `/api/projects/eefb58cb-b82a-41ee-af3f-2944f53eded7/exports/production-pack.md`
+- Showcase: `/projects/ede23f3a-a414-4d9b-8d7d-db2e970b1a6c/showcase`
+- Production Studio: `/projects/ede23f3a-a414-4d9b-8d7d-db2e970b1a6c/production-studio`
+- production-pack.md: `/api/projects/ede23f3a-a414-4d9b-8d7d-db2e970b1a6c/exports/production-pack.md`
 
 ## Scores
 
@@ -22,12 +22,15 @@
 - Rights 4/5
 - Overall 4/5
 
-## Batch 12B Gate
+## Batch 13A Density / Gate
+
+- Shot Density Profile: `standard`
+- Gate standard: 90s >= 24, 180s >= 48, total >= 72
 
 - Production Studio Gate: pass
-- 90s shots: 30
-- 180s shots: 60
-- promptBundles: 90
+- 90s shots: 24
+- 180s shots: 48
+- promptBundles: 72
 - prompt count equals shot count: yes
 - unmatched shots: 0
 - unmatched prompts: 0

@@ -56,11 +56,20 @@ export function ProjectShowcaseView({
           ) : null}
           <div className="showcase-warning">
             <strong>Shot / Prompt Gate：</strong>
+            profile: {showcase.productionStudioGate.densityProfile} / lock:{" "}
+            {showcase.productionStudioGate.lockStatus} / last gate:{" "}
+            {showcase.productionStudioGate.latestGateStatus} / edits:{" "}
+            {showcase.productionStudioGate.editedCount} /{" "}
             90s: {showcase.productionStudioGate.shotCount90s} shots / 180s:{" "}
             {showcase.productionStudioGate.shotCount180s} shots / prompts:{" "}
             {showcase.productionStudioGate.promptCount} / alignment:{" "}
             {showcase.productionStudioGate.alignment}
           </div>
+          {showcase.productionStudioGate.lockStatus === "locked" ? (
+            <div className="showcase-warning showcase-warning--ready">
+              Production Studio 已锁版：已锁定交付版本。
+            </div>
+          ) : null}
           {showcase.productionStudioGate.needsFix ? (
             <div className="showcase-warning showcase-warning--blocked">
               需要重跑 / 人工修正

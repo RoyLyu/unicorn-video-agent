@@ -43,6 +43,10 @@ function createShowcase(): ShowcaseViewModel {
     regenerateUrl: "/articles/new",
     fallbackWarning: "当前使用 fallback 结果，请在演示时说明 AI 结果已降级。",
     productionStudioGate: {
+      densityProfile: "dense",
+      lockStatus: "unlocked",
+      latestGateStatus: "pass",
+      editedCount: 0,
       shotCount90s: 30,
       shotCount180s: 60,
       promptCount: 90,

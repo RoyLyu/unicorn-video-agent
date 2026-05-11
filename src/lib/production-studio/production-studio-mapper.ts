@@ -1,4 +1,6 @@
 import type { ProductionPack, RightsRiskLevel } from "@/lib/schemas/production-pack";
+import type { ProductionStudioState } from "@/db/repositories/production-studio-repository";
+import type { ShotDensityProfile } from "./density-profile";
 
 import {
   analyzeShotPromptAlignment,
@@ -31,8 +33,16 @@ export type ProductionStudioRow = {
 export type ProductionStudioViewModel = {
   projectId: string;
   projectTitle: string;
+  densityProfile: ShotDensityProfile;
   summary: ProductionStudioSummary;
   gateLabel: string;
+  editedCount: number;
+  lock: {
+    locked: boolean;
+    lockedAt: string | null;
+    lockNote: string | null;
+  };
+  latestGateRun: ProductionStudioState["latestGateRun"];
   rows: ProductionStudioRow[];
   links: {
     showcase: string;
@@ -46,8 +56,11 @@ export function mapProductionStudioViewModel(input: {
   projectId: string;
   projectTitle: string;
   productionPack: ProductionPack;
+  densityProfile?: ShotDensityProfile;
+  studioState?: ProductionStudioState;
 }): ProductionStudioViewModel {
-  const summary = analyzeShotPromptAlignment(input.productionPack);
+  const densityProfile = input.densityProfile ?? input.studioState?.densityProfile ?? "standard";
+  const summary = analyzeShotPromptAlignment(input.productionPack, densityProfile);
   const promptByShot = new Map(
     getPromptBundles(input.productionPack).map((prompt) => [prompt.shotId, prompt])
   );
@@ -55,8 +68,16 @@ export function mapProductionStudioViewModel(input: {
   return {
     projectId: input.projectId,
     projectTitle: input.projectTitle,
+    densityProfile,
     summary,
     gateLabel: productionStudioGateLabel(summary),
+    editedCount: input.studioState?.edits.length ?? 0,
+    lock: {
+      locked: input.studioState?.lock?.locked ?? false,
+      lockedAt: input.studioState?.lock?.lockedAt ?? null,
+      lockNote: input.studioState?.lock?.lockNote ?? null
+    },
+    latestGateRun: input.studioState?.latestGateRun ?? null,
     rows: input.productionPack.storyboard.shots.map((shot) => {
       const prompt = promptByShot.get(shot.id);
 

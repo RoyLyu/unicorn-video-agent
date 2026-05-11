@@ -4,6 +4,7 @@ import type {
   ProductionPack
 } from "@/lib/schemas/production-pack";
 import { analyzeShotPromptAlignment, type ProductionStudioSummary } from "@/lib/production-studio/shot-prompt-alignment";
+import type { ShotDensityProfile } from "@/lib/production-studio/density-profile";
 
 export type RealRunAuditScorecard = {
   fact_structure_score: number;
@@ -52,6 +53,7 @@ type CreateRealRunAuditReportInput = {
   agentRunId?: string | null;
   fallbackUsed: boolean;
   generationMode: GenerationMode;
+  densityProfile?: ShotDensityProfile;
 };
 
 const styleLock =
@@ -69,7 +71,8 @@ export function createRealRunAuditReport({
   projectId,
   agentRunId = null,
   fallbackUsed,
-  generationMode
+  generationMode,
+  densityProfile = "standard"
 }: CreateRealRunAuditReportInput): RealRunAuditReport {
   const article = auditArticleAnalyst(productionPack);
   const thesis = auditThesisAgent(productionPack);
@@ -78,7 +81,7 @@ export function createRealRunAuditReport({
   const prompt = auditPromptGenerator(productionPack);
   const assetFinder = auditAssetFinder(productionPack);
   const qa = auditQaAgent(productionPack);
-  const productionStudioSummary = analyzeShotPromptAlignment(productionPack);
+  const productionStudioSummary = analyzeShotPromptAlignment(productionPack, densityProfile);
   const studioProblems = auditProductionStudioGate(productionStudioSummary);
   const agentSections = [
     article,
@@ -147,6 +150,7 @@ export function renderRealRunAuditMarkdown(report: RealRunAuditReport) {
     `- production-pack.md: ${report.productionPackDownloadUrl}`,
     `- Demo-ready: ${report.demoReady ? "yes" : "no"}`,
     `- Production Studio Gate: ${report.productionStudioSummary.needsFix ? "需要重跑 / 人工修正" : "pass"}`,
+    `- Shot Density Profile: ${report.productionStudioSummary.densityProfile}`,
     "",
     "## Scores",
     "",
@@ -156,6 +160,7 @@ export function renderRealRunAuditMarkdown(report: RealRunAuditReport) {
     "",
     "## Shot / Prompt Gate",
     "",
+    `- density profile: ${report.productionStudioSummary.densityProfile}`,
     `- 90s shots: ${report.productionStudioSummary.shotCount90s}`,
     `- 180s shots: ${report.productionStudioSummary.shotCount180s}`,
     `- 90s prompts: ${report.productionStudioSummary.promptCount90s}`,
@@ -207,6 +212,7 @@ function auditProductionStudioGate(summary: ProductionStudioSummary): AgentAudit
     : [];
 
   return section("Production Studio Gate", summary.scores.overallScore, [
+    `density profile ${summary.densityProfile}`,
     `90s shots ${summary.shotCount90s}`,
     `180s shots ${summary.shotCount180s}`,
     `90s prompts ${summary.promptCount90s}`,

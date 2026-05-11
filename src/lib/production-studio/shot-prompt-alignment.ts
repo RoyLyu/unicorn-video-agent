@@ -1,8 +1,11 @@
 import type {
   ProductionPack,
-  RightsRiskLevel,
-  StoryboardVersionType
+  RightsRiskLevel
 } from "@/lib/schemas/production-pack";
+import {
+  getShotDensitySpec,
+  type ShotDensityProfile
+} from "./density-profile";
 
 export type ProductionStudioScores = {
   volumeScore: number;
@@ -12,10 +15,13 @@ export type ProductionStudioScores = {
 };
 
 export type ProductionStudioSummary = {
+  densityProfile: ShotDensityProfile;
   shotCount90s: number;
   shotCount180s: number;
+  totalShots: number;
   promptCount90s: number;
   promptCount180s: number;
+  totalPrompts: number;
   unmatchedShots: string[];
   unmatchedPrompts: string[];
   redRisksWithoutReplacement: string[];
@@ -25,14 +31,11 @@ export type ProductionStudioSummary = {
   fixReasons: string[];
 };
 
-const minimumShots: Record<StoryboardVersionType, number> = {
-  "90s": 30,
-  "180s": 60
-};
-
 export function analyzeShotPromptAlignment(
-  productionPack: ProductionPack
+  productionPack: ProductionPack,
+  densityProfile: ShotDensityProfile = "standard"
 ): ProductionStudioSummary {
+  const densitySpec = getShotDensitySpec(densityProfile);
   const shots = productionPack.storyboard.shots;
   const promptBundles = getPromptBundles(productionPack);
   const shotKeys = new Set(shots.map(shotKey));
@@ -45,8 +48,10 @@ export function analyzeShotPromptAlignment(
     .map((prompt) => prompt.shotId);
   const shotCount90s = shots.filter((shot) => shot.versionType === "90s").length;
   const shotCount180s = shots.filter((shot) => shot.versionType === "180s").length;
+  const totalShots = shotCount90s + shotCount180s;
   const promptCount90s = promptBundles.filter((prompt) => prompt.versionType === "90s").length;
   const promptCount180s = promptBundles.filter((prompt) => prompt.versionType === "180s").length;
+  const totalPrompts = promptCount90s + promptCount180s;
   const redRisksWithoutReplacement = productionPack.rightsChecks
     .filter((risk) => risk.level === "red" && !hasReplacement(`${risk.action} ${risk.replacementPlan ?? ""}`))
     .map((risk) => risk.item);
@@ -65,8 +70,10 @@ export function analyzeShotPromptAlignment(
   }
 
   const fixReasons = [
-    shotCount90s < minimumShots["90s"] ? `需要重跑 / 人工修正：90s shots ${shotCount90s} < 30。` : null,
-    shotCount180s < minimumShots["180s"] ? `需要重跑 / 人工修正：180s shots ${shotCount180s} < 60。` : null,
+    shotCount90s < densitySpec.min90s ? `需要重跑 / 人工修正：90s shots ${shotCount90s} < ${densitySpec.min90s}。` : null,
+    shotCount180s < densitySpec.min180s ? `需要重跑 / 人工修正：180s shots ${shotCount180s} < ${densitySpec.min180s}。` : null,
+    totalShots < densitySpec.minTotal ? `需要重跑 / 人工修正：total shots ${totalShots} < ${densitySpec.minTotal}。` : null,
+    totalPrompts !== totalShots ? `需要重跑 / 人工修正：prompt count ${totalPrompts} != shot count ${totalShots}。` : null,
     unmatchedShots.length > 0 ? `需要重跑 / 人工修正：${unmatchedShots.length} 个 shot 缺少 prompt。` : null,
     unmatchedPrompts.length > 0 ? `需要重跑 / 人工修正：${unmatchedPrompts.length} 个 prompt 无法对应 shot。` : null,
     redRisksWithoutReplacement.length > 0 ? `需要重跑 / 人工修正：${redRisksWithoutReplacement.length} 个 red rights risk 缺少替代方案。` : null
@@ -76,19 +83,25 @@ export function analyzeShotPromptAlignment(
     shotCount180s,
     promptCount90s,
     promptCount180s,
+    totalShots,
+    totalPrompts,
     unmatchedShots,
     unmatchedPrompts,
-    redRisksWithoutReplacement
+    redRisksWithoutReplacement,
+    densitySpec
   });
   const needsFix =
     fixReasons.length > 0 ||
     Object.values(scores).some((score) => score < 4);
 
   return {
+    densityProfile,
     shotCount90s,
     shotCount180s,
+    totalShots,
     promptCount90s,
     promptCount180s,
+    totalPrompts,
     unmatchedShots,
     unmatchedPrompts,
     redRisksWithoutReplacement,
@@ -133,21 +146,30 @@ function scoreGate(input: {
   shotCount180s: number;
   promptCount90s: number;
   promptCount180s: number;
+  totalShots: number;
+  totalPrompts: number;
   unmatchedShots: string[];
   unmatchedPrompts: string[];
   redRisksWithoutReplacement: string[];
+  densitySpec: ReturnType<typeof getShotDensitySpec>;
 }): ProductionStudioScores {
   const volumeScore = Math.min(
     5,
     Math.floor(
-      Math.min(input.shotCount90s / minimumShots["90s"], input.shotCount180s / minimumShots["180s"]) * 5
+      Math.min(
+        input.shotCount90s / input.densitySpec.min90s,
+        input.shotCount180s / input.densitySpec.min180s,
+        input.totalShots / input.densitySpec.minTotal
+      ) * 5
     )
   );
   const alignmentPenalty = input.unmatchedShots.length + input.unmatchedPrompts.length;
   const alignmentScore = alignmentPenalty === 0 ? 5 : alignmentPenalty < 3 ? 3 : 2;
   const rightsScore = input.redRisksWithoutReplacement.length === 0 ? 5 : 2;
   const promptVolumeScore =
-    input.promptCount90s >= input.shotCount90s && input.promptCount180s >= input.shotCount180s
+    input.promptCount90s === input.shotCount90s &&
+      input.promptCount180s === input.shotCount180s &&
+      input.totalPrompts === input.totalShots
       ? 5
       : 3;
   const overallScore = Math.min(volumeScore, alignmentScore, rightsScore, promptVolumeScore);

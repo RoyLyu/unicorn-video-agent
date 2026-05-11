@@ -12,6 +12,10 @@ import {
   requiredNegativePrompt,
   visualStyleLock
 } from "./prompts/single-pack-production-prompt";
+import {
+  getShotDensitySpec,
+  type ShotDensityProfile
+} from "@/lib/production-studio/density-profile";
 
 export { visualStyleLock };
 
@@ -31,17 +35,16 @@ const cameraMotions = [
   "俯拍",
   "跟拍"
 ];
-const minimumShotsByVersion: Record<StoryboardVersionType, number> = {
-  "90s": 30,
-  "180s": 60
-};
 const defaultReplacementPlan =
   "替换为自制图表、抽象 AI 商业画面或 placeholder 复核项，不使用真实素材。";
 const usageWarning =
   "仅作为后续素材生成提示，不代表已生成素材；不得生成真实 Logo、新闻图、创始人肖像、招股书截图或可读品牌文字。";
 
-export function normalizeProductionPack(pack: ProductionPack): ProductionPack {
-  const storyboard = ensureStoryboardMinimumShots(pack.storyboard, pack);
+export function normalizeProductionPack(
+  pack: ProductionPack,
+  densityProfile: ShotDensityProfile = "standard"
+): ProductionPack {
+  const storyboard = ensureStoryboardMinimumShots(pack.storyboard, pack, densityProfile);
   const assetPrompts = ensurePromptCoverage(pack.assetPrompts, storyboard);
   const rightsChecks = ensureRightsAlternatives(pack.rightsChecks);
 
@@ -55,12 +58,13 @@ export function normalizeProductionPack(pack: ProductionPack): ProductionPack {
 
 export function ensureStoryboardMinimumShots(
   storyboard: StoryboardResult,
-  pack: ProductionPack
+  pack: ProductionPack,
+  densityProfile: ShotDensityProfile = "standard"
 ): StoryboardResult {
   return {
     shots: [
-      ...normalizeVersionShots(storyboard, pack, "90s"),
-      ...normalizeVersionShots(storyboard, pack, "180s")
+      ...normalizeVersionShots(storyboard, pack, "90s", densityProfile),
+      ...normalizeVersionShots(storyboard, pack, "180s", densityProfile)
     ]
   };
 }
@@ -155,9 +159,11 @@ export function ensureRightsAlternatives(
 function normalizeVersionShots(
   storyboard: StoryboardResult,
   pack: ProductionPack,
-  versionType: StoryboardVersionType
+  versionType: StoryboardVersionType,
+  densityProfile: ShotDensityProfile
 ) {
-  const targetCount = minimumShotsByVersion[versionType];
+  const densitySpec = getShotDensitySpec(densityProfile);
+  const targetCount = versionType === "90s" ? densitySpec.min90s : densitySpec.min180s;
   const sourceLines = versionType === "90s"
     ? pack.scripts.video90s.lines
     : pack.scripts.video180s.lines;

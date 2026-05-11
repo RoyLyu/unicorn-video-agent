@@ -1,5 +1,49 @@
 # 07 Batch Log
 
+## Batch 13A - Production Studio Edit / Density Profile / Revalidate / Lock
+
+目标：把 Production Studio 从只读检查页升级为内部生产编辑台，引入 `lite / standard / dense` Shot Density Profile，默认 `standard`，并通过 edits overlay、deterministic gate revalidate 和 lock 状态驱动 Showcase / Export 的 effective ProductionPack。
+
+完成内容：
+
+- Shot Density Profile：lite 20/40/60、standard 24/48/72、dense 30/60/90
+- `.env.example` 增加 `SHOT_DENSITY_PROFILE=standard`
+- single-pack prompt、normalization、Production Studio scorer 和 real-run audit 支持 density profile
+- `production_studio_edits`
+- `production_studio_gate_runs`
+- `production_studio_locks`
+- effective ProductionPack resolver，人工编辑不覆盖原始 AI JSON
+- Production Studio 可编辑 shot、prompt、replacementPlan
+- 批量保存 edits
+- deterministic “重新校验 Gate”
+- Gate pass 后锁定当前生产包，支持解除锁定
+- Production Studio GET/PATCH/revalidate/lock/unlock API
+- Showcase 展示 density、gate、lock、edited count
+- Export 使用 effective ProductionPack，并在 project JSON 中保留 original + productionStudio summary
+- Dashboard 展示 density、gate、lock 和 needsFix 状态
+
+明确不做：
+
+- AI 生图
+- AI 生视频
+- TTS
+- Remotion
+- 部署
+- 用户系统
+- 自动发布视频号
+- 真实素材下载
+- 调用 AI 重新生成
+- 覆盖原始 AI ProductionPack
+
+验收口径：
+
+- 默认 density profile 为 `standard`
+- 30/60 dense 项目在 standard 和 dense 下继续 pass
+- edits 能形成 effective ProductionPack，original 不变
+- revalidate 不调用 AI，只写入 gate run
+- gate fail 不能 lock，gate pass 可以 lock
+- Showcase / Export 使用 effective ProductionPack
+
 ## Batch 12B - Shot / Prompt Volume Gate and Production Studio Core
 
 目标：把分镜头脚本与 Prompt Generator 升级为内部产品核心能力，真实 AI 输出必须满足 90s 至少 30 shots、180s 至少 60 shots、每个 shot 一个 prompt bundle，且 red rights risk 必须有替代方案。

@@ -47,9 +47,37 @@ describe("Batch 04 export generation", () => {
   });
 
   it("adds Shot / Prompt Gate Summary to production-pack.md", () => {
-    const file = generateExportFile("production-pack.md", normalizeProductionPack(demoProductionPack));
+    const pack = normalizeProductionPack(demoProductionPack, "standard");
+    const file = generateExportFile("production-pack.md", pack, {
+      productionStudio: {
+        densityProfile: "standard",
+        lockStatus: "unlocked",
+        latestGateStatus: "pass",
+        editedCount: 1,
+        summary: {
+          densityProfile: "standard",
+          shotCount90s: 24,
+          shotCount180s: 48,
+          totalShots: 72,
+          promptCount90s: 24,
+          promptCount180s: 48,
+          totalPrompts: 72,
+          unmatchedShots: [],
+          unmatchedPrompts: [],
+          redRisksWithoutReplacement: [],
+          riskCounts: { green: 0, yellow: 0, red: 0, placeholder: 0 },
+          scores: { volumeScore: 5, alignmentScore: 5, rightsScore: 5, overallScore: 5 },
+          needsFix: false,
+          fixReasons: []
+        },
+        originalProductionPack: pack
+      }
+    });
 
     expect(file?.content).toContain("Shot / Prompt Gate Summary");
+    expect(file?.content).toContain("Shot Density Profile：standard");
+    expect(file?.content).toContain("Production Studio Lock Status：unlocked");
+    expect(file?.content).toContain("Edited Fields Count：1");
     expect(file?.content).toContain("90s shot count");
     expect(file?.content).toContain("180s shot count");
     expect(file?.content).toContain("needsFix");
@@ -76,7 +104,7 @@ describe("Batch 04 export generation", () => {
 
     expect(file?.contentType).toBe("text/csv; charset=utf-8");
     expect(lines[0]).toBe(
-      "shotId,materialType,sourceName,sourceUrl,licenseType,riskLevel,commercialAllowed,wechatVideoAllowed,needsAttribution,reviewStatus,notes"
+      "shotId,materialType,sourceName,sourceUrl,licenseType,riskLevel,commercialAllowed,wechatVideoAllowed,needsAttribution,reviewStatus,notes,replacementPlan"
     );
     expect(riskLevels.length).toBeGreaterThan(0);
     expect(riskLevels.every((level) => allowedRiskLevels.has(level))).toBe(true);
@@ -88,6 +116,41 @@ describe("Batch 04 export generation", () => {
 
     expect(file?.contentType).toBe("application/json; charset=utf-8");
     expect(parsed).toEqual(demoProductionPack);
+  });
+
+  it("generates project.json with productionStudio summary when provided", () => {
+    const pack = normalizeProductionPack(demoProductionPack, "standard");
+    const file = generateExportFile("project.json", pack, {
+      productionStudio: {
+        densityProfile: "standard",
+        lockStatus: "locked",
+        latestGateStatus: "pass",
+        editedCount: 2,
+        summary: {
+          densityProfile: "standard",
+          shotCount90s: 24,
+          shotCount180s: 48,
+          totalShots: 72,
+          promptCount90s: 24,
+          promptCount180s: 48,
+          totalPrompts: 72,
+          unmatchedShots: [],
+          unmatchedPrompts: [],
+          redRisksWithoutReplacement: [],
+          riskCounts: { green: 0, yellow: 0, red: 0, placeholder: 0 },
+          scores: { volumeScore: 5, alignmentScore: 5, rightsScore: 5, overallScore: 5 },
+          needsFix: false,
+          fixReasons: []
+        },
+        originalProductionPack: pack
+      }
+    });
+    const parsed = JSON.parse(file?.content ?? "");
+
+    expect(parsed.productionStudio.densityProfile).toBe("standard");
+    expect(parsed.productionStudio.lockStatus).toBe("locked");
+    expect(parsed.productionStudio.editedCount).toBe(2);
+    expect(parsed.productionStudio.originalProductionPack).toBeTruthy();
   });
 
   it("generates prompt-pack.md with image, video and negative prompts", () => {

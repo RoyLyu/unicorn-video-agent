@@ -4,11 +4,30 @@ import { normalizeProductionPack } from "@/lib/ai-agents/normalize-production-pa
 import { demoProductionPack } from "@/lib/mock-pipeline/demo-production-pack";
 
 import { analyzeShotPromptAlignment } from "./shot-prompt-alignment";
+import { readShotDensityProfile } from "./density-profile";
 
 describe("shot prompt alignment", () => {
+  it("defaults shot density profile to standard", () => {
+    expect(readShotDensityProfile({})).toBe("standard");
+  });
+
+  it("passes lite, standard and dense profile thresholds", () => {
+    const densePack = normalizeProductionPack(demoProductionPack, "dense");
+    const standardPack = normalizeProductionPack(demoProductionPack, "standard");
+    const litePack = normalizeProductionPack(demoProductionPack, "lite");
+
+    expect(analyzeShotPromptAlignment(litePack, "lite").needsFix).toBe(false);
+    expect(analyzeShotPromptAlignment(standardPack, "standard").needsFix).toBe(false);
+    expect(analyzeShotPromptAlignment(densePack, "dense").needsFix).toBe(false);
+    expect(analyzeShotPromptAlignment(densePack, "standard").needsFix).toBe(false);
+    expect(analyzeShotPromptAlignment(litePack, "lite").shotCount90s).toBe(20);
+    expect(analyzeShotPromptAlignment(standardPack, "standard").shotCount90s).toBe(24);
+    expect(analyzeShotPromptAlignment(densePack, "dense").shotCount90s).toBe(30);
+  });
+
   it("reports 30/60 shot counts and matching prompt counts for normalized packs", () => {
-    const pack = normalizeProductionPack(demoProductionPack);
-    const summary = analyzeShotPromptAlignment(pack);
+    const pack = normalizeProductionPack(demoProductionPack, "dense");
+    const summary = analyzeShotPromptAlignment(pack, "dense");
 
     expect(summary.shotCount90s).toBeGreaterThanOrEqual(30);
     expect(summary.shotCount180s).toBeGreaterThanOrEqual(60);

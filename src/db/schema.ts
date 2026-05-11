@@ -232,6 +232,53 @@ export const qaResults = sqliteTable("qa_results", {
   createdAt: text("created_at").notNull()
 });
 
+export const productionStudioEdits = sqliteTable("production_studio_edits", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => videoProjects.id, { onDelete: "cascade" }),
+  versionType: text("version_type").notNull(),
+  shotNumber: integer("shot_number").notNull(),
+  editType: text("edit_type").notNull(),
+  patchJson: text("patch_json").notNull(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull()
+});
+
+export const productionStudioGateRuns = sqliteTable("production_studio_gate_runs", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => videoProjects.id, { onDelete: "cascade" }),
+  densityProfile: text("density_profile").notNull(),
+  status: text("status").notNull(),
+  shotCount90s: integer("shot_count_90s").notNull(),
+  shotCount180s: integer("shot_count_180s").notNull(),
+  promptCount: integer("prompt_count").notNull(),
+  unmatchedShotsJson: text("unmatched_shots_json").notNull(),
+  unmatchedPromptsJson: text("unmatched_prompts_json").notNull(),
+  redRisksWithoutReplacementJson: text("red_risks_without_replacement_json").notNull(),
+  scoresJson: text("scores_json").notNull(),
+  needsFix: integer("needs_fix", { mode: "boolean" }).notNull(),
+  fixReasonsJson: text("fix_reasons_json").notNull(),
+  createdAt: text("created_at").notNull()
+});
+
+export const productionStudioLocks = sqliteTable("production_studio_locks", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => videoProjects.id, { onDelete: "cascade" }),
+  locked: integer("locked", { mode: "boolean" }).notNull(),
+  lockedAt: text("locked_at"),
+  lockNote: text("lock_note"),
+  gateRunId: text("gate_run_id").references(() => productionStudioGateRuns.id, {
+    onDelete: "set null"
+  }),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull()
+});
+
 export type ArticleRow = typeof articles.$inferSelect;
 export type VideoProjectRow = typeof videoProjects.$inferSelect;
 export type PublishCopyRow = typeof publishCopies.$inferSelect;
@@ -242,3 +289,6 @@ export type AgentRunRow = typeof agentRuns.$inferSelect;
 export type AgentRunStepRow = typeof agentRunSteps.$inferSelect;
 export type AgentContextSnapshotRow = typeof agentContextSnapshots.$inferSelect;
 export type QaResultRow = typeof qaResults.$inferSelect;
+export type ProductionStudioEditRow = typeof productionStudioEdits.$inferSelect;
+export type ProductionStudioGateRunRow = typeof productionStudioGateRuns.$inferSelect;
+export type ProductionStudioLockRow = typeof productionStudioLocks.$inferSelect;

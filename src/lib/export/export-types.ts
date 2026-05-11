@@ -1,4 +1,6 @@
 import type { ProductionPack } from "@/lib/schemas/production-pack";
+import type { ProductionStudioSummary } from "@/lib/production-studio/shot-prompt-alignment";
+import type { ShotDensityProfile } from "@/lib/production-studio/density-profile";
 
 export const allowedExportFileNames = [
   "production-pack.md",
@@ -31,6 +33,14 @@ export type PublishCopyExportData = {
 export type ExportGenerationOptions = {
   publishCopy?: PublishCopyExportData;
   fallbackWarning?: boolean;
+  productionStudio?: {
+    densityProfile: ShotDensityProfile;
+    lockStatus: "locked" | "unlocked";
+    latestGateStatus: "pass" | "needs_fix" | "not_run";
+    editedCount: number;
+    summary: ProductionStudioSummary;
+    originalProductionPack?: ProductionPack;
+  };
 };
 
 export function isExportFileName(fileName: string): fileName is ExportFileName {

@@ -1,4 +1,5 @@
 import type { ProductionPack } from "@/lib/schemas/production-pack";
+import type { ExportGenerationOptions } from "./export-types";
 import { analyzeShotPromptAlignment } from "@/lib/production-studio/shot-prompt-alignment";
 import { formatRightsRiskMarkdownLine } from "@/lib/rights/rights-display";
 import {
@@ -10,14 +11,14 @@ import {
 
 export function generateProductionPackMarkdown(
   productionPack: ProductionPack,
-  options: { fallbackWarning?: boolean } = {}
+  options: Pick<ExportGenerationOptions, "fallbackWarning" | "productionStudio"> = {}
 ) {
   const article = productionPack.articleInput;
 
   const warning = options.fallbackWarning
     ? "> 当前文件为 fallback/mock 结果，不可投入使用。\n\n"
     : "";
-  const gate = analyzeShotPromptAlignment(productionPack);
+  const gate = options.productionStudio?.summary ?? analyzeShotPromptAlignment(productionPack);
   const needsFixLine = gate.needsFix
     ? "需要重跑 / 人工修正"
     : "pass";
@@ -34,13 +35,19 @@ export function generateProductionPackMarkdown(
 
 ## Shot / Prompt Gate Summary
 
+- Shot Density Profile：${options.productionStudio?.densityProfile ?? gate.densityProfile}
+- Production Studio Lock Status：${options.productionStudio?.lockStatus ?? "unlocked"}
+- Last Gate Run Status：${options.productionStudio?.latestGateStatus ?? "not_run"}
+- Edited Fields Count：${options.productionStudio?.editedCount ?? 0}
 - 90s shot count：${gate.shotCount90s}
 - 180s shot count：${gate.shotCount180s}
+- prompt count：${gate.totalPrompts}
 - 90s prompt count：${gate.promptCount90s}
 - 180s prompt count：${gate.promptCount180s}
 - alignment：${gate.unmatchedShots.length === 0 && gate.unmatchedPrompts.length === 0 ? "pass" : "fail"}
 - red risk replacement gaps：${gate.redRisksWithoutReplacement.length}
 - needsFix：${needsFixLine}
+${options.productionStudio?.lockStatus === "locked" ? "- lock：已锁定交付版本" : "- lock：未锁版，建议先完成 Production Studio 校验。"}
 ${gate.fixReasons.length ? gate.fixReasons.map((reason) => `- ${reason}`).join("\n") : "- 无需重跑。"}
 
 ## 核心摘要

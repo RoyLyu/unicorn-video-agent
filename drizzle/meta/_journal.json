@@ -29,6 +29,13 @@
       "when": 1778320846399,
       "tag": "0003_lazy_genesis",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1778497383805,
+      "tag": "0004_lying_galactus",
+      "breakpoints": true
     }
   ]
 }

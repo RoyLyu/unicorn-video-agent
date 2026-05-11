@@ -263,3 +263,33 @@
 决定：Batch 12B 中 gate 失败的真实 AI ProductionPack 仍可下载，但必须在 Showcase、Export 和 Audit 中显示“需要重跑 / 人工修正”。这不同于 Batch 12A 的 fallback/mock 阻断。
 
 原因：gate 失败说明真实输出需要生产修正，不代表 AI 没有返回真实内容。团队仍需要查看导出内容来定位问题，但不能把它当作 ready 成品。
+
+## D045 - Shot Density 从固定 30/60 改为 profile
+
+决定：Batch 13A 将固定 30/60 shot 规则改为 `lite / standard / dense` 三档：lite 为 20/40/60，standard 为 24/48/72，dense 为 30/60/90。
+
+原因：固定 dense 适合压力测试和高密度剪辑，但日常内部生产需要更可控的默认密度；profile 能让 gate、prompt、normalization、audit 和 Production Studio 统一表达交付标准。
+
+## D046 - 默认内部生产使用 standard
+
+决定：`SHOT_DENSITY_PROFILE` 默认 `standard`，即 90s >= 24、180s >= 48、total >= 72。
+
+原因：standard 比 lite 更接近真实剪辑节奏，又比 dense 更稳定、成本更低；已有 30/60 项目在 standard 与 dense 下都应继续通过。
+
+## D047 - 原始 AI ProductionPack 不被人工编辑覆盖
+
+决定：Production Studio 人工修改写入 `production_studio_edits`，通过 overlay 生成 effective ProductionPack，不回写 `video_projects.production_pack_json`。
+
+原因：原始 AI 输出是审计和回放证据，人工生产修改是后处理状态；两者分离才能比较 original / effective，也能避免误判模型原始质量。
+
+## D048 - Showcase / Export 使用 effective ProductionPack
+
+决定：Showcase、Export、Production Studio 和 `project.json` 优先使用 edits overlay 后的 effective ProductionPack；`project.json` 同时保留 original 和 productionStudio summary。
+
+原因：内部生产交付需要反映人工修正后的可用版本，但仍必须保留原始 AI 包和 Studio 状态，便于审计与复核。
+
+## D049 - Production Studio 重新校验不调用 AI
+
+决定：`POST /api/projects/[projectId]/production-studio/revalidate` 只读取 effective ProductionPack 并执行 deterministic gate check，不调用 AI、不读取 API key、不下载素材。
+
+原因：revalidate 是生产编辑后的结构和合规检查，不是重新生成。这样能保持编辑台响应稳定，也不破坏 strict real output policy。

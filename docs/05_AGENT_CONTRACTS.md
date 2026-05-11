@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-Batch 12B 接入真实 AI 文本 Agent pipeline 的生产工作台门禁。本文件定义本地 mock Agent、真实 AI Agent、Agent 管理层、ProductionPack、文本导出、审阅记录、公开 demo 数据和 Production Studio 的输入输出边界。
+Batch 13A 在 Batch 12B 的真实 AI 文本 Agent pipeline 与生产工作台门禁上，新增 Shot Density Profile、人工 edits overlay、deterministic revalidate 和锁版状态。本文件定义本地 mock Agent、真实 AI Agent、Agent 管理层、ProductionPack、文本导出、审阅记录、公开 demo 数据和 Production Studio 的输入输出边界。
 
 ## Article Input Contract
 
@@ -37,10 +37,11 @@ Batch 12B 起，ProductionPack 还必须支持：
 - `assetPrompts.promptBundles[]`：canonical prompt 单元，按 `versionType + shotNumber + shotId` 对应唯一 shot
 - `rightsChecks[].replacementPlan`：red 项必须存在
 
-真实 AI 成品门禁：
+真实 AI 成品门禁由 Shot Density Profile 决定：
 
-- 90s shots >= 30
-- 180s shots >= 60
+- `lite`：90s shots >= 20，180s shots >= 40，total >= 60
+- `standard`：90s shots >= 24，180s shots >= 48，total >= 72
+- `dense`：90s shots >= 30，180s shots >= 60，total >= 90
 - `promptBundles.length === storyboard.shots.length`
 - 每个 shot 都能找到 prompt bundle，每个 prompt bundle 都能反查 shot
 - red rights risk 必须有替代方案
@@ -63,7 +64,7 @@ AI Agent 执行顺序固定为：
 6. Asset Finder
 7. QA Agent
 
-Batch 12A 起，真实输出模式不允许 fallback/mock 冒充成功成品。Batch 12B 的 shot/prompt gate 失败时，Audit、Showcase 和 Export 必须显示“需要重跑 / 人工修正”。
+Batch 12A 起，真实输出模式不允许 fallback/mock 冒充成功成品。Batch 12B/13A 的 shot/prompt gate 失败时，Audit、Showcase 和 Export 必须显示“需要重跑 / 人工修正”。
 
 单个 AI Agent 失败或 schema 不通过时，只有显式 fast demo 或开发测试才允许 fallback。真实生产和真实审计必须 fail loudly。
 
@@ -80,6 +81,16 @@ Batch 12B 导出要求：
 - `production-pack.md` 必须包含 Shot / Prompt Gate Summary。
 - `storyboard.csv` 必须包含 `versionType`。
 - `prompt-pack.md` 必须按 `versionType + shotNumber` 输出 prompt bundles。
+- Batch 13A 后，导出 API route 必须先解析 Production Studio edits overlay，使用 effective ProductionPack 输出 storyboard、prompt、rights 和 production-pack。
+- `project.json` 必须保留 original ProductionPack 与 productionStudio summary，避免人工编辑覆盖原始 AI 证据。
+
+## Production Studio Contract
+
+- `production_studio_edits` 只保存 patch，不覆盖原始 AI ProductionPack。
+- `production_studio_gate_runs` 记录 density profile、counts、unmatched shots/prompts、red replacement gaps、scores、needsFix 和 fix reasons。
+- `production_studio_locks` 只记录锁版状态；只有最近 gate run 为 pass 时允许 lock。
+- revalidate、lock、unlock 和 edits API 不调用 AI、不读取 API key、不下载素材。
+- Showcase / Export / Studio 使用 effective ProductionPack，同时显示 density、gate、lock 和 edited count。
 
 ## Review Contract
 

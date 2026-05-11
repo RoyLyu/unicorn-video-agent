@@ -196,4 +196,43 @@ CREATE TABLE IF NOT EXISTS qa_results (
   publish_qa_json TEXT NOT NULL,
   created_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS production_studio_edits (
+  id TEXT PRIMARY KEY NOT NULL,
+  project_id TEXT NOT NULL REFERENCES video_projects(id) ON DELETE CASCADE,
+  version_type TEXT NOT NULL,
+  shot_number INTEGER NOT NULL,
+  edit_type TEXT NOT NULL,
+  patch_json TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS production_studio_gate_runs (
+  id TEXT PRIMARY KEY NOT NULL,
+  project_id TEXT NOT NULL REFERENCES video_projects(id) ON DELETE CASCADE,
+  density_profile TEXT NOT NULL,
+  status TEXT NOT NULL,
+  shot_count_90s INTEGER NOT NULL,
+  shot_count_180s INTEGER NOT NULL,
+  prompt_count INTEGER NOT NULL,
+  unmatched_shots_json TEXT NOT NULL,
+  unmatched_prompts_json TEXT NOT NULL,
+  red_risks_without_replacement_json TEXT NOT NULL,
+  scores_json TEXT NOT NULL,
+  needs_fix INTEGER NOT NULL,
+  fix_reasons_json TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS production_studio_locks (
+  id TEXT PRIMARY KEY NOT NULL,
+  project_id TEXT NOT NULL REFERENCES video_projects(id) ON DELETE CASCADE,
+  locked INTEGER NOT NULL,
+  locked_at TEXT,
+  lock_note TEXT,
+  gate_run_id TEXT REFERENCES production_studio_gate_runs(id) ON DELETE SET NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 `;

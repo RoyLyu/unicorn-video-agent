@@ -11,6 +11,7 @@ import {
 import { getReviewData } from "@/db/repositories/review-repository";
 import { readAiPolicy } from "@/lib/ai/ai-policy";
 import { loadProjectPack } from "@/lib/server/project-pack";
+import { getProductionStudioPayload } from "@/lib/server/production-studio-service";
 import { mapShowcaseViewModel } from "@/lib/showcase/showcase-mapper";
 
 export const runtime = "nodejs";
@@ -33,12 +34,21 @@ export default async function ShowcasePage({
     ? getAgentRunDetailSafely(latestAgentRun.id)
     : null;
   const reviewData = getReviewDataSafely(projectId);
+  const productionStudioPayload = getProductionStudioPayload(projectId);
   const showcase = mapShowcaseViewModel({
     project: saved.project,
-    productionPack: saved.productionPack,
+    productionPack: productionStudioPayload?.effectiveProductionPack ?? saved.productionPack,
     reviewData,
     latestAgentRun,
-    latestAgentRunDetail
+    latestAgentRunDetail,
+    productionStudioState: productionStudioPayload
+      ? {
+          densityProfile: productionStudioPayload.densityProfile,
+          edits: productionStudioPayload.edits,
+          latestGateRun: productionStudioPayload.latestGateRun,
+          lock: productionStudioPayload.lock
+        }
+      : undefined
   });
   const policy = readAiPolicy();
 
