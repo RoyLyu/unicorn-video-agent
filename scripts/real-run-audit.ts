@@ -12,6 +12,7 @@ import {
   parseShotDensityProfile,
   type ShotDensityProfile
 } from "@/lib/production-studio/density-profile";
+import { analyzeReportCompleteness } from "@/lib/production-studio/report-completeness";
 import {
   createRealRunAuditReport,
   renderRealRunAuditMarkdown
@@ -74,8 +75,7 @@ async function main() {
       reason: `Audit AI request failed with ${response.status}`,
       responseBody: body
     });
-    process.exitCode = 1;
-    return;
+    process.exit(1);
   }
 
   const body = (await response.json()) as AiProductionPackResponse;
@@ -99,8 +99,7 @@ async function main() {
       responseBody: JSON.stringify(body, null, 2),
       productionPack: body.productionPack
     });
-    process.exitCode = 1;
-    return;
+    process.exit(1);
   }
 
   const auditReport = createRealRunAuditReport({
@@ -115,6 +114,7 @@ async function main() {
     "production-pack.md",
     body.productionPack
   );
+  const reportCompleteness = analyzeReportCompleteness(productionPackExport?.content ?? "");
   const markdown = [
     renderRealRunAuditMarkdown(auditReport),
     "",
@@ -122,22 +122,27 @@ async function main() {
     "",
     productionPackExport
       ? "- production-pack.md generated in memory: yes"
-      : "- production-pack.md generated in memory: no"
+      : "- production-pack.md generated in memory: no",
+    `- report_completeness_score: ${reportCompleteness.reportCompletenessScore}/5`,
+    `- report field completeness: ${reportCompleteness.reportFieldCompleteness}`,
+    `- missingReportFields: ${reportCompleteness.missingReportFields.join(" / ") || "none"}`
   ].join("\n");
 
   if (
     !args.allowFallback &&
     (auditReport.productionStudioSummary.needsFix ||
+      reportCompleteness.reportFieldCompleteness === "fail" ||
       auditReport.scorecard.overall_demo_readiness_score < 4)
   ) {
     await writeFailedArtifacts({
-      reason: "需要重跑 / 人工修正",
+      reason: reportCompleteness.reportFieldCompleteness === "fail"
+        ? `需要重跑 / 人工修正：报告字段缺失（${reportCompleteness.missingReportFields.join(" / ")}）`
+        : "需要重跑 / 人工修正",
       responseBody: JSON.stringify(body, null, 2),
       productionPack: body.productionPack,
       reportMarkdown: markdown
     });
-    process.exitCode = 1;
-    return;
+    process.exit(1);
   }
 
   await mkdir(outputDir, { recursive: true });
@@ -149,6 +154,7 @@ async function main() {
   console.log(`QA report: ${qaReportPath}`);
   console.log(`Showcase: /projects/${body.projectId}/showcase`);
   console.log(`Shot Density Profile: ${args.densityProfile}`);
+  process.exit(0);
 }
 
 function parseArgs(argv: string[]): AuditArgs {

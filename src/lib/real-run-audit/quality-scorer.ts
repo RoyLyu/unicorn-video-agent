@@ -20,6 +20,7 @@ export type RealRunAuditScorecard = {
   production_method_score: number;
   editing_readiness_score: number;
   prompt_field_completeness_score: number;
+  report_completeness_score: number;
   overall_demo_readiness_score: number;
 };
 
@@ -118,6 +119,7 @@ export function createRealRunAuditReport({
     production_method_score: productionStudioSummary.scores.productionMethodScore,
     editing_readiness_score: productionStudioSummary.scores.editingReadinessScore,
     prompt_field_completeness_score: productionStudioSummary.scores.promptFieldCompletenessScore,
+    report_completeness_score: productionStudioSummary.scores.reportCompletenessScore,
     overall_demo_readiness_score: clampScore(
       Math.min(
         Math.floor(
@@ -193,6 +195,9 @@ export function renderRealRunAuditMarkdown(report: RealRunAuditReport) {
     `- production method score: ${report.productionStudioSummary.scores.productionMethodScore}/5`,
     `- editing readiness score: ${report.productionStudioSummary.scores.editingReadinessScore}/5`,
     `- prompt field completeness score: ${report.productionStudioSummary.scores.promptFieldCompletenessScore}/5`,
+    `- report completeness score: ${report.productionStudioSummary.scores.reportCompletenessScore}/5`,
+    `- report field completeness: ${report.productionStudioSummary.reportFieldCompleteness}`,
+    `- missing report fields: ${report.productionStudioSummary.missingReportFields.join(" / ") || "none"}`,
     ...report.productionStudioSummary.fixReasons.map((reason) => `- ${reason}`),
     "",
     "## Agent Audit",
@@ -248,6 +253,8 @@ function auditProductionStudioGate(summary: ProductionStudioSummary): AgentAudit
     `production method ${summary.scores.productionMethodScore}/5`,
     `editing readiness ${summary.scores.editingReadinessScore}/5`,
     `prompt completeness ${summary.scores.promptFieldCompletenessScore}/5`,
+    `report completeness ${summary.scores.reportCompletenessScore}/5`,
+    `missing report fields ${summary.missingReportFields.join(" / ") || "none"}`,
     `needsFix ${summary.needsFix ? "需要重跑 / 人工修正" : "false"}`
   ], problems);
 }

@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-Batch 13B：AIGC Visual Bible + Shot Prompt Production Contract。
+Batch 13B-Hotfix：Full AIGC Production Report Export。
 
 当前仓库提供：
 
@@ -35,6 +35,7 @@ Batch 13B：AIGC Visual Bible + Shot Prompt Production Contract。
 - Production Studio edits overlay、Gate revalidate 和锁版状态
 - AIGC Creative Direction、Visual Style Bible、Continuity Bible
 - shot-level production contract：shotFunction、productionMethod、editing metadata 和 8 类 prompt 信息
+- `production-pack.md` 完整逐镜头 AIGC 制作表、Prompt/Report completeness gate
 - 冻结成功 Demo 项目和版权风险替代方案展示
 - fallback/mock 成品门禁：Showcase、Export 和 real-run audit 不再把 fallback 当作成功成品
 - 纯函数 mock Agent pipeline
@@ -45,7 +46,7 @@ Batch 13B：AIGC Visual Bible + Shot Prompt Production Contract。
 
 ## MVP 范围
 
-第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 13B 只升级 AIGC 分镜和 Prompt 的生产规格：Creative Direction、Visual Bible、Continuity Bible、shot function、production method、editing metadata 和 prompt field completeness；不调用 AI 重新生成，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
+第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 13B-Hotfix 只修复导出报告和 deterministic gate：`production-pack.md` 作为主生产报告必须输出完整逐镜头 AIGC 制作字段，Prompt completeness 与 Report completeness 分开校验；不调用 AI 重新生成，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
 
 ## 环境变量
 
@@ -118,6 +119,8 @@ tmp/real-run-audit/failed-qa-report.md
 ```
 
 失败审计不会覆盖 `latest-production-pack.json` 与 `latest-qa-report.md`。只有显式传入 `--allowFallback` 才允许生成 fallback 审计报告，但该报告不能冒充 latest success。
+
+Batch 13B-Hotfix 起，审计还会生成并检查 `production-pack.md` 文本本身。缺少 `AIGC 制作总控`、`视觉风格 Bible`、`连续性 Bible`、`逐镜头 AIGC 制作表` 或关键 shot/prompt 字段时，命令会写入 failed artifacts，不覆盖 latest success。
 
 ## Batch 11B 质量验收
 
@@ -336,4 +339,3 @@ src/
     schemas/
     storage/
 ```
-

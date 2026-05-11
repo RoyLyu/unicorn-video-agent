@@ -317,3 +317,21 @@
 决定：每个 shot 必须声明 `productionMethod` 和 `methodReason`，枚举覆盖 text_to_video、image_to_video、text_to_image_edit、motion_graphics、stock_footage、manual_design 和 compositing。
 
 原因：ProductionPack 需要为后续制作团队判断镜头应进入 AI 视频、AI 图像、动效设计、版权候选池、手工设计还是合成流程。
+
+## D054 - production-pack.md 是主生产报告
+
+决定：Batch 13B-Hotfix 起，`production-pack.md` 必须输出完整逐镜头 AIGC 制作字段，包括主体、环境、摄影机、灯光、风格、Production Method、Editing Metadata、Image / Video / Negative Prompt、Style Lock、Usage Warning、禁止项和 Replacement Plan，不允许只输出分镜摘要。
+
+原因：`production-pack.md` 是交给编导、设计和 AIGC 制作人员的主交付报告。Prompt 信息不能只存在于附件，否则制作人员无法从主报告判断每个镜头的执行方式与风险边界。
+
+## D055 - Prompt completeness 与 Report completeness 分开校验
+
+决定：Production Studio gate 同时保留 Prompt Field Completeness 和 Report Field Completeness。Prompt gate 检查 effective ProductionPack 是否有字段，Report gate 检查导出报告是否完整表达这些字段。
+
+原因：AI 输出字段完整并不代表交付报告完整；serializer 漏字段会造成实际交付失败，因此两个 gate 必须独立存在。
+
+## D056 - 报告缺字段是交付失败
+
+决定：如果 `production-pack.md` 缺少 AIGC 制作总控、视觉风格 Bible、连续性 Bible、逐镜头 AIGC 制作表或关键 shot/prompt 字段，Production Studio、Showcase 和 real-run audit 必须显示“需要重跑 / 人工修正”。
+
+原因：报告缺字段不是模型质量小问题，而是生产交付无法执行。即使 ProductionPack JSON 内部有数据，导出层漏出字段也不能被视为 ready 成品。

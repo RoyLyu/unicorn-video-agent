@@ -1,5 +1,14 @@
 # Changelog
 
+## Batch 13B-Hotfix - Full AIGC Production Report Export
+
+- `production-pack.md` 从压缩分镜概览升级为主生产报告，新增中文完整章节：AIGC 制作总控、视觉风格 Bible、连续性 Bible、逐镜头 AIGC 制作表。
+- 每个 shot block 合并 shot 与 prompt bundle，输出镜头编号、时长、主体、环境、摄影机、灯光、风格、production method、editing metadata、prompt、禁用项和 replacement plan。
+- `prompt-pack.md` 增加 Creative Concept、Visual Bible、Continuity Bible 摘要，并按镜头输出 production prompt contract。
+- `storyboard.csv` 与 `rights-check.csv` 改为 production contract 字段集合，red / placeholder 行保证 replacementPlan 非空。
+- 新增 report completeness gate，Production Studio summary、Showcase、audit report 和 lock 判断都能识别报告字段缺失。
+- Showcase 顶部展示 Prompt 字段完整性和报告字段完整性，并提供查看/下载完整 Production Report 入口。
+
 ## Batch 13B - AIGC Visual Bible + Shot Prompt Production Contract
 
 - 扩展 ProductionPack schema，兼容新增 `creativeDirection`、`visualStyleBible`、`continuityBible`。

@@ -91,6 +91,8 @@ export function mapShowcaseViewModel({
       productionMethodScore: productionStudioSummary.scores.productionMethodScore,
       editingReadinessScore: productionStudioSummary.scores.editingReadinessScore,
       promptFieldCompletenessScore: productionStudioSummary.scores.promptFieldCompletenessScore,
+      reportCompletenessScore: productionStudioSummary.scores.reportCompletenessScore,
+      reportFieldCompleteness: productionStudioSummary.reportFieldCompleteness,
       shotFunctionCounts: productionStudioSummary.shotFunctionCounts,
       productionMethodCounts: productionStudioSummary.productionMethodCounts
     },

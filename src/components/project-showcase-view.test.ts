@@ -26,6 +26,10 @@ describe("ProjectShowcaseView final demo status", () => {
     expect(html).toContain("180s: 60 shots");
     expect(html).toContain("Production Studio");
     expect(html).toContain("/projects/project-1/production-studio");
+    expect(html).toContain("Prompt 字段完整性：pass");
+    expect(html).toContain("报告字段完整性：pass");
+    expect(html).toContain("查看完整 Production Report");
+    expect(html).toContain("下载完整 production-pack.md");
   });
 });
 
@@ -57,6 +61,8 @@ function createShowcase(): ShowcaseViewModel {
       productionMethodScore: 5,
       editingReadinessScore: 5,
       promptFieldCompletenessScore: 5,
+      reportCompletenessScore: 5,
+      reportFieldCompleteness: "pass",
       shotFunctionCounts: {},
       productionMethodCounts: {},
       needsFix: false,

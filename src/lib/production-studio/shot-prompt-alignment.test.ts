@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { normalizeProductionPack } from "@/lib/ai-agents/normalize-production-pack";
 import { demoProductionPack } from "@/lib/mock-pipeline/demo-production-pack";
+import { generateProductionPackMarkdown } from "@/lib/export/production-pack-markdown";
 
 import { analyzeShotPromptAlignment } from "./shot-prompt-alignment";
 import { readShotDensityProfile } from "./density-profile";
+import { analyzeReportCompleteness } from "./report-completeness";
 
 describe("shot prompt alignment", () => {
   it("defaults shot density profile to standard", () => {
@@ -109,5 +111,16 @@ describe("shot prompt alignment", () => {
     expect(summary.needsFix).toBe(true);
     expect(summary.fixReasons.join("\n")).toContain("连续性");
     expect(summary.fixReasons.join("\n")).toContain("Prompt");
+  });
+
+  it("includes report completeness in the Production Studio gate", () => {
+    const pack = normalizeProductionPack(demoProductionPack);
+    const summary = analyzeShotPromptAlignment(pack);
+    const report = analyzeReportCompleteness(generateProductionPackMarkdown(pack));
+
+    expect(summary.reportFieldCompleteness).toBe("pass");
+    expect(summary.missingReportFields).toEqual([]);
+    expect(summary.scores.reportCompletenessScore).toBeGreaterThanOrEqual(4);
+    expect(summary.scores.reportCompletenessScore).toBe(report.reportCompletenessScore);
   });
 });

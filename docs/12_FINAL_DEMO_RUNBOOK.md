@@ -120,6 +120,16 @@ pnpm audit:real-run -- --title "新消费品牌上市背后：中国品牌全球
 4. 如果 Visual Bible、Continuity、Editing 或 Prompt Completeness 任一核心项低于 4 分，页面会显示“需要重跑 / 人工修正”，此时不要锁版。
 5. Showcase 会展示 Creative Direction、Visual Bible、Continuity、Shot Function 分布、Production Method 分布和 Prompt Completeness；Export 会把这些信息写入 `production-pack.md`、`storyboard.csv` 和 `prompt-pack.md`。
 
+## Batch 13B-Hotfix 完整 Production Report 检查
+
+演示前下载一次 `production-pack.md`，确认它不是压缩分镜摘要，而是完整 Production Report：
+
+- 包含 `AIGC 制作总控`、`视觉风格 Bible`、`连续性 Bible`。
+- 包含 `逐镜头 AIGC 制作表`。
+- 每个镜头 block 至少能看到镜头编号、时长、画面主体、场景环境、摄影机、灯光、风格、Production Method、Method Reason、Cut Type、Transition Logic、Music Cue、SFX Cue、Image Prompt、Video Prompt、Negative Prompt、Replacement Plan 和禁止项。
+- Showcase 顶部显示 `Prompt 字段完整性：pass` 与 `报告字段完整性：pass`。
+- 如果出现“需要重跑 / 人工修正：报告字段缺失”，不要锁版；优先检查 export serializer 和 report completeness gate，而不是重新生成 AI。
+
 ## 推荐 5 个标题
 
 1. 新消费品牌上市背后：中国品牌全球化的第二轮机会来了

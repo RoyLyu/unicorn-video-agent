@@ -203,6 +203,9 @@
 
 ## Batch 13B 后续建议
 
+- [x] Batch 13B-Hotfix：`production-pack.md` 输出完整逐镜头 AIGC 制作表。
+- [x] Batch 13B-Hotfix：`prompt-pack.md`、`storyboard.csv`、`rights-check.csv` 输出 production contract 字段。
+- [x] Batch 13B-Hotfix：新增 report completeness gate，并接入 Production Studio、Showcase 和 real-run audit。
 - [ ] 增加 prompt 版本管理和 prompt diff。
 - [ ] 增加真实 AI 输出质量评分和人工批准开关。
 - [ ] 增加浏览器端流程测试。

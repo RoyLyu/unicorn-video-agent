@@ -72,7 +72,11 @@ export function ProjectShowcaseView({
             {showcase.productionStudioGate.shotFunctionCoverageScore}/5 / Production Method{" "}
             {showcase.productionStudioGate.productionMethodScore}/5 / Editing{" "}
             {showcase.productionStudioGate.editingReadinessScore}/5 / Prompt Completeness{" "}
-            {showcase.productionStudioGate.promptFieldCompletenessScore}/5
+            {showcase.productionStudioGate.promptFieldCompletenessScore}/5 / Report Completeness{" "}
+            {showcase.productionStudioGate.reportCompletenessScore}/5
+          </div>
+          <div className="showcase-warning">
+            Prompt 字段完整性：{showcase.productionStudioGate.promptFieldCompletenessScore >= 4 ? "pass" : "fail"} / 报告字段完整性：{showcase.productionStudioGate.reportFieldCompleteness}
           </div>
           {showcase.productionStudioGate.lockStatus === "locked" ? (
             <div className="showcase-warning showcase-warning--ready">
@@ -89,13 +93,16 @@ export function ProjectShowcaseView({
         <div className="showcase-cta">
           {showcase.blockProductionDownload ? (
             <span className="primary-link is-disabled" aria-disabled="true">
-              下载 production-pack.md
+              下载完整 production-pack.md
             </span>
           ) : (
             <a className="primary-link" href={showcase.links.downloadProductionPack}>
-              下载 production-pack.md
+              下载完整 production-pack.md
             </a>
           )}
+          <a className="ghost-button" href={showcase.links.downloadProductionPack}>
+            查看完整 Production Report
+          </a>
           {showcase.blockProductionDownload ? (
             <Link className="ghost-button" href={showcase.regenerateUrl}>
               重新生成真实 AI 版本

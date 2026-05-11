@@ -2,55 +2,59 @@ import type { ProductionPack } from "@/lib/schemas/production-pack";
 import { csvRow } from "./export-utils";
 
 const header = [
-  "shotId",
+  "shotCode",
+  "versionType",
   "materialType",
-  "sourceName",
-  "sourceUrl",
-  "licenseType",
   "riskLevel",
-  "commercialAllowed",
-  "wechatVideoAllowed",
-  "needsAttribution",
+  "reason",
+  "replacementPlan",
+  "productionMethod",
+  "usageStatus",
   "reviewStatus",
-  "notes",
-  "replacementPlan"
+  "sourceUrl",
+  "notes"
 ];
 
 export function generateRightsCheckCsv(productionPack: ProductionPack) {
   const rows = productionPack.rightsChecks.map((risk, index) => {
     const shot = productionPack.storyboard.shots[index];
+    const replacementPlan =
+      risk.replacementPlan ??
+      shot?.replacementPlan ??
+      (risk.level === "red" || risk.level === "placeholder"
+        ? "替换为自制图表、抽象 AI 商业画面或 placeholder 复核项，不使用真实素材。"
+        : "");
 
     return csvRow([
-      shot?.id ?? `R${String(index + 1).padStart(2, "0")}`,
+      shot?.shotCode ?? shot?.id ?? `R${String(index + 1).padStart(2, "0")}`,
+      shot?.versionType ?? "",
       shot?.assetType ?? "material",
-      risk.item,
-      "",
-      licenseTypeForRisk(risk.level),
       risk.level,
-      risk.level === "green",
-      risk.level === "green",
-      risk.level === "yellow",
+      risk.reason,
+      replacementPlan,
+      shot?.productionMethod ?? "",
+      usageStatusForRisk(risk.level),
       risk.level === "green" ? "ready" : "needs_review",
-      `${risk.reason} ${risk.action}`,
-      risk.replacementPlan ?? ""
+      "",
+      `${risk.item} ${risk.action}`
     ]);
   });
 
   return [header.join(","), ...rows].join("\n");
 }
 
-function licenseTypeForRisk(level: ProductionPack["rightsChecks"][number]["level"]) {
+function usageStatusForRisk(level: ProductionPack["rightsChecks"][number]["level"]) {
   if (level === "green") {
-    return "self-made-or-cleared";
+    return "ready";
   }
 
   if (level === "yellow") {
-    return "manual-review-required";
+    return "manual_review";
   }
 
   if (level === "red") {
     return "do-not-use";
   }
 
-  return "placeholder";
+  return "placeholder_review";
 }

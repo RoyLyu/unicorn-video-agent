@@ -8,6 +8,7 @@ import {
   getShotDensitySpec,
   type ShotDensityProfile
 } from "./density-profile";
+import { analyzeProductionPackReportCompleteness } from "./report-completeness";
 
 export type ProductionStudioScores = {
   volumeScore: number;
@@ -20,6 +21,7 @@ export type ProductionStudioScores = {
   productionMethodScore: number;
   editingReadinessScore: number;
   promptFieldCompletenessScore: number;
+  reportCompletenessScore: number;
   overallScore: number;
 };
 
@@ -37,6 +39,8 @@ export type ProductionStudioSummary = {
   riskCounts: Record<RightsRiskLevel, number>;
   shotFunctionCounts: Record<ShotFunction, number>;
   productionMethodCounts: Record<ProductionMethod, number>;
+  missingReportFields: string[];
+  reportFieldCompleteness: "pass" | "fail";
   scores: ProductionStudioScores;
   needsFix: boolean;
   fixReasons: string[];
@@ -108,6 +112,7 @@ export function analyzeShotPromptAlignment(
   const shotFunctionCounts = countShotFunctions(shots);
   const productionMethodCounts = countProductionMethods(shots);
   const contractScores = scoreAigcContract(productionPack, promptBundles);
+  const reportCompleteness = analyzeProductionPackReportCompleteness(productionPack);
 
   const fixReasons = [
     shotCount90s < densitySpec.min90s ? `需要重跑 / 人工修正：90s shots ${shotCount90s} < ${densitySpec.min90s}。` : null,
@@ -123,7 +128,8 @@ export function analyzeShotPromptAlignment(
     contractScores.shotFunctionCoverageScore < 4 ? "需要重跑 / 人工修正：镜头功能覆盖不足或重复过多。" : null,
     contractScores.productionMethodScore < 4 ? "需要重跑 / 人工修正：Production Method 覆盖不足。" : null,
     contractScores.editingReadinessScore < 4 ? "需要重跑 / 人工修正：剪辑结构字段不完整。" : null,
-    contractScores.promptFieldCompletenessScore < 4 ? "需要重跑 / 人工修正：Prompt production contract 字段不完整。" : null
+    contractScores.promptFieldCompletenessScore < 4 ? "需要重跑 / 人工修正：Prompt production contract 字段不完整。" : null,
+    reportCompleteness.reportFieldCompleteness === "fail" ? `需要重跑 / 人工修正：报告字段缺失（${reportCompleteness.missingReportFields.join(" / ")}）。` : null
   ].filter(Boolean) as string[];
   const baseScores = scoreGate({
     shotCount90s,
@@ -140,10 +146,16 @@ export function analyzeShotPromptAlignment(
   const scores = {
     ...baseScores,
     ...contractScores,
-    overallScore: Math.min(baseScores.overallScore, ...Object.values(contractScores))
+    reportCompletenessScore: reportCompleteness.reportCompletenessScore,
+    overallScore: Math.min(
+      baseScores.overallScore,
+      ...Object.values(contractScores),
+      reportCompleteness.reportCompletenessScore
+    )
   };
   const needsFix =
     fixReasons.length > 0 ||
+    reportCompleteness.reportFieldCompleteness === "fail" ||
     Object.values(scores).some((score) => score < 4);
 
   return {
@@ -160,6 +172,8 @@ export function analyzeShotPromptAlignment(
     riskCounts,
     shotFunctionCounts,
     productionMethodCounts,
+    missingReportFields: reportCompleteness.missingReportFields,
+    reportFieldCompleteness: reportCompleteness.reportFieldCompleteness,
     scores,
     needsFix,
     fixReasons: needsFix && fixReasons.length === 0

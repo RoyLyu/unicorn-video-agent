@@ -72,6 +72,8 @@ export type ShowcaseProductionStudioGate = {
   productionMethodScore: number;
   editingReadinessScore: number;
   promptFieldCompletenessScore: number;
+  reportCompletenessScore: number;
+  reportFieldCompleteness: "pass" | "fail";
   shotFunctionCounts: Record<string, number>;
   productionMethodCounts: Record<string, number>;
 };

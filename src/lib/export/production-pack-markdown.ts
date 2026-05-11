@@ -1,6 +1,9 @@
 import type { ProductionPack } from "@/lib/schemas/production-pack";
 import type { ExportGenerationOptions } from "./export-types";
-import { analyzeShotPromptAlignment } from "@/lib/production-studio/shot-prompt-alignment";
+import {
+  analyzeShotPromptAlignment,
+  getPromptBundles
+} from "@/lib/production-studio/shot-prompt-alignment";
 import { formatRightsRiskMarkdownLine } from "@/lib/rights/rights-display";
 import {
   investmentDisclaimer,
@@ -47,10 +50,13 @@ export function generateProductionPackMarkdown(
 - alignment：${gate.unmatchedShots.length === 0 && gate.unmatchedPrompts.length === 0 ? "pass" : "fail"}
 - red risk replacement gaps：${gate.redRisksWithoutReplacement.length}
 - needsFix：${needsFixLine}
+- prompt field completeness：${(gate.scores.promptFieldCompletenessScore ?? gate.scores.overallScore) >= 4 ? "pass" : "fail"}
+- report field completeness：${gate.reportFieldCompleteness ?? "pass"}
+- report completeness score：${gate.scores.reportCompletenessScore ?? gate.scores.overallScore}/5
 ${options.productionStudio?.lockStatus === "locked" ? "- lock：已锁定交付版本" : "- lock：未锁版，建议先完成 Production Studio 校验。"}
 ${gate.fixReasons.length ? gate.fixReasons.map((reason) => `- ${reason}`).join("\n") : "- 无需重跑。"}
 
-## Creative Direction
+## AIGC 制作总控
 
 - Creative Concept：${productionPack.creativeDirection?.creativeConcept ?? "未提供"}
 - Visual Metaphor：${productionPack.creativeDirection?.visualMetaphor ?? "未提供"}
@@ -61,24 +67,54 @@ ${gate.fixReasons.length ? gate.fixReasons.map((reason) => `- ${reason}`).join("
 - Audience Takeaway：${productionPack.creativeDirection?.audienceTakeaway ?? "未提供"}
 - Production Notes：${productionPack.creativeDirection?.productionNotes ?? "未提供"}
 
-## Visual Style Bible
+## 视觉风格 Bible
 
-- Aspect Ratio：${productionPack.visualStyleBible?.aspectRatio ?? "未提供"}
-- Image Type：${productionPack.visualStyleBible?.imageType ?? "未提供"}
-- Color System：${productionPack.visualStyleBible ? `${productionPack.visualStyleBible.colorSystem.primaryColor} / ${productionPack.visualStyleBible.colorSystem.secondaryColor} / ${productionPack.visualStyleBible.colorSystem.accentColor}` : "未提供"}
-- Lighting：${productionPack.visualStyleBible ? `${productionPack.visualStyleBible.lightingSystem.contrast} / ${productionPack.visualStyleBible.lightingSystem.temperature} / ${productionPack.visualStyleBible.lightingSystem.atmosphere}` : "未提供"}
-- Forbidden Elements：${productionPack.visualStyleBible?.forbiddenElements.join(" / ") ?? "未提供"}
+- 画幅：${productionPack.visualStyleBible?.aspectRatio ?? "未提供"}
+- 影像类型：${productionPack.visualStyleBible?.imageType ?? "未提供"}
+- 色彩系统：
+  - primaryColor：${productionPack.visualStyleBible?.colorSystem.primaryColor ?? "未提供"}
+  - secondaryColor：${productionPack.visualStyleBible?.colorSystem.secondaryColor ?? "未提供"}
+  - accentColor：${productionPack.visualStyleBible?.colorSystem.accentColor ?? "未提供"}
+  - forbiddenColors：${formatList(productionPack.visualStyleBible?.colorSystem.forbiddenColors)}
+- 光线系统：
+  - contrast：${productionPack.visualStyleBible?.lightingSystem.contrast ?? "未提供"}
+  - temperature：${productionPack.visualStyleBible?.lightingSystem.temperature ?? "未提供"}
+  - keyLightDirection：${productionPack.visualStyleBible?.lightingSystem.keyLightDirection ?? "未提供"}
+  - atmosphere：${productionPack.visualStyleBible?.lightingSystem.atmosphere ?? "未提供"}
+- 材质系统：
+  - metal：${productionPack.visualStyleBible?.materialSystem.metal ?? "未提供"}
+  - glass：${productionPack.visualStyleBible?.materialSystem.glass ?? "未提供"}
+  - dataParticles：${productionPack.visualStyleBible?.materialSystem.dataParticles ?? "未提供"}
+  - paperProspectus：${productionPack.visualStyleBible?.materialSystem.paperProspectus ?? "未提供"}
+  - screenUI：${productionPack.visualStyleBible?.materialSystem.screenUI ?? "未提供"}
+  - otherMaterials：${formatList(productionPack.visualStyleBible?.materialSystem.otherMaterials)}
+- 摄影质感：
+  - realistic：${productionPack.visualStyleBible?.cameraTexture.realistic ?? "未提供"}
+  - semiRealistic：${productionPack.visualStyleBible?.cameraTexture.semiRealistic ?? "未提供"}
+  - motionGraphics：${productionPack.visualStyleBible?.cameraTexture.motionGraphics ?? "未提供"}
+  - threeD：${productionPack.visualStyleBible?.cameraTexture.threeD ?? "未提供"}
+- 字幕风格：
+  - fontMood：${productionPack.visualStyleBible?.typographyStyle.fontMood ?? "未提供"}
+  - placement：${productionPack.visualStyleBible?.typographyStyle.placement ?? "未提供"}
+  - sizeRule：${productionPack.visualStyleBible?.typographyStyle.sizeRule ?? "未提供"}
+  - motionRule：${productionPack.visualStyleBible?.typographyStyle.motionRule ?? "未提供"}
+- 图表风格：
+  - flat：${productionPack.visualStyleBible?.chartStyle.flat ?? "未提供"}
+  - threeD：${productionPack.visualStyleBible?.chartStyle.threeD ?? "未提供"}
+  - transparentHUD：${productionPack.visualStyleBible?.chartStyle.transparentHUD ?? "未提供"}
+  - infoCard：${productionPack.visualStyleBible?.chartStyle.infoCard ?? "未提供"}
+- 禁止项：${formatList(productionPack.visualStyleBible?.forbiddenElements)}
 
-## Continuity Bible
+## 连续性 Bible
 
-- Character：${productionPack.continuityBible?.mainCharacterBible ?? "未提供"}
-- Environment：${productionPack.continuityBible?.environmentBible ?? "未提供"}
-- Objects：${productionPack.continuityBible?.objectBible ?? "未提供"}
-- Color：${productionPack.continuityBible?.colorContinuity ?? "未提供"}
-- Motion：${productionPack.continuityBible?.motionContinuity ?? "未提供"}
-- Graphics：${productionPack.continuityBible?.graphicContinuity ?? "未提供"}
-- Typography：${productionPack.continuityBible?.typographyContinuity ?? "未提供"}
-- Reference Frames：${productionPack.continuityBible?.referenceFramePlan ?? "未提供"}
+- Main Character Bible：${productionPack.continuityBible?.mainCharacterBible ?? "未提供"}
+- Environment Bible：${productionPack.continuityBible?.environmentBible ?? "未提供"}
+- Object Bible：${productionPack.continuityBible?.objectBible ?? "未提供"}
+- Color Continuity：${productionPack.continuityBible?.colorContinuity ?? "未提供"}
+- Motion Continuity：${productionPack.continuityBible?.motionContinuity ?? "未提供"}
+- Graphic Continuity：${productionPack.continuityBible?.graphicContinuity ?? "未提供"}
+- Typography Continuity：${productionPack.continuityBible?.typographyContinuity ?? "未提供"}
+- Reference Frame Plan：${productionPack.continuityBible?.referenceFramePlan ?? "未提供"}
 
 ## Shot Function Summary
 
@@ -140,14 +176,9 @@ ${scriptLines(productionPack.scripts.video180s)}
 
 收束：${productionPack.scripts.video180s.closing}
 
-## 分镜概览
+## 逐镜头 AIGC 制作表
 
-${productionPack.storyboard.shots
-  .map(
-    (shot) =>
-      `- ${shot.id} ${shot.timeRange}：${shot.scene} / ${shot.visual} / ${shot.rightsLevel}`
-  )
-  .join("\n")}
+${renderAigcShotBlocks(productionPack)}
 
 ## 版权风险与替代方案
 
@@ -176,4 +207,83 @@ function summarizeEditing(productionPack: ProductionPack) {
   );
 
   return `cutType=${Array.from(cutTypes).join(" / ") || "未提供"}；pace=${Array.from(paces).join(" / ") || "未提供"}`;
+}
+
+function renderAigcShotBlocks(productionPack: ProductionPack) {
+  const promptsByShot = new Map(
+    getPromptBundles(productionPack).map((prompt) => [
+      promptKey(prompt.versionType, prompt.shotNumber, prompt.shotId),
+      prompt
+    ])
+  );
+
+  return [...productionPack.storyboard.shots]
+    .sort(compareShots)
+    .map((shot) => {
+      const versionType = shot.versionType ?? "90s";
+      const shotNumber = shot.shotNumber ?? 0;
+      const prompt = promptsByShot.get(promptKey(versionType, shotNumber, shot.id));
+      const shotCode = shot.shotCode ?? prompt?.shotCode ?? shot.id;
+      const editing = shot.editing;
+
+      return `### ${shotCode} / ${shot.id}
+
+- 镜头编号：${shotCode}
+- 版本：${versionType}
+- 时长：${shot.duration ?? prompt?.duration ?? shot.timeRange}
+- Beat：${shot.beat ?? editing?.beat ?? ""}
+- Shot Function：${shot.shotFunction ?? ""}
+- 画面主体：${shot.subject ?? prompt?.subject ?? ""}
+- 场景环境：${shot.environment ?? prompt?.environment ?? ""}
+- 摄影机：${shot.camera ?? prompt?.camera ?? ""}
+- 灯光：${shot.lighting ?? prompt?.lighting ?? ""}
+- 风格：${shot.style ?? prompt?.style ?? ""}
+- 构图：${shot.composition ?? ""}
+- 运动：${shot.motion ?? ""}
+- 画面文字：${shot.overlayText ?? shot.scene}
+- 图表需求：${shot.chartNeed ?? ""}
+- Production Method：${shot.productionMethod ?? ""}
+- Method Reason：${shot.methodReason ?? ""}
+- Continuity Assets：${formatList(shot.continuityAssets)}
+- Cut Type：${editing?.cutType ?? ""}
+- Transition Logic：${editing?.transitionLogic ?? ""}
+- Screen Text Timing：${editing?.screenTextTiming ?? ""}
+- Graphic Timing：${editing?.graphicTiming ?? ""}
+- Music Cue：${editing?.musicCue ?? ""}
+- SFX Cue：${editing?.sfxCue ?? ""}
+- Pace：${editing?.pace ?? ""}
+- Roll Type：${editing?.rollType ?? ""}
+- Copyright Risk：${shot.copyrightRisk ?? shot.rightsLevel}
+- Replacement Plan：${prompt?.replacementPlan ?? shot.replacementPlan ?? ""}
+- Image Prompt：${prompt?.imagePrompt ?? ""}
+- Video Prompt：${prompt?.videoPrompt ?? ""}
+- Negative Prompt：${prompt?.negativePrompt ?? ""}
+- Style Lock：${prompt?.styleLock ?? ""}
+- Aspect Ratio：${prompt?.aspectRatio ?? ""}
+- Usage Warning：${prompt?.usageWarning ?? ""}
+- 禁止项：${formatList(prompt?.forbiddenElements) || prompt?.negativeConstraints || prompt?.negativePrompt || ""}`;
+    })
+    .join("\n\n");
+}
+
+function compareShots(
+  a: ProductionPack["storyboard"]["shots"][number],
+  b: ProductionPack["storyboard"]["shots"][number]
+) {
+  const aVersion = a.versionType ?? "90s";
+  const bVersion = b.versionType ?? "90s";
+
+  if (aVersion !== bVersion) {
+    return aVersion === "90s" ? -1 : 1;
+  }
+
+  return (a.shotNumber ?? 0) - (b.shotNumber ?? 0);
+}
+
+function promptKey(versionType: string, shotNumber: number, shotId: string) {
+  return `${versionType}:${shotNumber}:${shotId}`;
+}
+
+function formatList(values?: string[]) {
+  return values?.length ? values.join(" / ") : "未提供";
 }

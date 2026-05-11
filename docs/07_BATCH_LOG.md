@@ -1,5 +1,31 @@
 # 07 Batch Log
 
+## Batch 13B-Hotfix - Full AIGC Production Report Export
+
+目标：修复 Export / Report / Gate 层，让 `production-pack.md` 成为交给编导和 AIGC 制作人的主生产报告，而不是压缩分镜摘要。
+
+完成内容：
+
+- `production-pack.md` 改为中文完整章节：AIGC 制作总控、视觉风格 Bible、连续性 Bible、逐镜头 AIGC 制作表。
+- 逐镜头输出 shot 与 prompt bundle 合并后的 production contract：主体、环境、摄影机、灯光、风格、production method、editing metadata、image/video/negative prompt、style lock、禁止项和 replacementPlan。
+- `prompt-pack.md` 增加 Creative Concept、Visual Bible 和 Continuity Bible 摘要，并补齐 productionMethod、methodReason、continuityAssets 等字段。
+- `storyboard.csv` 输出 production method 与 editing fields。
+- `rights-check.csv` 输出 shot-level replacementPlan，red / placeholder 行不得为空。
+- 新增 report completeness gate，缺字段会显示“需要重跑 / 人工修正”，并进入 Production Studio、Showcase 和 audit 报告。
+
+明确不做：
+
+- AI 生图
+- AI 生视频
+- TTS
+- Remotion
+- 公网部署
+- 真实素材下载
+- 抓取
+- 用户系统
+- 数据库重构
+- 修改 AI pipeline 或 single-pack prompt
+
 ## Batch 13B - AIGC Visual Bible + Shot Prompt Production Contract
 
 目标：将 ProductionPack 升级为可执行 AIGC 视频制作规格，补齐 Creative Direction、Visual Style Bible、Continuity Bible、shot-level production method、editing metadata 和 8 类 prompt 信息。

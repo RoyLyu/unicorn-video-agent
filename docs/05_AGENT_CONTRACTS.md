@@ -78,7 +78,7 @@ Batch 13B 后，Prompt Generator 输出不再只是几句生成词，而是 shot
 - 每个 shot 的 `shotFunction`、`productionMethod`、`methodReason`、subject、environment、lighting、style、continuityAssets 和 editing metadata。
 - 每个 prompt bundle 的 shotCode、duration、subject、environment、camera、lighting、style、negativeConstraints、forbiddenElements 和 replacementPlan。
 
-Production Studio gate 必须校验 Visual Bible、Continuity、Shot Function coverage、Production Method coverage、Editing Readiness 和 Prompt Field Completeness。任一核心项低于 4 分时，结果必须显示“需要重跑 / 人工修正”，并且 Production Studio lock 不允许通过。
+Production Studio gate 必须校验 Visual Bible、Continuity、Shot Function coverage、Production Method coverage、Editing Readiness、Prompt Field Completeness 和 Report Field Completeness。任一核心项低于 4 分或报告字段缺失时，结果必须显示“需要重跑 / 人工修正”，并且 Production Studio lock 不允许通过。
 
 ## Mock Pipeline Tracking Contract
 
@@ -95,6 +95,16 @@ Batch 12B 导出要求：
 - `prompt-pack.md` 必须按 `versionType + shotNumber` 输出 prompt bundles。
 - Batch 13A 后，导出 API route 必须先解析 Production Studio edits overlay，使用 effective ProductionPack 输出 storyboard、prompt、rights 和 production-pack。
 - `project.json` 必须保留 original ProductionPack 与 productionStudio summary，避免人工编辑覆盖原始 AI 证据。
+
+Batch 13B-Hotfix 后，`production-pack.md` 是主生产报告，必须完整输出：
+
+- AIGC 制作总控
+- 视觉风格 Bible
+- 连续性 Bible
+- 逐镜头 AIGC 制作表
+- 每个 shot 的主体、环境、摄影机、灯光、风格、Production Method、Method Reason、Continuity Assets、Editing Metadata、版权风险、Replacement Plan、Image Prompt、Video Prompt、Negative Prompt、Style Lock、Aspect Ratio、Usage Warning 和禁止项
+
+`prompt-pack.md` 是逐镜头 prompt 附件，`storyboard.csv` 是制作表格，`rights-check.csv` 是版权复核 worksheet。四个导出文件都必须从 effective ProductionPack 读取，不调用 AI、不读写服务器文件。
 
 ## Production Studio Contract
 
