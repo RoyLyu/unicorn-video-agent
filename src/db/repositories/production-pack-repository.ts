@@ -23,14 +23,22 @@ export type SavedProductionPack = {
   productionPack: ProductionPack;
 };
 
+type SaveProductionPackOptions = {
+  isDemo?: boolean;
+  status?: string;
+};
+
 export function saveProductionPack(
   productionPack: ProductionPack,
-  client: DbClient = getDbClient()
+  client: DbClient = getDbClient(),
+  options: SaveProductionPackOptions = {}
 ): SavedProductionPack {
   const parsedPack = ProductionPackSchema.parse(productionPack);
   const article = createArticle(parsedPack.articleInput, client);
   const projectId = crypto.randomUUID();
   const now = new Date().toISOString();
+  const status = options.status ?? "mock_saved";
+  const isDemo = options.isDemo ?? false;
 
   client.db.transaction(() => {
     client.db
@@ -40,7 +48,8 @@ export function saveProductionPack(
         articleId: article.id,
         title: parsedPack.articleInput.title,
         sourceName: parsedPack.articleInput.sourceName,
-        status: "mock_saved",
+        status,
+        isDemo,
         productionPackJson: JSON.stringify(parsedPack),
         createdAt: now,
         updatedAt: now
@@ -186,7 +195,8 @@ export function saveProductionPack(
       articleId: article.id,
       title: parsedPack.articleInput.title,
       sourceName: parsedPack.articleInput.sourceName,
-      status: "mock_saved",
+      status,
+      isDemo,
       createdAt: now,
       updatedAt: now
     },

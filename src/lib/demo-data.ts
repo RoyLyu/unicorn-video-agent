@@ -18,7 +18,7 @@ export const navigationItems: Array<{
   label: string;
   description: string;
 }> = [
-  { href: "/", label: "总览入口", description: "Batch 03 SQLite Mock" },
+  { href: "/", label: "总览入口", description: "Batch 08 Real AI Pipeline" },
   { href: "/dashboard", label: "Dashboard", description: "后台总览" },
   { href: "/articles/new", label: "新建文章", description: "静态输入表单" },
   { href: "/articles/demo", label: "Demo 文章", description: "示例文章状态" },
@@ -51,20 +51,20 @@ export const navigationItems: Array<{
 ];
 
 export const batchStatus = {
-  label: "Batch 03 / SQLite Mock",
-  description: "本地 mock 生产包流程，写入 SQLite；不接 AI、云数据库、素材下载、真实导出或自动发布。"
+  label: "Batch 08 / Real AI Pipeline",
+  description: "支持真实 AI 文本生产包生成，并在失败时 fallback 到 mock；不做媒体生成、素材下载或自动发布。"
 };
 
 export const dashboardMetrics = [
   {
     label: "Demo 项目",
-    value: "1",
-    detail: "仅用于 UI Shell 展示"
+    value: "2",
+    detail: "公开安全模拟项目"
   },
   {
-    label: "输出模块",
-    value: "8",
-    detail: "分析、脚本、分镜、版权、导出等"
+    label: "Agent",
+    value: "7",
+    detail: "AI / Mock 运行日志和 QA"
   },
   {
     label: "版权等级",
@@ -246,5 +246,5 @@ export const settings = [
   { label: "栏目名", value: "独角兽早知道" },
   { label: "视频号标准", value: "财经解释型竖屏短视频，90s / 180s 双版本" },
   { label: "版权策略", value: "只使用自制、授权或人工确认可用素材" },
-  { label: "Agent 模式", value: "UI Shell Only，未接入真实 AI" }
+  { label: "Agent 模式", value: "Public Demo Mock，未接入真实 AI" }
 ];

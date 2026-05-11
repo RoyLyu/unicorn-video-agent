@@ -8,6 +8,7 @@ export type RecentProject = {
   title: string;
   sourceName: string;
   status: string;
+  isDemo: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -16,7 +17,40 @@ export type ProjectDetail = RecentProject & {
   articleId: string;
 };
 
+type ListRecentProjectsOptions = {
+  includeDemo?: boolean;
+};
+
 export function listRecentProjects(
+  limit = 10,
+  options: ListRecentProjectsOptions = {},
+  client: DbClient = getDbClient()
+): RecentProject[] {
+  const includeDemo = options.includeDemo ?? true;
+  const query = client.db
+    .select({
+      id: videoProjects.id,
+      title: videoProjects.title,
+      sourceName: videoProjects.sourceName,
+      status: videoProjects.status,
+      isDemo: videoProjects.isDemo,
+      createdAt: videoProjects.createdAt,
+      updatedAt: videoProjects.updatedAt
+    })
+    .from(videoProjects);
+
+  if (!includeDemo) {
+    return query
+      .where(eq(videoProjects.isDemo, false))
+      .orderBy(desc(videoProjects.createdAt))
+      .limit(limit)
+      .all();
+  }
+
+  return query.orderBy(desc(videoProjects.createdAt)).limit(limit).all();
+}
+
+export function listDemoProjects(
   limit = 10,
   client: DbClient = getDbClient()
 ): RecentProject[] {
@@ -26,13 +60,24 @@ export function listRecentProjects(
       title: videoProjects.title,
       sourceName: videoProjects.sourceName,
       status: videoProjects.status,
+      isDemo: videoProjects.isDemo,
       createdAt: videoProjects.createdAt,
       updatedAt: videoProjects.updatedAt
     })
     .from(videoProjects)
+    .where(eq(videoProjects.isDemo, true))
     .orderBy(desc(videoProjects.createdAt))
     .limit(limit)
     .all();
+}
+
+export function deleteDemoProjects(client: DbClient = getDbClient()): number {
+  const result = client.db
+    .delete(videoProjects)
+    .where(eq(videoProjects.isDemo, true))
+    .run();
+
+  return result.changes;
 }
 
 export function getProjectById(
@@ -55,6 +100,7 @@ export function toProjectDetail(row: VideoProjectRow): ProjectDetail {
     title: row.title,
     sourceName: row.sourceName,
     status: row.status,
+    isDemo: row.isDemo,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt
   };

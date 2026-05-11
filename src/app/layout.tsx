@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "独角兽早知道 Video Agent MVP",
-  description: "文章转微信视频号生产包的 Batch 01 后台 UI Shell"
+  description: "文章转微信视频号生产包的本地 Agent 管理与演示系统"
 };
 
 export default function RootLayout({

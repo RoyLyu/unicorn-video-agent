@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
+import { DemoModeBanner } from "@/components/demo-mode-banner";
 import { PageHeader } from "@/components/page-header";
+import { ProjectNav } from "@/components/project-nav";
 import { ProductionPackRightsView } from "@/components/production-pack-rights-view";
 import { loadProjectPack } from "@/lib/server/project-pack";
 
@@ -21,10 +24,17 @@ export default async function RightsPage({
 
   return (
     <main className="content-stack">
+      {saved.project.isDemo ? <DemoModeBanner /> : null}
       <PageHeader
         title="版权风险"
         description="从 SQLite 读取 rightsChecks，展示 green / yellow / red / placeholder 四级版权风险。"
+        actions={
+          <Link className="primary-link" href={`/projects/${projectId}/review`}>
+            进入 Review
+          </Link>
+        }
       />
+      <ProjectNav projectId={projectId} />
       <ProductionPackRightsView productionPack={saved.productionPack} />
     </main>
   );

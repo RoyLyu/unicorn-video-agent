@@ -1,27 +1,50 @@
 import Link from "next/link";
 
 import { DataTable } from "@/components/data-table";
+import { DemoModeBanner } from "@/components/demo-mode-banner";
+import { FinalDemoPath } from "@/components/final-demo-path";
 import { MetricCard } from "@/components/metric-card";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
-import { listRecentProjects, type RecentProject } from "@/db/repositories/project-repository";
+import {
+  getLatestAgentRunForProject,
+  type AgentRunSummary
+} from "@/db/repositories/agent-run-repository";
+import {
+  listDemoProjects,
+  listRecentProjects
+} from "@/db/repositories/project-repository";
+import { getReviewData, type ReviewSummary } from "@/db/repositories/review-repository";
+import { attachLatestAgentRunStatus, type ProjectWithAgentRun } from "@/lib/agents/dashboard-agent-runs";
+import { splitDashboardProjects } from "@/lib/demo-public/dashboard-projects";
 import { dashboardMetrics, exportFiles } from "@/lib/demo-data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export default function DashboardPage() {
-  const projects = getProjectsSafely();
+  const { demoProjects, recentProjects } = getDashboardProjectsSafely();
 
   return (
     <main className="content-stack">
       <PageHeader
         title="Dashboard"
-        description="内部后台总览。当前展示 Batch 03 SQLite 本地持久化项目状态。"
+        description="内部后台总览。当前展示 Batch 06 Demo 项目、普通项目、审阅完成度和导出状态。"
         actions={
-          <Link className="primary-link" href="/articles/new">
-            新建文章
-          </Link>
+          <div className="action-row">
+            <Link className="primary-link" href="/articles/new">
+              新建文章
+            </Link>
+            <Link className="ghost-button" href="/quick-demo">
+              Quick Demo
+            </Link>
+            <Link className="ghost-button" href="/demo">
+              Public Demo
+            </Link>
+            <Link className="ghost-button" href="/agents">
+              Agents
+            </Link>
+          </div>
         }
       />
 
@@ -31,18 +54,33 @@ export default function DashboardPage() {
         ))}
       </section>
 
+      <FinalDemoPath />
+
+      <section className="panel">
+        <h2>公开 Demo 项目</h2>
+        <DemoModeBanner />
+        {demoProjects.length > 0 ? (
+          <ul className="info-list">
+            {demoProjects.map((project) => (
+              <ProjectListItem key={project.id} project={project} />
+            ))}
+          </ul>
+        ) : (
+          <div className="empty-state">
+            <p>当前没有公开 demo 项目。请从 `/demo` 重置公开演示数据。</p>
+            <Link className="primary-link" href="/demo">
+              打开 Public Demo
+            </Link>
+          </div>
+        )}
+      </section>
+
       <section className="panel">
         <h2>最近项目</h2>
-        {projects.length > 0 ? (
+        {recentProjects.length > 0 ? (
           <ul className="info-list">
-            {projects.map((project) => (
-              <li key={project.id}>
-                <strong>{project.title}</strong>
-                <span>{project.sourceName}</span>
-                <br />
-                <StatusBadge>{project.status}</StatusBadge>{" "}
-                <Link href={`/projects/${project.id}/analysis`}>查看项目</Link>
-              </li>
+            {recentProjects.map((project) => (
+              <ProjectListItem key={project.id} project={project} />
             ))}
           </ul>
         ) : (
@@ -58,7 +96,7 @@ export default function DashboardPage() {
       <section className="panel">
         <h2>未来导出文件</h2>
         <DataTable
-          caption="Batch 01 仅展示导出计划，不生成文件。"
+          caption="Batch 06 展示文本导出清单，不生成真实媒体文件。"
           rows={[...exportFiles]}
           columns={[
             { key: "filename", header: "文件名", render: (row) => row.filename },
@@ -72,10 +110,90 @@ export default function DashboardPage() {
   );
 }
 
-function getProjectsSafely(): RecentProject[] {
+function getDashboardProjectsSafely(): {
+  demoProjects: ProjectWithAgentRun[];
+  recentProjects: ProjectWithAgentRun[];
+} {
   try {
-    return listRecentProjects();
+    const split = splitDashboardProjects(
+      listDemoProjects(10),
+      listRecentProjects(10, { includeDemo: false })
+    );
+
+    return {
+      demoProjects: attachLatestAgentRunStatus(
+        split.demoProjects,
+        getLatestAgentRunSafely
+      ),
+      recentProjects: attachLatestAgentRunStatus(
+        split.recentProjects,
+        getLatestAgentRunSafely
+      )
+    };
   } catch {
-    return [];
+    return { demoProjects: [], recentProjects: [] };
+  }
+}
+
+function ProjectListItem({ project }: { project: ProjectWithAgentRun }) {
+  const reviewSummary = getReviewSummarySafely(project.id);
+
+  return (
+    <li>
+      <strong>{project.title}</strong>
+      <span>{project.sourceName}</span>
+      <br />
+      <StatusBadge>{project.status}</StatusBadge>{" "}
+      {project.isDemo ? <StatusBadge tone="placeholder">Demo Mode</StatusBadge> : null}{" "}
+      <StatusBadge tone={reviewSummary?.status === "ready" ? "green" : "placeholder"}>
+        review: {reviewSummary?.status ?? "not_started"}
+      </StatusBadge>{" "}
+      <StatusBadge tone="green">
+        checklist: {Math.round((reviewSummary?.checklistCompletion ?? 0) * 100)}%
+      </StatusBadge>{" "}
+      <StatusBadge tone="green">export: ready</StatusBadge>{" "}
+      <StatusBadge tone={agentRunTone(project.latestAgentRun?.status)}>
+        agent: {project.latestAgentRun?.status ?? "not_started"}
+      </StatusBadge>{" "}
+      <div className="action-row">
+        <Link href={`/projects/${project.id}/showcase`}>Showcase</Link>
+        <Link href={`/projects/${project.id}/analysis`}>Analysis</Link>
+        <Link href={`/projects/${project.id}/agent-runs`}>Agent Runs</Link>
+        <Link href={`/projects/${project.id}/review`}>Review</Link>
+        <Link href={`/projects/${project.id}/export`}>Export</Link>
+      </div>
+    </li>
+  );
+}
+
+function getLatestAgentRunSafely(projectId: string): AgentRunSummary | null {
+  try {
+    return getLatestAgentRunForProject(projectId);
+  } catch {
+    return null;
+  }
+}
+
+function agentRunTone(status: AgentRunSummary["status"] | undefined) {
+  if (status === "completed") {
+    return "green" as const;
+  }
+
+  if (status === "completed_with_fallback") {
+    return "yellow" as const;
+  }
+
+  if (status === "failed") {
+    return "red" as const;
+  }
+
+  return "placeholder" as const;
+}
+
+function getReviewSummarySafely(projectId: string): ReviewSummary | null {
+  try {
+    return getReviewData(projectId)?.reviewSummary ?? null;
+  } catch {
+    return null;
   }
 }

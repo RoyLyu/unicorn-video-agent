@@ -7,6 +7,7 @@ const DateTimeString = z.string().regex(
 );
 
 export const TargetDurationSchema = z.union([z.literal(90), z.literal(180)]);
+export const GenerationModeSchema = z.enum(["mock", "ai"]);
 export const RightsRiskLevelSchema = z.enum([
   "green",
   "yellow",
@@ -132,7 +133,7 @@ export const ExportManifestSchema = z.object({
 export const ProductionPackSchema = z.object({
   id: NonEmptyString,
   createdAt: DateTimeString,
-  mode: z.literal("mock"),
+  mode: GenerationModeSchema,
   articleInput: ArticleInputSchema,
   analysis: AnalysisResultSchema,
   thesis: ThesisResultSchema,
@@ -152,4 +153,5 @@ export type AssetPromptResult = z.infer<typeof AssetPromptResultSchema>;
 export type RightsCheckResult = z.infer<typeof RightsCheckResultSchema>;
 export type ExportManifest = z.infer<typeof ExportManifestSchema>;
 export type ProductionPack = z.infer<typeof ProductionPackSchema>;
+export type GenerationMode = z.infer<typeof GenerationModeSchema>;
 export type RightsRiskLevel = z.infer<typeof RightsRiskLevelSchema>;
