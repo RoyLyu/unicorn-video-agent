@@ -2,7 +2,12 @@ import { ZodError } from "zod";
 
 import type { DbClient } from "@/db";
 import { getAgentRunDetail } from "@/db/repositories/agent-run-repository";
+import { readAiConfig, type AiEnvironment } from "@/lib/ai/ai-config";
 import { runAiPipeline } from "@/lib/ai-agents/run-ai-pipeline";
+import {
+  runAiSinglePackPipeline,
+  type ChatCompletionExecutor
+} from "@/lib/ai-agents/run-ai-single-pack-pipeline";
 import { ArticleInputSchema } from "@/lib/schemas/production-pack";
 
 import { classifyAiFallbackReason } from "./fallback-summary";
@@ -11,6 +16,8 @@ export const runtime = "nodejs";
 
 type HandlerOptions = {
   client?: DbClient;
+  env?: AiEnvironment;
+  chatCompletionExecutor?: ChatCompletionExecutor;
 };
 
 export async function POST(request: Request) {
@@ -24,9 +31,18 @@ export async function handleAiProductionPackRequest(
   try {
     const body = await request.json();
     const articleInput = ArticleInputSchema.parse(body);
-    const result = await runAiPipeline(articleInput, {
-      client: options.client
-    });
+    const config = readAiConfig(options.env);
+    const result =
+      config.agentMode === "sequential"
+        ? await runAiPipeline(articleInput, {
+            client: options.client,
+            env: options.env
+          })
+        : await runAiSinglePackPipeline(articleInput, {
+            client: options.client,
+            env: options.env,
+            chatCompletionExecutor: options.chatCompletionExecutor
+          });
     const fallbackSummary = result.fallbackUsed
       ? classifyAiFallbackReason(
           getAgentRunErrorMessage(result.agentRunId, options.client)
@@ -39,6 +55,7 @@ export async function handleAiProductionPackRequest(
       agentRunId: result.agentRunId,
       fallbackUsed: result.fallbackUsed,
       generationMode: result.generationMode,
+      agentMode: "agentMode" in result ? result.agentMode : "sequential",
       ...(fallbackSummary ?? {})
     });
   } catch (error) {

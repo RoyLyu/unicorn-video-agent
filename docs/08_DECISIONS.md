@@ -203,3 +203,21 @@
 决定：`tmp/` 和 `tmp/real-run-audit/` 被 `.gitignore` 忽略，真实运行 JSON 与报告只作为本地诊断材料。
 
 原因：审计 JSON 可能包含用户输入、模型输出和本地项目标识，不应作为源代码或文档提交；仓库只保留审计脚本、评分规则和报告模板。
+
+## D035 - Batch 11B 先补齐 single-pack 路径再做质量修复
+
+决定：当前工作区缺少 Batch 08 hotfix 的 single-pack 文件和 MiniMax-compatible wiring，Batch 11B 将其作为 Storyboard / Prompt 质量升级的前置修复。
+
+原因：只有 `/api/ai/production-pack` 默认走 single-pack，新的分镜和 prompt 质量约束才会作用到真实 AI 生成结果；这不是新增产品功能，而是恢复已确认的生成路径。
+
+## D036 - 分镜执行信息写入 visual 字段
+
+决定：不修改 `ProductionPackSchema` 或 SQLite schema，镜头运动、构图和图表逻辑统一写进 `storyboard.shots[].visual`，格式为“主体 / 场景 / 镜头 / 构图 / 图表”。
+
+原因：Batch 11B 目标是质量修复，不应引入数据库重构；现有 Showcase、Export 和 Audit 都能读取 `visual`。
+
+## D037 - Normalization 作为 AI 输出质量护栏
+
+决定：AI JSON 通过基础 schema 后，在保存 SQLite 前执行 ProductionPack normalization，补足 8 个分镜、prompt 覆盖、style lock、negativePrompt 和 red rights 替代方案。
+
+原因：MiniMax 输出可能局部缺项；确定性 normalization 能稳定 demo 质量，同时保留 fallback 和审计记录。

@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-Batch 11A：Real Run Audit。
+Batch 11B：Storyboard / Prompt Quality Upgrade。
 
 当前仓库提供：
 
@@ -28,6 +28,7 @@ Batch 11A：Real Run Audit。
 - 只输入标题即可生成并跳转 Showcase 的 `/quick-demo`
 - 最终演示路径提示、fallback 风险提示和 `docs/12_FINAL_DEMO_RUNBOOK.md`
 - 真实 AI 端到端审计命令 `pnpm audit:real-run`
+- Storyboard / Prompt / Rights 输出质量 normalization 与审计评分
 - 纯函数 mock Agent pipeline
 - `localStorage` demo fallback
 - Zod schema 与 pipeline 单元测试
@@ -36,7 +37,7 @@ Batch 11A：Real Run Audit。
 
 ## MVP 范围
 
-第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 11A 只做真实运行审计和质量报告，不优化 Agent 输出，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
+第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 11B 只优化 Storyboard / Prompt / Rights 的文本生产包质量，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
 
 ## 环境变量
 
@@ -55,7 +56,7 @@ AI_REQUEST_TIMEOUT_MS=180000
 AI_MAX_TOKENS=4000
 ```
 
-`AI_MODEL` 必须从环境变量读取，业务逻辑不写默认模型。MiniMax OpenAI-compatible client 会优先读取 `MINIMAX_API_KEY` 与 `MINIMAX_BASE_URL`，再 fallback 到 `OPENAI_API_KEY` 与 `OPENAI_BASE_URL`。`AI_AGENT_MODE` 默认 `single_pack`，即一次 Chat Completions 调用生成完整 `ProductionPack`；只有显式设置为 `sequential` 时才走旧的 7-step remote runner。缺少 key、baseURL 或 model 时，AI 生成会记录 fallback 并使用 mock pipeline 继续完成生产包。
+`AI_MODEL` 必须从环境变量读取，业务逻辑不写默认模型。MiniMax OpenAI-compatible client 会优先读取 `MINIMAX_API_KEY` 与 `MINIMAX_BASE_URL`，再 fallback 到 `OPENAI_API_KEY` 与 `OPENAI_BASE_URL`。`AI_AGENT_MODE` 默认 `single_pack`，即一次 Chat Completions 调用生成完整 `ProductionPack`；只有显式设置为 `sequential` 时才走旧的 7-step remote runner。single-pack 请求会使用至少 8000 output tokens，避免 MiniMax 可见思考内容导致 JSON 截断；`AI_MAX_TOKENS` 可设置更高值。缺少 key、baseURL 或 model 时，AI 生成会记录 fallback 并使用 mock pipeline 继续完成生产包。
 
 ## 启动
 
@@ -94,6 +95,18 @@ tmp/real-run-audit/latest-qa-report.md
 ```
 
 `tmp/` 已加入 `.gitignore`，不要提交真实审计 JSON。报告只指出质量问题和 Batch 11B 修复方向，不会优化 Storyboard 或 Prompt Generator。
+
+## Batch 11B 质量验收
+
+Batch 11B 默认使用 `AI_AGENT_MODE=single_pack`。生成后的 ProductionPack 会在保存前做文本 normalization：
+
+- 分镜至少 8 个 shots。
+- 每个 shot 的 `visual` 包含主体、场景、镜头、构图和图表逻辑。
+- imagePrompt / videoPrompt 覆盖每个 shot，并带统一 style lock。
+- negativePrompt 自动补齐 Logo、文字、中文、人脸和 cyberpunk 禁用项。
+- red rights risk 必须带替代方案。
+
+验收时重新运行真实审计，并确认 `storyboard_actionability_score`、`prompt_usability_score`、`rights_safety_score`、`overall_demo_readiness_score` 均达到 4/5 或以上。若 `fallbackUsed=true`，不能把结果计为真实 AI 质量达标。
 
 ## Batch 10B 最终演示验收路径
 

@@ -6,6 +6,38 @@ import { demoArticleInput } from "@/lib/mock-pipeline/demo-input";
 import { handleAiProductionPackRequest } from "./route";
 
 describe("POST /api/ai/production-pack", () => {
+  it("uses single-pack mode by default when AI env is configured", async () => {
+    const client = createTestDbClient();
+
+    try {
+      const response = await handleAiProductionPackRequest(
+        new Request("http://localhost/api/ai/production-pack", {
+          method: "POST",
+          body: JSON.stringify(demoArticleInput)
+        }),
+        {
+          client,
+          env: {
+            AI_PROVIDER: "minimax",
+            AI_MODEL: "MiniMax-M2.7",
+            MINIMAX_API_KEY: "test-key",
+            MINIMAX_BASE_URL: "https://api.minimaxi.com/v1"
+          },
+          chatCompletionExecutor: async () => JSON.stringify({
+            ...demoArticleInput,
+            invalid: true
+          })
+        }
+      );
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body.agentMode).toBe("single_pack");
+    } finally {
+      client.close();
+    }
+  });
+
   it("returns fallback production pack when AI env is missing", async () => {
     const client = createTestDbClient();
 

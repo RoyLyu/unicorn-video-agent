@@ -1,5 +1,13 @@
 # Changelog
 
+## Batch 11B - Storyboard / Prompt Quality Upgrade
+
+- 补齐 MiniMax OpenAI-compatible single-pack 生成路径，`AI_AGENT_MODE` 默认 `single_pack`，仅显式设置 `sequential` 时走旧 runner。
+- 新增 single-pack ProductionPack prompt，强化 8 个以上分镜、shot-prompt 一一对应、统一视觉风格锁、negativePrompt 禁用项和版权替代方案。
+- 新增 ProductionPack normalization，保存前补齐分镜、prompt 覆盖、style lock、negativePrompt 和 red rights 替代 action。
+- 提升 Real Run Audit QA scorer，报告低分 shotId / promptId，并区分 red rights 是否已有替代方案。
+- 新增 MiniMax config、single-pack prompt、normalization、single-pack runner 和 QA scorer 测试。
+
 ## Batch 11A - Real Run Audit
 
 - 新增 `pnpm audit:real-run`，从标题构造 Title-only ArticleInput，复用现有 AI production-pack handler 运行真实端到端审计。

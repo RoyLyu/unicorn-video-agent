@@ -129,6 +129,17 @@
 - [x] 新增 Storyboard、Prompt、Rights 风险识别测试。
 - [x] `.gitignore` 忽略 `tmp/` 和 `tmp/real-run-audit/`。
 
+## Batch 11B
+
+- [x] 补齐 MiniMax single-pack prompt 和 runner。
+- [x] `/api/ai/production-pack` 默认走 `AI_AGENT_MODE=single_pack`。
+- [x] AI config 支持 `AI_PROVIDER=minimax`、MiniMax key/baseURL 优先级和请求参数默认值。
+- [x] 新增 ProductionPack normalization，补齐 8 个以上可执行分镜。
+- [x] Prompt normalization 覆盖每个 shot，并补齐 style lock 与 negativePrompt 禁用项。
+- [x] red rights risk 自动补替代方案。
+- [x] Real Run Audit scorer 输出低分 shotId / promptId。
+- [x] QA scorer 对可执行分镜、完整 prompt 和有替代方案的 red rights 给出 4/5+。
+
 ## Batch 10 建议
 
 - [ ] 增加 prompt 版本管理和 prompt diff。

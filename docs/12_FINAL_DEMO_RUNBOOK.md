@@ -65,6 +65,19 @@ pnpm audit:real-run -- --title "虚构家庭医疗公司冲刺上市" --template
 
 报告重点检查 Storyboard 是否可剪辑执行、Prompt 是否可直接用于后续素材生成工具、版权风险是否可控，以及当前结果是否适合 demo。审计只记录问题和修改建议，不会自动优化 Agent、不生成图片视频、不下载素材。
 
+Batch 11B 后，演示前建议使用这条标题做一次质量验收：
+
+```bash
+pnpm audit:real-run -- --title "新消费品牌上市背后：中国品牌全球化的第二轮机会来了" --templateType ipo --industryTags "IPO,消费,出海,新消费"
+```
+
+验收口径：
+
+- `fallbackUsed` 必须为 `false` 才能说明真实 AI 质量达标。
+- `storyboard_actionability_score`、`prompt_usability_score`、`rights_safety_score`、`overall_demo_readiness_score` 应达到 4/5 或以上。
+- `production-pack.md` 下载路径应出现在报告中，并可从 Showcase 或 Export 进入。
+- 如果报告列出低分 shotId / promptId，优先检查 single-pack prompt 和 normalization 规则。
+
 ## 推荐 5 个标题
 
 1. 虚构家庭医疗公司冲刺上市，基层健康管理赛道迎来新样本

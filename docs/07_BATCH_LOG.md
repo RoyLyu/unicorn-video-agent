@@ -1,5 +1,35 @@
 # 07 Batch Log
 
+## Batch 11B - Storyboard / Prompt Quality Upgrade
+
+目标：根据真实运行审计报告，只优化 Storyboard、Prompt Generator 和 Rights 输出质量，使关键审计分数达到 4/5 或以上。
+
+完成内容：
+
+- MiniMax OpenAI-compatible single-pack 生成路径
+- `AI_AGENT_MODE=single_pack` 默认路由
+- single-pack ProductionPack prompt
+- 8 个以上可执行分镜要求
+- `visual` 字段中的主体、场景、镜头、构图和图表逻辑
+- imagePrompt / videoPrompt 与 shot 一一对应
+- 统一 style lock 与 negativePrompt 禁用项
+- ProductionPack normalization
+- red rights risk 替代方案补齐
+- Real Run Audit scorer 输出低分 shotId / promptId
+- Storyboard、Prompt、Rights 质量测试
+
+明确不做：
+
+- AI 生图
+- AI 生视频
+- TTS
+- Remotion
+- 部署
+- 素材下载
+- 数据库重构
+- Showcase 主结构改造
+- Batch 12 功能
+
 ## Batch 11A - Real Run Audit
 
 目标：建立一次真实 AI 端到端运行审计能力，用于跑通 `/quick-demo → AI production pack → Showcase → Export` 并输出质量问题报告。

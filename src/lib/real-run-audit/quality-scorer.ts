@@ -21,6 +21,7 @@ export type AuditProblem = {
   problem: string;
   fixPriority: string;
   suggestedTarget: "prompt" | "schema" | "mapper" | "QA rule";
+  targetIds?: string[];
 };
 
 export type AgentAuditSection = {
@@ -225,23 +226,35 @@ function auditStoryboardAgent(productionPack: ProductionPack): AgentAuditSection
   const shots = productionPack.storyboard.shots;
 
   if (shots.length < 8) {
-    problems.push(problem("storyboard-too-few-shots", "high", "Storyboard Agent", "分镜少于 8 个，无法覆盖 90s 核心节奏。", "P1", "prompt"));
+    problems.push(problem("storyboard-too-few-shots", "high", "Storyboard Agent", "分镜少于 8 个，无法覆盖 90s 核心节奏。", "P1", "prompt", shots.map((shot) => shot.id)));
   }
 
-  if (shots.some((shot) => !hasCameraMotion(`${shot.scene} ${shot.visual}`))) {
-    problems.push(problem("storyboard-missing-camera-motion", "high", "Storyboard Agent", "部分分镜缺少推拉摇移、跟拍、俯拍等镜头运动。", "P1", "prompt"));
+  const shotsMissingCameraMotion = shots
+    .filter((shot) => !hasCameraMotion(`${shot.scene} ${shot.visual}`))
+    .map((shot) => shot.id);
+  if (shotsMissingCameraMotion.length > 0) {
+    problems.push(problem("storyboard-missing-camera-motion", "high", "Storyboard Agent", "部分分镜缺少推拉摇移、跟拍、俯拍等镜头运动。", "P1", "prompt", shotsMissingCameraMotion));
   }
 
-  if (shots.some((shot) => !hasVisualSubject(`${shot.scene} ${shot.visual}`))) {
-    problems.push(problem("storyboard-weak-visual-subject", "medium", "Storyboard Agent", "部分分镜缺少明确画面主体。", "P2", "prompt"));
+  const shotsMissingSubject = shots
+    .filter((shot) => !hasVisualSubject(`${shot.scene} ${shot.visual}`))
+    .map((shot) => shot.id);
+  if (shotsMissingSubject.length > 0) {
+    problems.push(problem("storyboard-weak-visual-subject", "medium", "Storyboard Agent", "部分分镜缺少明确画面主体。", "P2", "prompt", shotsMissingSubject));
   }
 
-  if (shots.some((shot) => !shot.assetType || !shot.narration)) {
-    problems.push(problem("storyboard-missing-editing-fields", "medium", "Storyboard Agent", "部分分镜缺少视觉类型或旁白，剪辑执行信息不足。", "P2", "schema"));
+  const shotsMissingFields = shots
+    .filter((shot) => !shot.assetType || !shot.narration)
+    .map((shot) => shot.id);
+  if (shotsMissingFields.length > 0) {
+    problems.push(problem("storyboard-missing-editing-fields", "medium", "Storyboard Agent", "部分分镜缺少视觉类型或旁白，剪辑执行信息不足。", "P2", "schema", shotsMissingFields));
   }
 
-  if (shots.some((shot) => containsForbiddenRealAsset(`${shot.scene} ${shot.visual}`))) {
-    problems.push(problem("storyboard-real-asset-risk", "high", "Storyboard Agent", "分镜暗示真实 Logo、上市现场或人物肖像，版权和事实风险高。", "P1", "prompt"));
+  const shotsWithRealAssetRisk = shots
+    .filter((shot) => containsForbiddenRealAsset(`${shot.scene} ${shot.visual}`))
+    .map((shot) => shot.id);
+  if (shotsWithRealAssetRisk.length > 0) {
+    problems.push(problem("storyboard-real-asset-risk", "high", "Storyboard Agent", "分镜暗示真实 Logo、上市现场或人物肖像，版权和事实风险高。", "P1", "prompt", shotsWithRealAssetRisk));
   }
 
   return section("Storyboard Agent", 5 - Math.min(5, problems.length), [
@@ -260,24 +273,36 @@ function auditPromptGenerator(productionPack: ProductionPack): AgentAuditSection
     ...productionPack.assetPrompts.videoPrompts
   ];
 
-  if (prompts.some((prompt) => !prompt.negativePrompt.trim())) {
-    problems.push(problem("prompt-missing-negative-prompt", "high", "Prompt Generator", "部分 Prompt 缺少 negativePrompt，无法控制 Logo、文字和脸部伪影。", "P1", "schema"));
+  const promptsMissingNegativePrompt = prompts
+    .filter((prompt) => !prompt.negativePrompt.trim())
+    .map((prompt) => prompt.id);
+  if (promptsMissingNegativePrompt.length > 0) {
+    problems.push(problem("prompt-missing-negative-prompt", "high", "Prompt Generator", "部分 Prompt 缺少 negativePrompt，无法控制 Logo、文字和脸部伪影。", "P1", "schema", promptsMissingNegativePrompt));
   }
 
-  if (prompts.some((prompt) => !containsStyleLock(prompt.prompt))) {
-    problems.push(problem("prompt-missing-style-lock", "high", "Prompt Generator", "部分 Prompt 缺少统一风格锁，视觉风格不稳定。", "P1", "prompt"));
+  const promptsMissingStyleLock = prompts
+    .filter((prompt) => !containsStyleLock(prompt.prompt))
+    .map((prompt) => prompt.id);
+  if (promptsMissingStyleLock.length > 0) {
+    problems.push(problem("prompt-missing-style-lock", "high", "Prompt Generator", "部分 Prompt 缺少统一风格锁，视觉风格不稳定。", "P1", "prompt", promptsMissingStyleLock));
   }
 
-  if (prompts.some((prompt) => !containsNegativePromptTerms(prompt.negativePrompt))) {
-    problems.push(problem("prompt-negative-terms-incomplete", "medium", "Prompt Generator", "negativePrompt 未覆盖 fake logo、不可读文字、畸形中文、人脸和 cyberpunk 风险。", "P2", "prompt"));
+  const promptsWithIncompleteNegativeTerms = prompts
+    .filter((prompt) => !containsNegativePromptTerms(prompt.negativePrompt))
+    .map((prompt) => prompt.id);
+  if (promptsWithIncompleteNegativeTerms.length > 0) {
+    problems.push(problem("prompt-negative-terms-incomplete", "medium", "Prompt Generator", "negativePrompt 未覆盖 fake logo、不可读文字、畸形中文、人脸和 cyberpunk 风险。", "P2", "prompt", promptsWithIncompleteNegativeTerms));
   }
 
   if (!allPromptsReferenceShots(productionPack.assetPrompts, productionPack.storyboard.shots.map((shot) => shot.id))) {
     problems.push(problem("prompt-shot-mismatch", "medium", "Prompt Generator", "部分 Prompt 没有对应分镜。", "P2", "mapper"));
   }
 
-  if (prompts.some((prompt) => containsForbiddenRealAsset(prompt.prompt))) {
-    problems.push(problem("prompt-real-brand-risk", "high", "Prompt Generator", "Prompt 暗示真实品牌 Logo、可读文字或人物肖像。", "P1", "prompt"));
+  const promptsWithRealBrandRisk = prompts
+    .filter((prompt) => containsForbiddenRealAsset(prompt.prompt))
+    .map((prompt) => prompt.id);
+  if (promptsWithRealBrandRisk.length > 0) {
+    problems.push(problem("prompt-real-brand-risk", "high", "Prompt Generator", "Prompt 暗示真实品牌 Logo、可读文字或人物肖像。", "P1", "prompt", promptsWithRealBrandRisk));
   }
 
   return section("Prompt Generator", 5 - Math.min(5, problems.length), [
@@ -305,15 +330,21 @@ function auditAssetFinder(productionPack: ProductionPack): AgentAuditSection {
 function auditQaAgent(productionPack: ProductionPack): AgentAuditSection {
   const problems: AuditProblem[] = [];
 
-  if (productionPack.rightsChecks.some((risk) => risk.level === "red")) {
-    problems.push(problem("rights-red-risk", "high", "QA Agent", "版权风险中存在 red 项，不能作为 demo-ready 成品展示。", "P1", "QA rule"));
+  const redRisks = productionPack.rightsChecks.filter((risk) => risk.level === "red");
+  const redRisksWithoutAlternative = redRisks.filter(
+    (risk) => !/替换|自制图表|抽象 AI 画面|placeholder/.test(risk.action)
+  );
+  if (redRisksWithoutAlternative.length > 0) {
+    problems.push(problem("rights-red-risk", "high", "QA Agent", "版权风险中存在 red 项且缺少可替代方案，不能作为 demo-ready 成品展示。", "P1", "QA rule", redRisksWithoutAlternative.map((risk) => risk.item)));
+  } else if (redRisks.length > 0) {
+    problems.push(problem("rights-red-risk-with-alternative", "medium", "QA Agent", "版权风险中存在 red 项，但已提供替换为自制图表、抽象 AI 画面或 placeholder 的方案。", "P2", "QA rule", redRisks.map((risk) => risk.item)));
   }
 
   if (productionPack.exportManifest.files.length < 6) {
     problems.push(problem("export-manifest-incomplete", "medium", "QA Agent", "导出 manifest 少于 6 个文件。", "P2", "schema"));
   }
 
-  return section("QA Agent", 5 - Math.min(5, problems.length * 2), [
+  return section("QA Agent", 5 - Math.min(5, problems.reduce((score, item) => score + (item.severity === "high" ? 2 : 1), 0)), [
     "rights risk levels checked",
     "export manifest checked",
     "investment disclaimer expected"
@@ -335,7 +366,8 @@ function problem(
   agent: string,
   problemText: string,
   fixPriority: string,
-  suggestedTarget: AuditProblem["suggestedTarget"]
+  suggestedTarget: AuditProblem["suggestedTarget"],
+  targetIds?: string[]
 ): AuditProblem {
   return {
     id,
@@ -343,12 +375,17 @@ function problem(
     agent,
     problem: problemText,
     fixPriority,
-    suggestedTarget
+    suggestedTarget,
+    targetIds
   };
 }
 
 function formatProblem(problemItem: AuditProblem) {
-  return `[${problemItem.severity}] ${problemItem.agent}: ${problemItem.problem} Fix priority: ${problemItem.fixPriority}. Modify: ${problemItem.suggestedTarget}.`;
+  const targets = problemItem.targetIds?.length
+    ? ` Targets: ${problemItem.targetIds.join(", ")}.`
+    : "";
+
+  return `[${problemItem.severity}] ${problemItem.agent}: ${problemItem.problem}${targets} Fix priority: ${problemItem.fixPriority}. Modify: ${problemItem.suggestedTarget}.`;
 }
 
 function hasCameraMotion(text: string) {
@@ -356,11 +393,15 @@ function hasCameraMotion(text: string) {
 }
 
 function hasVisualSubject(text: string) {
-  return /(人物|团队|办公室|工厂|门店|产品|设备|图表|数据|屏幕|城市|会议|生产线|实验室|主体|company|office|chart|screen|factory|product)/i.test(text);
+  return /(人物|团队|办公室|工厂|门店|产品|设备|图表|数据|屏幕|城市|会议|生产线|实验室|主体|商业团队|信息卡|company|office|chart|screen|factory|product)/i.test(text);
 }
 
 function containsForbiddenRealAsset(text: string) {
-  return /(真实\s*logo|真实logo|logo|上市现场|敲钟|真实人物|人物肖像|celebrity|brand logo|readable text)/i.test(text);
+  const normalized = text
+    .replace(/不出现可读品牌文字|不出现可读品牌|不出现可读文字/g, "")
+    .replace(/no readable brand text|no real company marks?|no brand logos?/gi, "");
+
+  return /(真实\s*logo|真实logo|brand logo|company logo|上市现场|敲钟|真实人物|人物肖像|创始人肖像|精确地图|招股书截图|可读品牌|可读文字|celebrity|founder portrait|prospectus screenshot)/i.test(normalized);
 }
 
 function containsStyleLock(text: string) {
@@ -373,7 +414,7 @@ function containsStyleLock(text: string) {
 function containsNegativePromptTerms(text: string) {
   const normalized = text.toLowerCase();
 
-  return negativePromptTerms.every((term) => normalized.includes(term));
+  return negativePromptTerms.every((term) => normalized.includes(term.toLowerCase()));
 }
 
 function allPromptsReferenceShots(

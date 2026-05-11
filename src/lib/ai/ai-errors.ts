@@ -3,6 +3,7 @@ export type AiErrorCode =
   | "unsupported_provider"
   | "missing_api_key"
   | "missing_model"
+  | "missing_base_url"
   | "provider_error"
   | "schema_error";
 
