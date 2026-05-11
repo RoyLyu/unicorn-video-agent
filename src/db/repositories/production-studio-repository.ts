@@ -245,7 +245,7 @@ function mapEditRow(row: ProductionStudioEditRow): ProductionStudioEdit {
   const base = {
     id: row.id,
     projectId: row.projectId,
-    versionType: row.versionType as "90s" | "180s",
+    versionType: row.versionType as ProductionStudioEdit["versionType"],
     shotNumber: row.shotNumber,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt
@@ -256,7 +256,7 @@ function mapEditRow(row: ProductionStudioEditRow): ProductionStudioEdit {
       ...base,
       editType: "shot",
       patch: JSON.parse(row.patchJson) as Extract<ProductionStudioEdit, { editType: "shot" }>["patch"]
-    };
+    } as ProductionStudioEdit;
   }
 
   if (row.editType === "prompt") {
@@ -264,14 +264,54 @@ function mapEditRow(row: ProductionStudioEditRow): ProductionStudioEdit {
       ...base,
       editType: "prompt",
       patch: JSON.parse(row.patchJson) as Extract<ProductionStudioEdit, { editType: "prompt" }>["patch"]
-    };
+    } as ProductionStudioEdit;
+  }
+
+  if (row.editType === "rights") {
+    return {
+      ...base,
+      editType: "rights",
+      patch: JSON.parse(row.patchJson) as Extract<ProductionStudioEdit, { editType: "rights" }>["patch"]
+    } as ProductionStudioEdit;
+  }
+
+  if (row.editType === "method") {
+    return {
+      ...base,
+      editType: "method",
+      patch: JSON.parse(row.patchJson) as Extract<ProductionStudioEdit, { editType: "method" }>["patch"]
+    } as ProductionStudioEdit;
+  }
+
+  if (row.editType === "editing") {
+    return {
+      ...base,
+      editType: "editing",
+      patch: JSON.parse(row.patchJson) as Extract<ProductionStudioEdit, { editType: "editing" }>["patch"]
+    } as ProductionStudioEdit;
+  }
+
+  if (row.editType === "creative_direction") {
+    return {
+      ...base,
+      editType: "creative_direction",
+      patch: JSON.parse(row.patchJson) as Extract<ProductionStudioEdit, { editType: "creative_direction" }>["patch"]
+    } as ProductionStudioEdit;
+  }
+
+  if (row.editType === "visual_bible") {
+    return {
+      ...base,
+      editType: "visual_bible",
+      patch: JSON.parse(row.patchJson) as Extract<ProductionStudioEdit, { editType: "visual_bible" }>["patch"]
+    } as ProductionStudioEdit;
   }
 
   return {
     ...base,
-    editType: "rights",
-    patch: JSON.parse(row.patchJson) as Extract<ProductionStudioEdit, { editType: "rights" }>["patch"]
-  };
+    editType: "continuity_bible",
+    patch: JSON.parse(row.patchJson) as Extract<ProductionStudioEdit, { editType: "continuity_bible" }>["patch"]
+  } as ProductionStudioEdit;
 }
 
 function mapGateRunRow(row: ProductionStudioGateRunRow): ProductionStudioGateRun {

@@ -123,4 +123,46 @@ describe("normalizeProductionPack", () => {
     expect(normalized.rightsChecks[0].replacementPlan).toMatch(/替换|自制图表|抽象 AI 画面|placeholder/);
     expect(redShots[0]?.replacementPlan).toMatch(/替换|自制图表|抽象 AI 画面|placeholder/);
   });
+
+  it("normalizes AIGC creative direction, visual bible and continuity bible", () => {
+    const normalized = normalizeProductionPack(demoProductionPack);
+
+    expect(normalized.creativeDirection?.creativeConcept).toBeTruthy();
+    expect(normalized.creativeDirection?.visualMetaphor).toBeTruthy();
+    expect(normalized.creativeDirection?.mainVisualMotif).toBeTruthy();
+    expect(normalized.visualStyleBible?.aspectRatio).toBe("9:16 vertical");
+    expect(normalized.visualStyleBible?.forbiddenElements).toContain("no real logo");
+    expect(normalized.continuityBible?.referenceFramePlan).toBeTruthy();
+  });
+
+  it("normalizes every shot and prompt bundle into an AIGC production contract", () => {
+    const normalized = normalizeProductionPack(demoProductionPack);
+
+    for (const shot of normalized.storyboard.shots) {
+      expect(shot.shotCode).toMatch(/^S(90|180)-\d{2}$/);
+      expect(shot.shotFunction).toBeTruthy();
+      expect(shot.productionMethod).toBeTruthy();
+      expect(shot.methodReason).toBeTruthy();
+      expect(shot.subject).toBeTruthy();
+      expect(shot.environment).toBeTruthy();
+      expect(shot.lighting).toBeTruthy();
+      expect(shot.style).toBeTruthy();
+      expect(shot.continuityAssets?.length).toBeGreaterThan(0);
+      expect(shot.editing?.cutType).toBeTruthy();
+      expect(shot.editing?.transitionLogic).toBeTruthy();
+      expect(shot.editing?.pace).toBeTruthy();
+    }
+
+    for (const bundle of normalized.assetPrompts.promptBundles ?? []) {
+      expect(bundle.shotCode).toBeTruthy();
+      expect(bundle.duration).toBeTruthy();
+      expect(bundle.subject).toBeTruthy();
+      expect(bundle.environment).toBeTruthy();
+      expect(bundle.camera).toBeTruthy();
+      expect(bundle.lighting).toBeTruthy();
+      expect(bundle.style).toBeTruthy();
+      expect(bundle.negativeConstraints).toBeTruthy();
+      expect(bundle.forbiddenElements?.length).toBeGreaterThan(0);
+    }
+  });
 });

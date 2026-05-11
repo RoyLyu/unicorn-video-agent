@@ -293,3 +293,27 @@
 决定：`POST /api/projects/[projectId]/production-studio/revalidate` 只读取 effective ProductionPack 并执行 deterministic gate check，不调用 AI、不读取 API key、不下载素材。
 
 原因：revalidate 是生产编辑后的结构和合规检查，不是重新生成。这样能保持编辑台响应稳定，也不破坏 strict real output policy。
+
+## D050 - AIGC 视频生产包必须包含 Creative Direction
+
+决定：Batch 13B 起，ProductionPack 必须能表达 `creativeDirection`、`visualStyleBible` 和 `continuityBible`，旧项目可读，normalization 和 effective resolver 负责补齐缺失字段。
+
+原因：分镜和 prompt 不能只逐条存在；AIGC 制作需要全片视觉核心、风格约束和连续性规则，否则镜头之间容易风格漂移。
+
+## D051 - Prompt 是 shot-level production contract
+
+决定：prompt bundle 不再只保存 imagePrompt / videoPrompt / negativePrompt，还要包含 shotCode、duration、subject、environment、camera、lighting、style、negativeConstraints、forbiddenElements 和 replacementPlan。
+
+原因：后续进入文生图、图生视频、动效、stock、手工设计或合成流程时，需要明确镜头主体、环境、镜头语言、禁用元素和使用边界。
+
+## D052 - Production Studio lock 依赖 AIGC contract gate
+
+决定：除了 density、alignment 和 rights gate，lock 还必须依赖 Visual Bible、Continuity、Shot Function、Production Method、Editing Readiness 和 Prompt Completeness 全部达标。
+
+原因：只满足 shot 数量和 prompt 数量不足以交付生产；缺少视觉圣经、连续性、剪辑结构或 prompt 字段完整性时，应进入“需要重跑 / 人工修正”。
+
+## D053 - Production Method 决定后续制作路径
+
+决定：每个 shot 必须声明 `productionMethod` 和 `methodReason`，枚举覆盖 text_to_video、image_to_video、text_to_image_edit、motion_graphics、stock_footage、manual_design 和 compositing。
+
+原因：ProductionPack 需要为后续制作团队判断镜头应进入 AI 视频、AI 图像、动效设计、版权候选池、手工设计还是合成流程。

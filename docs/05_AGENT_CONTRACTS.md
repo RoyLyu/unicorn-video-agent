@@ -68,6 +68,18 @@ Batch 12A 起，真实输出模式不允许 fallback/mock 冒充成功成品。B
 
 单个 AI Agent 失败或 schema 不通过时，只有显式 fast demo 或开发测试才允许 fallback。真实生产和真实审计必须 fail loudly。
 
+## Batch 13B AIGC Production Contract
+
+Batch 13B 后，Prompt Generator 输出不再只是几句生成词，而是 shot-level production contract。真实或 effective ProductionPack 必须包含：
+
+- 全片 `creativeDirection`：creativeConcept、visualMetaphor、mainVisualMotif、narrativeDevice、emotionalCurve、visualProgression、audienceTakeaway、productionNotes。
+- 全片 `visualStyleBible`：9:16 竖屏、色彩、灯光、材质、camera texture、typography、chart style 和 forbiddenElements。
+- 全片 `continuityBible`：mainCharacter、environment、object、color、motion、graphic、typography 和 reference frame plan。
+- 每个 shot 的 `shotFunction`、`productionMethod`、`methodReason`、subject、environment、lighting、style、continuityAssets 和 editing metadata。
+- 每个 prompt bundle 的 shotCode、duration、subject、environment、camera、lighting、style、negativeConstraints、forbiddenElements 和 replacementPlan。
+
+Production Studio gate 必须校验 Visual Bible、Continuity、Shot Function coverage、Production Method coverage、Editing Readiness 和 Prompt Field Completeness。任一核心项低于 4 分时，结果必须显示“需要重跑 / 人工修正”，并且 Production Studio lock 不允许通过。
+
 ## Mock Pipeline Tracking Contract
 
 `src/lib/mock-pipeline/*` 中的每个 mock agent 继续保持纯函数。Batch 07/08 的 tracked runner 负责调用这些纯函数，并把 agent run、step、input/output JSON、context snapshot 和 QA result 写入 SQLite。素材下载、AI 生图、生视频、TTS 或外部事实核验都不允许进入 Batch 08。

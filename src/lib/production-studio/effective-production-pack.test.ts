@@ -53,4 +53,33 @@ describe("resolveEffectiveProductionPack", () => {
     expect(result.summary.unmatchedShots).toEqual([]);
     expect(result.summary.unmatchedPrompts).toEqual([]);
   });
+
+  it("applies pack-level visual bible edits without mutating original ProductionPack", () => {
+    const original = normalizeProductionPack(demoProductionPack, "standard");
+    const result = resolveEffectiveProductionPack({
+      productionPack: original,
+      densityProfile: "standard",
+      edits: [
+        {
+          id: "edit-visual-bible",
+          projectId: "project-1",
+          versionType: "global",
+          shotNumber: 0,
+          editType: "visual_bible",
+          patch: {
+            visualStyleBible: {
+              ...original.visualStyleBible,
+              imageType: "edited premium AIGC finance documentary"
+            }
+          },
+          createdAt: "now",
+          updatedAt: "now"
+        }
+      ]
+    });
+
+    expect(result.effective.visualStyleBible?.imageType).toBe("edited premium AIGC finance documentary");
+    expect(original.visualStyleBible?.imageType).not.toBe("edited premium AIGC finance documentary");
+    expect(result.summary.scores.visualBibleScore).toBeGreaterThanOrEqual(4);
+  });
 });

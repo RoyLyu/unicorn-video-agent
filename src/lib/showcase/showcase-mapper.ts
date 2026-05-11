@@ -84,8 +84,27 @@ export function mapShowcaseViewModel({
           ? "pass"
           : "fail",
       needsFix: productionStudioSummary.needsFix,
-      fixReasons: productionStudioSummary.fixReasons
+      fixReasons: productionStudioSummary.fixReasons,
+      visualBibleScore: productionStudioSummary.scores.visualBibleScore,
+      continuityScore: productionStudioSummary.scores.continuityScore,
+      shotFunctionCoverageScore: productionStudioSummary.scores.shotFunctionCoverageScore,
+      productionMethodScore: productionStudioSummary.scores.productionMethodScore,
+      editingReadinessScore: productionStudioSummary.scores.editingReadinessScore,
+      promptFieldCompletenessScore: productionStudioSummary.scores.promptFieldCompletenessScore,
+      shotFunctionCounts: productionStudioSummary.shotFunctionCounts,
+      productionMethodCounts: productionStudioSummary.productionMethodCounts
     },
+    creativeDirection: {
+      creativeConcept: productionPack.creativeDirection?.creativeConcept ?? "未提供",
+      visualMetaphor: productionPack.creativeDirection?.visualMetaphor ?? "未提供",
+      mainVisualMotif: productionPack.creativeDirection?.mainVisualMotif ?? "未提供"
+    },
+    visualBibleSummary: productionPack.visualStyleBible
+      ? `${productionPack.visualStyleBible.imageType} / ${productionPack.visualStyleBible.aspectRatio} / ${productionPack.visualStyleBible.colorSystem.primaryColor}`
+      : "未提供",
+    continuityBibleSummary: productionPack.continuityBible
+      ? `${productionPack.continuityBible.environmentBible} / ${productionPack.continuityBible.motionContinuity}`
+      : "未提供",
     generation,
     agentSummary: mapAgentSummary(latestAgentRun, latestAgentRunDetail),
     coreSummary: productionPack.analysis.summary,

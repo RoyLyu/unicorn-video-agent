@@ -65,6 +65,15 @@ export function ProjectShowcaseView({
             {showcase.productionStudioGate.promptCount} / alignment:{" "}
             {showcase.productionStudioGate.alignment}
           </div>
+          <div className="showcase-warning">
+            <strong>AIGC Production Contract：</strong>
+            Visual Bible {showcase.productionStudioGate.visualBibleScore}/5 / Continuity{" "}
+            {showcase.productionStudioGate.continuityScore}/5 / Shot Function{" "}
+            {showcase.productionStudioGate.shotFunctionCoverageScore}/5 / Production Method{" "}
+            {showcase.productionStudioGate.productionMethodScore}/5 / Editing{" "}
+            {showcase.productionStudioGate.editingReadinessScore}/5 / Prompt Completeness{" "}
+            {showcase.productionStudioGate.promptFieldCompletenessScore}/5
+          </div>
           {showcase.productionStudioGate.lockStatus === "locked" ? (
             <div className="showcase-warning showcase-warning--ready">
               Production Studio 已锁版：已锁定交付版本。
@@ -111,6 +120,31 @@ export function ProjectShowcaseView({
         generation={showcase.generation}
         agentSummary={showcase.agentSummary}
       />
+
+      <section className="showcase-grid">
+        <article className="panel showcase-highlight">
+          <h2>Creative Concept</h2>
+          <p>{showcase.creativeDirection.creativeConcept}</p>
+          <p>{showcase.creativeDirection.visualMetaphor}</p>
+          <p>{showcase.creativeDirection.mainVisualMotif}</p>
+        </article>
+        <article className="panel">
+          <h2>Visual / Continuity Bible</h2>
+          <p>{showcase.visualBibleSummary}</p>
+          <p>{showcase.continuityBibleSummary}</p>
+          <details className="showcase-details">
+            <summary>Shot Function / Production Method 分布</summary>
+            <PromptList
+              title="Shot Function"
+              items={Object.entries(showcase.productionStudioGate.shotFunctionCounts).map(([key, value]) => `${key}: ${value}`)}
+            />
+            <PromptList
+              title="Production Method"
+              items={Object.entries(showcase.productionStudioGate.productionMethodCounts).map(([key, value]) => `${key}: ${value}`)}
+            />
+          </details>
+        </article>
+      </section>
 
       <section className="showcase-grid">
         <article className="panel showcase-highlight">

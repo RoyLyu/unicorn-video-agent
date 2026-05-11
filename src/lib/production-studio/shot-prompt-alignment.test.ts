@@ -63,4 +63,51 @@ describe("shot prompt alignment", () => {
     expect(summary.unmatchedShots.length).toBeGreaterThan(0);
     expect(summary.redRisksWithoutReplacement).toEqual(["真实新闻图"]);
   });
+
+  it("marks needsFix when shot function coverage is incomplete", () => {
+    const pack = normalizeProductionPack(demoProductionPack);
+    const broken = {
+      ...pack,
+      storyboard: {
+        shots: pack.storyboard.shots.map((shot) => ({
+          ...shot,
+          shotFunction: "context_shot" as const
+        }))
+      }
+    };
+    const summary = analyzeShotPromptAlignment(broken);
+
+    expect(summary.scores.shotFunctionCoverageScore).toBeLessThan(4);
+    expect(summary.needsFix).toBe(true);
+    expect(summary.fixReasons.join("\n")).toContain("镜头功能");
+  });
+
+  it("marks needsFix when continuity and prompt contract fields are missing", () => {
+    const pack = normalizeProductionPack(demoProductionPack);
+    const broken = {
+      ...pack,
+      continuityBible: undefined,
+      storyboard: {
+        shots: pack.storyboard.shots.map((shot) => ({
+          ...shot,
+          continuityAssets: []
+        }))
+      },
+      assetPrompts: {
+        ...pack.assetPrompts,
+        promptBundles: pack.assetPrompts.promptBundles?.map((bundle) => ({
+          ...bundle,
+          subject: "",
+          forbiddenElements: []
+        }))
+      }
+    };
+    const summary = analyzeShotPromptAlignment(broken);
+
+    expect(summary.scores.continuityScore).toBeLessThan(4);
+    expect(summary.scores.promptFieldCompletenessScore).toBeLessThan(4);
+    expect(summary.needsFix).toBe(true);
+    expect(summary.fixReasons.join("\n")).toContain("连续性");
+    expect(summary.fixReasons.join("\n")).toContain("Prompt");
+  });
 });

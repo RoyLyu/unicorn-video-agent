@@ -1,5 +1,17 @@
 # TODO
 
+## Batch 13B
+
+- [x] ProductionPack schema 兼容 `creativeDirection`、`visualStyleBible`、`continuityBible`。
+- [x] single-pack prompt 要求全片 Creative Direction、Visual Bible、Continuity Bible 和 shot-level production contract。
+- [x] normalization 补齐 shotFunction、productionMethod、editing metadata、continuityAssets 和 8 类 prompt 信息。
+- [x] Production Studio gate 增加 Visual Bible、Continuity、Shot Function、Production Method、Editing Readiness 和 Prompt Completeness 分数。
+- [x] Production Studio UI 增加 AIGC contract 总览、pack-level 编辑区、筛选和新增字段编辑。
+- [x] Showcase 展示视觉总控、连续性、镜头功能、制作方式、剪辑准备度和 prompt 完整性。
+- [x] Export 输出 Creative Direction、Visual Style Bible、Continuity Bible、editing summary 和新增 CSV/Prompt 字段。
+- [x] real-run audit 增加 AIGC production contract 分数和 needsFix 判定。
+- [x] 新增/更新 schema、normalization、Studio gate、effective edits、Showcase 和 Export 测试。
+
 ## Batch 13A
 
 - [x] 新增 Shot Density Profile：lite / standard / dense，默认 standard。

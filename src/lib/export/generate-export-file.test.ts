@@ -66,7 +66,40 @@ describe("Batch 04 export generation", () => {
           unmatchedPrompts: [],
           redRisksWithoutReplacement: [],
           riskCounts: { green: 0, yellow: 0, red: 0, placeholder: 0 },
-          scores: { volumeScore: 5, alignmentScore: 5, rightsScore: 5, overallScore: 5 },
+          shotFunctionCounts: {
+            hook_shot: 1,
+            context_shot: 1,
+            evidence_shot: 1,
+            concept_shot: 1,
+            transition_shot: 1,
+            emotional_shot: 1,
+            data_shot: 1,
+            risk_shot: 1,
+            summary_shot: 1,
+            cta_shot: 1
+          },
+          productionMethodCounts: {
+            text_to_video: 1,
+            image_to_video: 1,
+            text_to_image_edit: 1,
+            motion_graphics: 1,
+            stock_footage: 1,
+            manual_design: 1,
+            compositing: 1
+          },
+          scores: {
+            volumeScore: 5,
+            alignmentScore: 5,
+            rightsScore: 5,
+            creativeDirectionScore: 5,
+            visualBibleScore: 5,
+            continuityScore: 5,
+            shotFunctionCoverageScore: 5,
+            productionMethodScore: 5,
+            editingReadinessScore: 5,
+            promptFieldCompletenessScore: 5,
+            overallScore: 5
+          },
           needsFix: false,
           fixReasons: []
         },
@@ -83,12 +116,28 @@ describe("Batch 04 export generation", () => {
     expect(file?.content).toContain("needsFix");
   });
 
+  it("adds AIGC visual bible and editing summaries to production-pack.md", () => {
+    const pack = normalizeProductionPack(demoProductionPack, "standard");
+    const file = generateExportFile("production-pack.md", pack);
+
+    expect(file?.content).toContain("Creative Direction");
+    expect(file?.content).toContain("Visual Style Bible");
+    expect(file?.content).toContain("Continuity Bible");
+    expect(file?.content).toContain("Shot Function Summary");
+    expect(file?.content).toContain("Production Method Summary");
+    expect(file?.content).toContain("Editing Structure Summary");
+    expect(file?.content).toContain("Prompt Completeness Summary");
+  });
+
   it("generates storyboard.csv with required header and storyboard rows", () => {
     const file = generateExportFile("storyboard.csv", normalizeProductionPack(demoProductionPack));
 
     expect(file?.contentType).toBe("text/csv; charset=utf-8");
     expect(file?.content.split("\n")[0]).toContain("versionType");
     expect(file?.content.split("\n")[0]).toContain("replacementPlan");
+    expect(file?.content.split("\n")[0]).toContain("productionMethod");
+    expect(file?.content.split("\n")[0]).toContain("cutType");
+    expect(file?.content.split("\n")[0]).toContain("transitionLogic");
     expect(file?.content).toContain("90s");
     expect(file?.content).toContain("180s");
   });
@@ -138,7 +187,40 @@ describe("Batch 04 export generation", () => {
           unmatchedPrompts: [],
           redRisksWithoutReplacement: [],
           riskCounts: { green: 0, yellow: 0, red: 0, placeholder: 0 },
-          scores: { volumeScore: 5, alignmentScore: 5, rightsScore: 5, overallScore: 5 },
+          shotFunctionCounts: {
+            hook_shot: 1,
+            context_shot: 1,
+            evidence_shot: 1,
+            concept_shot: 1,
+            transition_shot: 1,
+            emotional_shot: 1,
+            data_shot: 1,
+            risk_shot: 1,
+            summary_shot: 1,
+            cta_shot: 1
+          },
+          productionMethodCounts: {
+            text_to_video: 1,
+            image_to_video: 1,
+            text_to_image_edit: 1,
+            motion_graphics: 1,
+            stock_footage: 1,
+            manual_design: 1,
+            compositing: 1
+          },
+          scores: {
+            volumeScore: 5,
+            alignmentScore: 5,
+            rightsScore: 5,
+            creativeDirectionScore: 5,
+            visualBibleScore: 5,
+            continuityScore: 5,
+            shotFunctionCoverageScore: 5,
+            productionMethodScore: 5,
+            editingReadinessScore: 5,
+            promptFieldCompletenessScore: 5,
+            overallScore: 5
+          },
           needsFix: false,
           fixReasons: []
         },
@@ -161,6 +243,12 @@ describe("Batch 04 export generation", () => {
     expect(file?.content).toContain("negativePrompt");
     expect(file?.content).toContain("versionType：90s");
     expect(file?.content).toContain("shotNumber：1");
+    expect(file?.content).toContain("subject：");
+    expect(file?.content).toContain("environment：");
+    expect(file?.content).toContain("camera：");
+    expect(file?.content).toContain("lighting：");
+    expect(file?.content).toContain("style：");
+    expect(file?.content).toContain("forbiddenElements：");
   });
 
   it("generates publish-copy.md with investment advice disclaimer", () => {

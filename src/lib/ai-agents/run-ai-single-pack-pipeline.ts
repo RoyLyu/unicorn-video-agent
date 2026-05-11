@@ -35,7 +35,10 @@ import { runMockPipeline } from "@/lib/mock-pipeline/run-mock-pipeline";
 import { readShotDensityProfile } from "@/lib/production-studio/density-profile";
 import {
   ArticleInputSchema,
+  ContinuityBibleSchema,
+  CreativeDirectionSchema,
   ProductionPackSchema,
+  VisualStyleBibleSchema,
   type ArticleInput,
   type GenerationMode,
   type ProductionPack
@@ -43,6 +46,7 @@ import {
 
 import { normalizeProductionPack } from "./normalize-production-pack";
 import {
+  compactSinglePackProductionPrompt,
   requiredNegativePrompt,
   singlePackProductionPrompt,
   visualStyleLock
@@ -316,7 +320,7 @@ async function requestChatCompletionJson(
       {
         model: config.model,
         messages: [
-        { role: "system", content: singlePackProductionPrompt(densityProfile) },
+          { role: "system", content: compactSinglePackProductionPrompt(densityProfile) },
           { role: "user", content: JSON.stringify(userInput) }
         ],
         temperature: 0.2,
@@ -423,6 +427,18 @@ function coerceAiProductionPack(rawOutput: unknown, articleInput: ArticleInput):
       chartNeed: item.chartNeed ? String(item.chartNeed) : undefined,
       copyrightRisk: normalizeRightsLevel(item.copyrightRisk ?? item.rightsLevel),
       replacementPlan: item.replacementPlan ? String(item.replacementPlan) : undefined,
+      shotCode: item.shotCode ? String(item.shotCode) : undefined,
+      shotFunction: item.shotFunction ? String(item.shotFunction) : undefined,
+      productionMethod: item.productionMethod ? String(item.productionMethod) : undefined,
+      methodReason: item.methodReason ? String(item.methodReason) : undefined,
+      subject: item.subject ? String(item.subject) : undefined,
+      environment: item.environment ? String(item.environment) : undefined,
+      lighting: item.lighting ? String(item.lighting) : undefined,
+      style: item.style ? String(item.style) : undefined,
+      continuityAssets: Array.isArray(item.continuityAssets)
+        ? item.continuityAssets.map((asset) => String(asset)).filter(Boolean)
+        : undefined,
+      editing: isRecord(item.editing) ? item.editing : undefined,
       imagePrompt: item.imagePrompt,
       videoPrompt: item.videoPrompt,
       negativePrompt: item.negativePrompt,
@@ -461,12 +477,31 @@ function coerceAiProductionPack(rawOutput: unknown, articleInput: ArticleInput):
         visualType: shot.visualType,
         chartNeed: shot.chartNeed,
         copyrightRisk: shot.copyrightRisk,
-        replacementPlan: shot.replacementPlan
+        replacementPlan: shot.replacementPlan,
+        shotCode: shot.shotCode,
+        shotFunction: shot.shotFunction,
+        productionMethod: shot.productionMethod,
+        methodReason: shot.methodReason,
+        subject: shot.subject,
+        environment: shot.environment,
+        lighting: shot.lighting,
+        style: shot.style,
+        continuityAssets: shot.continuityAssets,
+        editing: shot.editing
       }))
     },
     assetPrompts,
     rightsChecks: coerceRightsChecks(record.rightsChecks, basePack),
-    exportManifest
+    exportManifest,
+    creativeDirection: CreativeDirectionSchema.safeParse(record.creativeDirection).success
+      ? CreativeDirectionSchema.parse(record.creativeDirection)
+      : undefined,
+    visualStyleBible: VisualStyleBibleSchema.safeParse(record.visualStyleBible).success
+      ? VisualStyleBibleSchema.parse(record.visualStyleBible)
+      : undefined,
+    continuityBible: ContinuityBibleSchema.safeParse(record.continuityBible).success
+      ? ContinuityBibleSchema.parse(record.continuityBible)
+      : undefined
   });
 }
 

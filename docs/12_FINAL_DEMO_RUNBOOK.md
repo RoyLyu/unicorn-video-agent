@@ -110,6 +110,16 @@ pnpm audit:real-run -- --title "新消费品牌上市背后：中国品牌全球
 6. 只有 gate pass 时点击“锁定当前生产包”；锁定后 Showcase 顶部显示“Production Studio 已锁版”，Export 顶部显示锁版状态。
 7. 解除锁定不会删除 edits 或 gate runs，只改变交付锁状态。
 
+## Batch 13B AIGC 生产规格检查
+
+进入 Production Studio 后，除了 shot / prompt 数量，还要检查 AIGC Production Contract：
+
+1. 顶部确认 Creative Concept、Visual Motif、Visual Bible status、Continuity status、Shot Function coverage、Production Method coverage、Editing readiness 和 Prompt completeness。
+2. 用筛选器检查 `shotFunction`、`productionMethod`、riskLevel、needsFix 和 editedOnly。
+3. 每个 shot 卡片应包含 shotCode、duration、shotFunction、productionMethod、subject、environment、camera、lighting、style、editing metadata、imagePrompt、videoPrompt、negativePrompt 和 replacementPlan。
+4. 如果 Visual Bible、Continuity、Editing 或 Prompt Completeness 任一核心项低于 4 分，页面会显示“需要重跑 / 人工修正”，此时不要锁版。
+5. Showcase 会展示 Creative Direction、Visual Bible、Continuity、Shot Function 分布、Production Method 分布和 Prompt Completeness；Export 会把这些信息写入 `production-pack.md`、`storyboard.csv` 和 `prompt-pack.md`。
+
 ## 推荐 5 个标题
 
 1. 新消费品牌上市背后：中国品牌全球化的第二轮机会来了

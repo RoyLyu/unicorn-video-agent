@@ -1,5 +1,16 @@
 # Changelog
 
+## Batch 13B - AIGC Visual Bible + Shot Prompt Production Contract
+
+- 扩展 ProductionPack schema，兼容新增 `creativeDirection`、`visualStyleBible`、`continuityBible`。
+- 扩展 shot / prompt bundle 合同：shotFunction、productionMethod、methodReason、subject、environment、lighting、style、continuityAssets、editing metadata、negativeConstraints 和 forbiddenElements。
+- 更新 single-pack prompt 与 normalization，补齐全片视觉总控、连续性系统、镜头功能、制作方式、剪辑结构和 8 类 prompt 信息。
+- 扩展 Production Studio gate，新增 Creative Direction、Visual Bible、Continuity、Shot Function、Production Method、Editing Readiness 和 Prompt Field Completeness 分数。
+- Production Studio UI 增加 AIGC contract 总览、pack-level 编辑区、shotFunction / productionMethod / risk / needsFix / editedOnly 筛选和更多 shot/prompt 字段编辑。
+- Showcase 展示 Creative Concept、Visual Metaphor、Visual Bible、Continuity、Shot Function 分布、Production Method 分布和 AIGC contract 分数。
+- Export 增强：`production-pack.md` 输出 Creative Direction、Visual Style Bible、Continuity Bible、Shot Function Summary、Production Method Summary、Editing Structure Summary 和 Prompt Completeness Summary；`storyboard.csv` 与 `prompt-pack.md` 输出新增制作字段。
+- real-run audit 增加视觉、连续性、镜头功能、制作方式、剪辑准备度和 prompt 字段完整性评分。
+
 ## Batch 13A - Production Studio Edit / Density Profile / Revalidate / Lock
 
 - 新增 Shot Density Profile：`lite`、`standard`、`dense`，默认 `standard`，并让 prompt、normalization、Production Studio gate 和 audit 接收 profile。

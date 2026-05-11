@@ -14,7 +14,23 @@ const header = [
   "visualType",
   "chartNeed",
   "copyrightRisk",
-  "replacementPlan"
+  "replacementPlan",
+  "shotCode",
+  "shotFunction",
+  "productionMethod",
+  "methodReason",
+  "subject",
+  "environment",
+  "lighting",
+  "style",
+  "cutType",
+  "transitionLogic",
+  "screenTextTiming",
+  "graphicTiming",
+  "musicCue",
+  "sfxCue",
+  "pace",
+  "rollType"
 ];
 
 export function generateStoryboardCsv(productionPack: ProductionPack) {
@@ -32,7 +48,23 @@ export function generateStoryboardCsv(productionPack: ProductionPack) {
       shot.visualType ?? shot.assetType,
       shot.chartNeed ?? "",
       shot.copyrightRisk ?? shot.rightsLevel,
-      shot.replacementPlan ?? ""
+      shot.replacementPlan ?? "",
+      shot.shotCode ?? shot.id,
+      shot.shotFunction ?? "",
+      shot.productionMethod ?? "",
+      shot.methodReason ?? "",
+      shot.subject ?? "",
+      shot.environment ?? "",
+      shot.lighting ?? "",
+      shot.style ?? "",
+      shot.editing?.cutType ?? "",
+      shot.editing?.transitionLogic ?? "",
+      shot.editing?.screenTextTiming ?? "",
+      shot.editing?.graphicTiming ?? "",
+      shot.editing?.musicCue ?? "",
+      shot.editing?.sfxCue ?? "",
+      shot.editing?.pace ?? "",
+      shot.editing?.rollType ?? ""
     ])
   );
 

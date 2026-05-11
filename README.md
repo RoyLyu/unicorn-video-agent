@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-Batch 13A：Production Studio Edit / Density Profile / Revalidate / Lock。
+Batch 13B：AIGC Visual Bible + Shot Prompt Production Contract。
 
 当前仓库提供：
 
@@ -33,6 +33,8 @@ Batch 13A：Production Studio Edit / Density Profile / Revalidate / Lock。
 - Shot Density Profile：`lite` / `standard` / `dense`，默认 `standard`
 - 可编辑 Production Studio 页面 `/projects/[projectId]/production-studio`
 - Production Studio edits overlay、Gate revalidate 和锁版状态
+- AIGC Creative Direction、Visual Style Bible、Continuity Bible
+- shot-level production contract：shotFunction、productionMethod、editing metadata 和 8 类 prompt 信息
 - 冻结成功 Demo 项目和版权风险替代方案展示
 - fallback/mock 成品门禁：Showcase、Export 和 real-run audit 不再把 fallback 当作成功成品
 - 纯函数 mock Agent pipeline
@@ -43,7 +45,7 @@ Batch 13A：Production Studio Edit / Density Profile / Revalidate / Lock。
 
 ## MVP 范围
 
-第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 13A 只升级 Production Studio 的密度档位、人工编辑、重新校验、锁版以及 Showcase / Export effective ProductionPack 联动；不调用 AI 重新生成，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
+第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 13B 只升级 AIGC 分镜和 Prompt 的生产规格：Creative Direction、Visual Bible、Continuity Bible、shot function、production method、editing metadata 和 prompt field completeness；不调用 AI 重新生成，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
 
 ## 环境变量
 
@@ -118,6 +120,18 @@ tmp/real-run-audit/failed-qa-report.md
 失败审计不会覆盖 `latest-production-pack.json` 与 `latest-qa-report.md`。只有显式传入 `--allowFallback` 才允许生成 fallback 审计报告，但该报告不能冒充 latest success。
 
 ## Batch 11B 质量验收
+
+## Batch 13B AIGC Production Contract
+
+Batch 13B 将 ProductionPack 从“shot/prompt 对齐文本包”升级为 AIGC 视频制作规格。真实或 effective ProductionPack 应包含：
+
+- `creativeDirection`：视觉核心、视觉隐喻、主视觉符号、叙事推进和制作总说明。
+- `visualStyleBible`：9:16 竖屏、色彩、灯光、材质、字体、图表和禁止元素。
+- `continuityBible`：人物/空间/物件/色彩/运动/图形/字体连续性和 reference frame plan。
+- 每个 shot 的 `shotFunction`、`productionMethod`、`methodReason`、subject、environment、lighting、style 和 editing metadata。
+- 每个 prompt bundle 的 shotCode、duration、subject、environment、camera、lighting、style、negativeConstraints、forbiddenElements 和 replacementPlan。
+
+Production Studio、Showcase、Export 和 `pnpm audit:real-run` 会显示 Visual Bible、Continuity、Shot Function、Production Method、Editing Readiness 和 Prompt Completeness。任一核心分数低于 4 时，界面和审计报告必须显示“需要重跑 / 人工修正”，且 Production Studio lock 会被拒绝。
 
 Batch 11B 默认使用 `AI_AGENT_MODE=single_pack`。生成后的 ProductionPack 会在保存前做文本 normalization：
 
@@ -322,5 +336,4 @@ src/
     schemas/
     storage/
 ```
-
 

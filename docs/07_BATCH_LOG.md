@@ -1,5 +1,32 @@
 # 07 Batch Log
 
+## Batch 13B - AIGC Visual Bible + Shot Prompt Production Contract
+
+目标：将 ProductionPack 升级为可执行 AIGC 视频制作规格，补齐 Creative Direction、Visual Style Bible、Continuity Bible、shot-level production method、editing metadata 和 8 类 prompt 信息。
+
+完成内容：
+
+- ProductionPack schema 兼容新增全局三大 bible 和 shot/prompt production contract 字段。
+- single-pack prompt 要求输出 Creative Direction、Visual Style Bible、Continuity Bible、shotFunction、productionMethod、editing metadata 和 prompt production contract。
+- normalization 补齐缺失字段，并保持 prompt bundle 与 shot 一一对应。
+- Production Studio gate 新增 creative / visual / continuity / function / method / editing / prompt completeness 分数。
+- Production Studio UI 增加 AIGC contract 总览、pack-level 编辑区、筛选和新增字段编辑。
+- Showcase 展示 Visual Bible、Continuity、Shot Function、Production Method、Editing Readiness 和 Prompt Completeness。
+- Export 输出 Creative Direction、Visual Style Bible、Continuity Bible、Shot Function Summary、Production Method Summary、Editing Structure Summary 和 Prompt Completeness Summary。
+- real-run audit 增加 AIGC production contract 分数和 needsFix 判定。
+
+明确不做：
+
+- AI 生图
+- AI 生视频
+- TTS
+- Remotion 自动成片
+- 公网部署
+- 用户系统
+- 自动发布视频号
+- 真实素材下载
+- 新增数据库表或覆盖原始 AI ProductionPack
+
 ## Batch 13A - Production Studio Edit / Density Profile / Revalidate / Lock
 
 目标：把 Production Studio 从只读检查页升级为内部生产编辑台，引入 `lite / standard / dense` Shot Density Profile，默认 `standard`，并通过 edits overlay、deterministic gate revalidate 和 lock 状态驱动 Showcase / Export 的 effective ProductionPack。

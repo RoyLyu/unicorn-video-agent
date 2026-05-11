@@ -16,9 +16,18 @@ export function generatePromptPackMarkdown(productionPack: ProductionPack) {
 - versionType：${prompt.versionType}
 - shotNumber：${prompt.shotNumber}
 - shotId：${prompt.shotId}
+- shotCode：${prompt.shotCode ?? prompt.shotId}
+- duration：${prompt.duration ?? ""}
+- subject：${prompt.subject ?? ""}
+- environment：${prompt.environment ?? ""}
+- camera：${prompt.camera ?? ""}
+- lighting：${prompt.lighting ?? ""}
+- style：${prompt.style ?? ""}
 - imagePrompt：${prompt.imagePrompt}
 - videoPrompt：${prompt.videoPrompt}
 - negativePrompt：${prompt.negativePrompt}
+- negativeConstraints：${prompt.negativeConstraints ?? prompt.negativePrompt}
+- forbiddenElements：${(prompt.forbiddenElements ?? []).join(" / ")}
 - styleLock：${prompt.styleLock}
 - aspectRatio：${prompt.aspectRatio}
 - usageWarning：${prompt.usageWarning}`

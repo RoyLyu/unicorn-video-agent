@@ -51,6 +51,14 @@ function createShowcase(): ShowcaseViewModel {
       shotCount180s: 60,
       promptCount: 90,
       alignment: "pass",
+      visualBibleScore: 5,
+      continuityScore: 5,
+      shotFunctionCoverageScore: 5,
+      productionMethodScore: 5,
+      editingReadinessScore: 5,
+      promptFieldCompletenessScore: 5,
+      shotFunctionCounts: {},
+      productionMethodCounts: {},
       needsFix: false,
       fixReasons: []
     },
@@ -73,6 +81,13 @@ function createShowcase(): ShowcaseViewModel {
     coreViewpoints: ["观点"],
     videoAngle: "角度",
     audienceTakeaway: "收获",
+    creativeDirection: {
+      creativeConcept: "用数据空间展示产业升级",
+      visualMetaphor: "从点状信号汇聚为增长路径",
+      mainVisualMotif: "银色数据线"
+    },
+    visualBibleSummary: "9:16 vertical / 商业纪录片 / 禁止真实 Logo",
+    continuityBibleSummary: "数据空间、信息卡和图表 HUD 贯穿全片",
     publishCopy: {
       coverTitle: "封面",
       titleCandidates: ["标题 1"],

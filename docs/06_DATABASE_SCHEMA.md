@@ -46,7 +46,7 @@ pnpm db:migrate
 - `agent_run_steps`：每个 Agent step 的顺序、状态、输入输出 JSON 和摘要。
 - `agent_context_snapshots`：每个 Agent step 的上下文快照。
 - `qa_results`：deterministic QA summary，包括 red rights risk 数量。
-- `production_studio_edits`：Production Studio 人工编辑 patch，按 projectId、versionType、shotNumber、editType 存储，不覆盖原始 ProductionPack。
+- `production_studio_edits`：Production Studio 人工编辑 patch，按 projectId、versionType、shotNumber、editType 存储，不覆盖原始 ProductionPack。Batch 13B 复用该表保存 pack-level 编辑，约定 `versionType = "global"`、`shotNumber = 0`，`editType` 可为 `creative_direction`、`visual_bible`、`continuity_bible`。
 - `production_studio_gate_runs`：Production Studio deterministic gate 记录，包括 densityProfile、counts、unmatched shots/prompts、red gaps、scores、needsFix 和 fix reasons。
 - `production_studio_locks`：Production Studio 锁版状态，记录 locked、lockedAt、lockNote 和对应 gateRunId。
 
@@ -65,7 +65,7 @@ pnpm db:migrate
 - `/projects/[projectId]/agent-runs` 读取项目 agent run。
 - `/agents` 和 `/agents/[agentSlug]` 读取 Agent 注册表和最近运行。
 - `/api/projects/[projectId]/production-studio` 读取 original/effective ProductionPack、edits、最近 gate run 和 lock 状态。
-- `/api/projects/[projectId]/production-studio/edits` 保存 shot、prompt 和 rights patch。
+- `/api/projects/[projectId]/production-studio/edits` 保存 shot、prompt、rights、method、editing patch，以及 Batch 13B 的 Creative Direction / Visual Bible / Continuity Bible pack-level patch。
 - `/api/projects/[projectId]/production-studio/revalidate` 对 effective ProductionPack 执行 deterministic gate check 并写入 gate run。
 - `/api/projects/[projectId]/production-studio/lock` 仅在最近 gate pass 时锁定当前生产包。
 - `/api/projects/[projectId]/production-studio/unlock` 解除锁定，不删除 edits 或 gate runs。
