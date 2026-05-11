@@ -1,5 +1,14 @@
 # Changelog
 
+## Batch 11A - Real Run Audit
+
+- 新增 `pnpm audit:real-run`，从标题构造 Title-only ArticleInput，复用现有 AI production-pack handler 运行真实端到端审计。
+- 新增真实审计输出：`tmp/real-run-audit/latest-production-pack.json` 与 `tmp/real-run-audit/latest-qa-report.md`。
+- 新增 QA scorer，按 7 个 Agent 输出分数、Top 10 problems、fix priority、建议修改位置和 demo-ready 判断。
+- Storyboard QA 检查镜头主体、镜头运动、剪辑可执行性、真实 Logo / 上市现场 / 人物肖像风险和 90s 节奏覆盖。
+- Prompt QA 检查 style lock、negativePrompt、真实品牌 Logo / 可读文字风险和 prompt-shot 对应关系。
+- 新增 `tmp/` ignore、`tsx` dev dependency 和审计相关测试。
+
 ## Batch 10B - Final Demo QA and Demo Runbook
 
 - 增强 `/quick-demo` 的 AI fallback 提示，配置缺失提示检查 `.env.local`，超时提示可改用短标题或稍后重试。

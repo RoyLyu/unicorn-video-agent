@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-Batch 10B：Final Demo QA and Demo Runbook。
+Batch 11A：Real Run Audit。
 
 当前仓库提供：
 
@@ -27,6 +27,7 @@ Batch 10B：Final Demo QA and Demo Runbook。
 - 面向外部展示、录屏和讲解的 `/projects/[projectId]/showcase`
 - 只输入标题即可生成并跳转 Showcase 的 `/quick-demo`
 - 最终演示路径提示、fallback 风险提示和 `docs/12_FINAL_DEMO_RUNBOOK.md`
+- 真实 AI 端到端审计命令 `pnpm audit:real-run`
 - 纯函数 mock Agent pipeline
 - `localStorage` demo fallback
 - Zod schema 与 pipeline 单元测试
@@ -35,7 +36,7 @@ Batch 10B：Final Demo QA and Demo Runbook。
 
 ## MVP 范围
 
-第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 10B 只做最终演示稳定性、错误提示、演示路径提示和 Runbook，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
+第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 11A 只做真实运行审计和质量报告，不优化 Agent 输出，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
 
 ## 环境变量
 
@@ -76,6 +77,23 @@ pnpm typecheck
 pnpm test
 pnpm build
 ```
+
+## Batch 11A Real Run Audit
+
+运行一次真实 AI 端到端审计：
+
+```bash
+pnpm audit:real-run -- --title "虚构家庭医疗公司冲刺上市" --templateType ipo --industryTags "医疗,IPO"
+```
+
+审计会创建本地 SQLite 项目，并输出：
+
+```text
+tmp/real-run-audit/latest-production-pack.json
+tmp/real-run-audit/latest-qa-report.md
+```
+
+`tmp/` 已加入 `.gitignore`，不要提交真实审计 JSON。报告只指出质量问题和 Batch 11B 修复方向，不会优化 Storyboard 或 Prompt Generator。
 
 ## Batch 10B 最终演示验收路径
 

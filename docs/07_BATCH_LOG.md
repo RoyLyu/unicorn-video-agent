@@ -1,5 +1,35 @@
 # 07 Batch Log
 
+## Batch 11A - Real Run Audit
+
+目标：建立一次真实 AI 端到端运行审计能力，用于跑通 `/quick-demo → AI production pack → Showcase → Export` 并输出质量问题报告。
+
+完成内容：
+
+- `pnpm audit:real-run`
+- `scripts/real-run-audit.ts`
+- 从标题、内容类型和行业标签构造 Title-only `ArticleInput`
+- 复用现有 `/api/ai/production-pack` route handler 写入 SQLite 项目
+- 保存完整 response JSON 到 `tmp/real-run-audit/latest-production-pack.json`
+- 保存 QA Markdown 报告到 `tmp/real-run-audit/latest-qa-report.md`
+- 逐 Agent 审计 Article Analyst、Thesis Agent、Script Writer、Storyboard Agent、Prompt Generator、Asset Finder、QA Agent
+- 输出 7 项评分、Top 10 problems、fix priority、建议修改位置和 demo-ready 判断
+- Storyboard 与 Prompt Generator 质量检查规则
+- `tmp/` 审计产物忽略提交
+- QA scorer、审计脚本表面和忽略规则测试
+
+明确不做：
+
+- AI 生图
+- AI 生视频
+- TTS
+- Remotion
+- 部署
+- 素材下载
+- 数据库重构
+- Agent 输出优化
+- Batch 11B 功能
+
 ## Batch 10B - Final Demo QA and Demo Runbook
 
 目标：为 `/quick-demo → AI Agent → Showcase → Export` 建立最终演示验收、错误提示、演示说明和最小浏览器流程测试基础。

@@ -117,6 +117,18 @@
 - [x] 新增 `docs/12_FINAL_DEMO_RUNBOOK.md`。
 - [x] 新增最终演示 QA 测试。
 
+## Batch 11A
+
+- [x] 新增 `pnpm audit:real-run`。
+- [x] 新增 `scripts/real-run-audit.ts`。
+- [x] 从标题、templateType、industryTags 构造 Title-only ArticleInput。
+- [x] 复用现有 AI production-pack handler 生成真实本地项目。
+- [x] 保存 `tmp/real-run-audit/latest-production-pack.json`。
+- [x] 保存 `tmp/real-run-audit/latest-qa-report.md`。
+- [x] 新增 7 个 Agent 的 QA scorer 和 Markdown 报告。
+- [x] 新增 Storyboard、Prompt、Rights 风险识别测试。
+- [x] `.gitignore` 忽略 `tmp/` 和 `tmp/real-run-audit/`。
+
 ## Batch 10 建议
 
 - [ ] 增加 prompt 版本管理和 prompt diff。

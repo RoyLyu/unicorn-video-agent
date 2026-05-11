@@ -191,3 +191,15 @@
 决定：Batch 10B 不修改 AI pipeline 主逻辑，只在 API response、Quick Demo、Showcase、Dashboard、Public Demo 和 Runbook 中增加最终演示提示、fallback 摘要和验收路径。
 
 原因：今天的目标是外部展示稳定性；生成质量和 prompt 版本管理应留给后续批次，避免在演示前引入高风险逻辑变更。
+
+## D033 - Real Run Audit 只产出审计证据
+
+决定：Batch 11A 新增 `pnpm audit:real-run`，将真实运行 response 和 QA 报告写入 `tmp/real-run-audit/`，但不修改 Agent prompt、schema 或 mapper 来优化结果。
+
+原因：当前问题是 Storyboard 与 Prompt Generator 质量需要被完整记录和定位；先用可复现审计报告形成 Batch 11B 的证据，再进入优化，避免把评估和修复混在同一批次。
+
+## D034 - 审计产物不进入仓库
+
+决定：`tmp/` 和 `tmp/real-run-audit/` 被 `.gitignore` 忽略，真实运行 JSON 与报告只作为本地诊断材料。
+
+原因：审计 JSON 可能包含用户输入、模型输出和本地项目标识，不应作为源代码或文档提交；仓库只保留审计脚本、评分规则和报告模板。

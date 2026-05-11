@@ -11,3 +11,5 @@ coverage
 *.tsbuildinfo
 data/*.sqlite
 data/*.sqlite-*
+tmp/
+tmp/real-run-audit/

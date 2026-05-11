@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "audit:real-run": "tsx scripts/real-run-audit.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "mkdir -p data && drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
@@ -30,6 +31,7 @@
     "drizzle-kit": "^0.31.10",
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.6",
+    "tsx": "^4.21.0",
     "typescript": "5.9.3",
     "vitest": "4.1.5"
   },

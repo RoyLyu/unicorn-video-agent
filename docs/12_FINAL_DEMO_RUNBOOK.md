@@ -50,6 +50,21 @@ http://localhost:3000
 6. 点击下载 `production-pack.md`。
 7. 点击 Export，展示其余文本导出文件。
 
+## 真实运行审计
+
+演示前或发现输出质量问题时，可以运行一次审计命令：
+
+```bash
+pnpm audit:real-run -- --title "虚构家庭医疗公司冲刺上市" --templateType ipo --industryTags "医疗,IPO"
+```
+
+审计会创建一个本地项目记录，并保存两份本地文件：
+
+- `tmp/real-run-audit/latest-production-pack.json`
+- `tmp/real-run-audit/latest-qa-report.md`
+
+报告重点检查 Storyboard 是否可剪辑执行、Prompt 是否可直接用于后续素材生成工具、版权风险是否可控，以及当前结果是否适合 demo。审计只记录问题和修改建议，不会自动优化 Agent、不生成图片视频、不下载素材。
+
 ## 推荐 5 个标题
 
 1. 虚构家庭医疗公司冲刺上市，基层健康管理赛道迎来新样本
