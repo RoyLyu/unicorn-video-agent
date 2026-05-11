@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-Batch 08 接入真实 AI 文本 Agent pipeline。本文件定义本地 mock Agent、真实 AI Agent、Agent 管理层、ProductionPack、文本导出、审阅记录和公开 demo 数据的输入输出边界。
+Batch 12B 接入真实 AI 文本 Agent pipeline 的生产工作台门禁。本文件定义本地 mock Agent、真实 AI Agent、Agent 管理层、ProductionPack、文本导出、审阅记录、公开 demo 数据和 Production Studio 的输入输出边界。
 
 ## Article Input Contract
 
@@ -18,7 +18,7 @@ Batch 08 接入真实 AI 文本 Agent pipeline。本文件定义本地 mock Agen
 
 ## Production Package Contract
 
-Batch 05 的生成源数据仍应符合 `ProductionPackSchema`，包括：
+生成源数据仍应符合 `ProductionPackSchema`，包括：
 
 - `analysis`
 - `thesis`
@@ -27,6 +27,23 @@ Batch 05 的生成源数据仍应符合 `ProductionPackSchema`，包括：
 - `assetPrompts`
 - `rightsChecks`
 - `exportManifest`
+
+Batch 12B 起，ProductionPack 还必须支持：
+
+- `storyboard.shots[].versionType`：`90s` 或 `180s`
+- `storyboard.shots[].shotNumber`：版本内递增编号
+- `storyboard.shots[].camera`、`composition`、`motion`、`visualType`、`chartNeed`
+- `storyboard.shots[].copyrightRisk` 与 `replacementPlan`
+- `assetPrompts.promptBundles[]`：canonical prompt 单元，按 `versionType + shotNumber + shotId` 对应唯一 shot
+- `rightsChecks[].replacementPlan`：red 项必须存在
+
+真实 AI 成品门禁：
+
+- 90s shots >= 30
+- 180s shots >= 60
+- `promptBundles.length === storyboard.shots.length`
+- 每个 shot 都能找到 prompt bundle，每个 prompt bundle 都能反查 shot
+- red rights risk 必须有替代方案
 
 ## Batch 07 Agent Registry Contract
 
@@ -46,7 +63,9 @@ AI Agent 执行顺序固定为：
 6. Asset Finder
 7. QA Agent
 
-单个 AI Agent 失败或 schema 不通过时，该 step 必须记录 `completed_with_fallback`，并使用对应 mock 输出继续。AI 配置缺失时，整条 AI route 仍创建 agent run，并以 mock 输出完成 ProductionPack。
+Batch 12A 起，真实输出模式不允许 fallback/mock 冒充成功成品。Batch 12B 的 shot/prompt gate 失败时，Audit、Showcase 和 Export 必须显示“需要重跑 / 人工修正”。
+
+单个 AI Agent 失败或 schema 不通过时，只有显式 fast demo 或开发测试才允许 fallback。真实生产和真实审计必须 fail loudly。
 
 ## Mock Pipeline Tracking Contract
 
@@ -55,6 +74,12 @@ AI Agent 执行顺序固定为：
 ## Export Contract
 
 `src/lib/export/*` 中的导出函数必须是纯函数。它们只接收 `ProductionPack`，返回 Markdown、CSV 或 JSON 字符串，不读写文件、不调用外部 API、不访问数据库。数据库读取只发生在导出 API route 中。
+
+Batch 12B 导出要求：
+
+- `production-pack.md` 必须包含 Shot / Prompt Gate Summary。
+- `storyboard.csv` 必须包含 `versionType`。
+- `prompt-pack.md` 必须按 `versionType + shotNumber` 输出 prompt bundles。
 
 ## Review Contract
 

@@ -1,5 +1,15 @@
 # Changelog
 
+## Batch 12B - Shot / Prompt Volume Gate and Production Studio Core
+
+- 扩展 ProductionPack schema，支持 90s / 180s micro-shots、shotNumber、camera、composition、motion、copyrightRisk、replacementPlan 和 canonical `promptBundles`。
+- 更新 single-pack prompt 与 normalization：90s 至少 30 shots，180s 至少 60 shots，prompt bundle 数量等于 shot 数量。
+- 新增 Production Studio 纯函数层与 `/projects/[projectId]/production-studio` 页面，展示 shot/prompt 对齐、gate score、版权汇总和修正原因。
+- Showcase 顶部显示 Shot / Prompt Gate 摘要；低于标准时显示“需要重跑 / 人工修正”。
+- 导出增强：`production-pack.md` 增加 Shot / Prompt Gate Summary，`storyboard.csv` 增加 versionType 等字段，`prompt-pack.md` 按 versionType + shotNumber 输出。
+- real-run audit 增加 30/60 shots、prompt count、red replacement 和 needsFix 门禁，失败不覆盖 latest success。
+- 更新 README、TODO、Agent Contracts、Batch Log、Decisions、Runbook 和 env token 建议。
+
 ## Batch 12A - Strict Real Output and Audit Failure Gate
 
 - 新增 strict AI policy：默认 `AI_REQUIRE_REAL_OUTPUT=true`、`AI_ALLOW_MOCK_FALLBACK=false`，真实模式下 AI 失败不再保存 mock fallback 成功项目。

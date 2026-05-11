@@ -35,6 +35,9 @@ export default async function ExportPage({
             <Link className="primary-link" href={`/projects/${projectId}/showcase`}>
               进入 Showcase
             </Link>
+            <Link className="ghost-button" href={`/projects/${projectId}/production-studio`}>
+              Production Studio
+            </Link>
             <Link className="ghost-button" href={`/projects/${projectId}/review`}>
               进入 Review
             </Link>

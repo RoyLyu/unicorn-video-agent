@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import type { AgentRunDetail, AgentRunSummary } from "@/db/repositories/agent-run-repository";
 import type { ProjectDetail } from "@/db/repositories/project-repository";
 import { demoProductionPack } from "@/lib/mock-pipeline/demo-production-pack";
+import { normalizeProductionPack } from "@/lib/ai-agents/normalize-production-pack";
 
 import { mapShowcaseViewModel } from "./showcase-mapper";
 
@@ -159,6 +160,21 @@ describe("showcase mapper", () => {
     expect(viewModel.isTitleOnlyDemo).toBe(false);
     expect(viewModel.titleOnlyWarning).toBeNull();
     expect(viewModel.titleOnlyFactReportWarning).toBeNull();
+  });
+
+  it("adds shot prompt gate summary and production studio link", () => {
+    const viewModel = mapShowcaseViewModel({
+      project,
+      productionPack: normalizeProductionPack({ ...demoProductionPack, mode: "ai" }),
+      reviewData: null,
+      latestAgentRun: completedRun,
+      latestAgentRunDetail: createRunDetail(completedRun)
+    });
+
+    expect(viewModel.productionStudioGate.shotCount90s).toBeGreaterThanOrEqual(30);
+    expect(viewModel.productionStudioGate.shotCount180s).toBeGreaterThanOrEqual(60);
+    expect(viewModel.productionStudioGate.alignment).toBe("pass");
+    expect(viewModel.links.productionStudio).toBe("/projects/project-1/production-studio");
   });
 
   it("does not import AI modules or read server API key names", () => {

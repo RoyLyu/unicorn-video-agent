@@ -43,7 +43,8 @@ import {
 import { normalizeProductionPack } from "./normalize-production-pack";
 import {
   requiredNegativePrompt,
-  singlePackProductionPrompt
+  singlePackProductionPrompt,
+  visualStyleLock
 } from "./prompts/single-pack-production-prompt";
 
 type SaveOptions = {
@@ -307,17 +308,20 @@ async function requestChatCompletionJson(
   userInput: unknown
 ) {
   const client = createOpenAiClient(config);
-  const response = await client.chat.completions.create(
-    {
-      model: config.model,
-      messages: [
-        { role: "system", content: singlePackProductionPrompt() },
-        { role: "user", content: JSON.stringify(userInput) }
-      ],
-      temperature: 0.2,
-      max_tokens: Math.max(config.maxTokens, 8000)
-    },
-    { timeout: config.requestTimeoutMs }
+  const response = await withTimeout(
+    client.chat.completions.create(
+      {
+        model: config.model,
+        messages: [
+          { role: "system", content: singlePackProductionPrompt() },
+          { role: "user", content: JSON.stringify(userInput) }
+        ],
+        temperature: 0.2,
+        max_tokens: config.maxTokens
+      },
+      { timeout: config.requestTimeoutMs }
+    ),
+    config.requestTimeoutMs
   );
   const content = response.choices[0]?.message?.content;
 
@@ -326,6 +330,20 @@ async function requestChatCompletionJson(
   }
 
   return content;
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout>;
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeout = setTimeout(() => {
+      reject(new Error(`AI request timeout after ${timeoutMs}ms.`));
+    }, timeoutMs);
+  });
+
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    clearTimeout(timeout);
+  });
 }
 
 function saveFallbackPack(input: {
@@ -389,6 +407,19 @@ function coerceAiProductionPack(rawOutput: unknown, articleInput: ArticleInput):
       visual: String(item.visual ?? item.scene ?? "行业观点信息卡"),
       assetType: normalizeAssetType(item.assetType, index),
       rightsLevel: normalizeRightsLevel(item.rightsLevel),
+      versionType: normalizeVersionType(item.versionType),
+      shotNumber: Number(item.shotNumber ?? index + 1),
+      beat: item.beat ? String(item.beat) : undefined,
+      duration: item.duration ? String(item.duration) : undefined,
+      voiceover: item.voiceover ? String(item.voiceover) : undefined,
+      overlayText: item.overlayText ? String(item.overlayText) : undefined,
+      camera: item.camera ? String(item.camera) : undefined,
+      composition: item.composition ? String(item.composition) : undefined,
+      motion: item.motion ? String(item.motion) : undefined,
+      visualType: item.visualType ? String(item.visualType) : undefined,
+      chartNeed: item.chartNeed ? String(item.chartNeed) : undefined,
+      copyrightRisk: normalizeRightsLevel(item.copyrightRisk ?? item.rightsLevel),
+      replacementPlan: item.replacementPlan ? String(item.replacementPlan) : undefined,
       imagePrompt: item.imagePrompt,
       videoPrompt: item.videoPrompt,
       negativePrompt: item.negativePrompt,
@@ -414,7 +445,20 @@ function coerceAiProductionPack(rawOutput: unknown, articleInput: ArticleInput):
         narration: shot.narration,
         visual: shot.visual,
         assetType: shot.assetType,
-        rightsLevel: shot.rightsLevel
+        rightsLevel: shot.rightsLevel,
+        versionType: shot.versionType,
+        shotNumber: shot.shotNumber,
+        beat: shot.beat,
+        duration: shot.duration,
+        voiceover: shot.voiceover,
+        overlayText: shot.overlayText,
+        camera: shot.camera,
+        composition: shot.composition,
+        motion: shot.motion,
+        visualType: shot.visualType,
+        chartNeed: shot.chartNeed,
+        copyrightRisk: shot.copyrightRisk,
+        replacementPlan: shot.replacementPlan
       }))
     },
     assetPrompts,
@@ -546,6 +590,27 @@ function coerceAssetPrompts(
         negativePrompt: shot.negativePrompt,
         notes: shot.notes
       }));
+  const promptBundles = Array.isArray(record.promptBundles)
+    ? record.promptBundles.map((item, index) => {
+        const bundle = isRecord(item) ? item : {};
+        const shot = shots[index] ?? {};
+        const versionType = normalizeVersionType(bundle.versionType ?? shot.versionType) ?? "90s";
+        const shotNumber = Number(bundle.shotNumber ?? shot.shotNumber ?? index + 1);
+        const shotId = String(bundle.shotId ?? bundle.sceneRef ?? shot.id ?? `S${String(index + 1).padStart(2, "0")}`);
+
+        return {
+          versionType,
+          shotNumber,
+          shotId,
+          imagePrompt: String(bundle.imagePrompt ?? bundle.prompt ?? shot.imagePrompt ?? shot.visual ?? "business documentary image prompt"),
+          videoPrompt: String(bundle.videoPrompt ?? bundle.prompt ?? shot.videoPrompt ?? shot.visual ?? "business documentary video prompt"),
+          negativePrompt: String(bundle.negativePrompt || requiredNegativePrompt),
+          styleLock: String(bundle.styleLock ?? visualStyleLock),
+          aspectRatio: String(bundle.aspectRatio ?? "9:16"),
+          usageWarning: String(bundle.usageWarning ?? "不得生成真实 Logo、新闻图、创始人肖像、招股书截图或可读品牌文字。")
+        };
+      })
+    : undefined;
 
   return {
     imagePrompts: imagePrompts.map((item, index) => coercePromptItem(item, index, "IMG", shots)),
@@ -568,7 +633,8 @@ function coerceAssetPrompts(
             intendedUse: "寻找非特定公司、非新闻现场的抽象商业氛围素材。",
             licenseRequirement: "必须人工确认可商用、可二创和署名要求。"
           }
-        ]
+        ],
+    promptBundles
   };
 }
 
@@ -601,7 +667,8 @@ function coerceRightsChecks(value: unknown, basePack: ProductionPack) {
       item: String(record.item ?? record.materialType ?? record.shotId ?? `版权项 ${index + 1}`),
       level,
       reason: String(record.reason ?? record.notes ?? "需要人工复核授权。"),
-      action: String(record.action ?? record.reviewAction ?? "替换为自制图表、抽象 AI 画面或 placeholder 复核项，不使用真实素材。")
+      action: String(record.action ?? record.reviewAction ?? "替换为自制图表、抽象 AI 画面或 placeholder 复核项，不使用真实素材。"),
+      replacementPlan: record.replacementPlan ? String(record.replacementPlan) : undefined
     };
   });
 }
@@ -694,6 +761,10 @@ function normalizeRightsLevel(value: unknown) {
   const allowed = ["green", "yellow", "red", "placeholder"];
 
   return allowed.includes(String(value)) ? String(value) : "placeholder";
+}
+
+function normalizeVersionType(value: unknown) {
+  return value === "90s" || value === "180s" ? value : undefined;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -12,5 +12,7 @@ describe("ProjectNav", () => {
 
     expect(html).toContain("Showcase");
     expect(html).toContain("/projects/project-1/showcase");
+    expect(html).toContain("Production Studio");
+    expect(html).toContain("/projects/project-1/production-studio");
   });
 });

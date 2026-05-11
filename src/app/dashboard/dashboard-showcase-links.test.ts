@@ -8,6 +8,8 @@ describe("Dashboard showcase links", () => {
 
     expect(source).toContain("/showcase");
     expect(source).toContain("Showcase");
+    expect(source).toContain("/production-studio");
+    expect(source).toContain("Production Studio");
   });
 
   it("adds a Quick Demo shortcut to the dashboard header", () => {

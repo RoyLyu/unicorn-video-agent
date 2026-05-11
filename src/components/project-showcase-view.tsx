@@ -54,6 +54,19 @@ export function ProjectShowcaseView({
               {showcase.titleOnlyFactReportWarning}
             </div>
           ) : null}
+          <div className="showcase-warning">
+            <strong>Shot / Prompt Gate：</strong>
+            90s: {showcase.productionStudioGate.shotCount90s} shots / 180s:{" "}
+            {showcase.productionStudioGate.shotCount180s} shots / prompts:{" "}
+            {showcase.productionStudioGate.promptCount} / alignment:{" "}
+            {showcase.productionStudioGate.alignment}
+          </div>
+          {showcase.productionStudioGate.needsFix ? (
+            <div className="showcase-warning showcase-warning--blocked">
+              需要重跑 / 人工修正
+              {showcase.productionStudioGate.fixReasons.length ? `：${showcase.productionStudioGate.fixReasons.join("；")}` : null}
+            </div>
+          ) : null}
         </div>
         <div className="showcase-cta">
           {showcase.blockProductionDownload ? (
@@ -70,6 +83,9 @@ export function ProjectShowcaseView({
               重新生成真实 AI 版本
             </Link>
           ) : null}
+          <Link className="ghost-button" href={showcase.links.productionStudio}>
+            Production Studio
+          </Link>
           <Link className="ghost-button" href={showcase.links.review}>
             进入 Review
           </Link>

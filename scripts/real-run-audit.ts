@@ -97,10 +97,6 @@ async function main() {
     return;
   }
 
-  const productionPackExport = generateExportFile(
-    "production-pack.md",
-    body.productionPack
-  );
   const auditReport = createRealRunAuditReport({
     productionPack: body.productionPack,
     projectId: body.projectId,
@@ -108,6 +104,10 @@ async function main() {
     fallbackUsed: body.fallbackUsed,
     generationMode: body.generationMode
   });
+  const productionPackExport = generateExportFile(
+    "production-pack.md",
+    body.productionPack
+  );
   const markdown = [
     renderRealRunAuditMarkdown(auditReport),
     "",
@@ -117,6 +117,21 @@ async function main() {
       ? "- production-pack.md generated in memory: yes"
       : "- production-pack.md generated in memory: no"
   ].join("\n");
+
+  if (
+    !args.allowFallback &&
+    (auditReport.productionStudioSummary.needsFix ||
+      auditReport.scorecard.overall_demo_readiness_score < 4)
+  ) {
+    await writeFailedArtifacts({
+      reason: "需要重跑 / 人工修正",
+      responseBody: JSON.stringify(body, null, 2),
+      productionPack: body.productionPack,
+      reportMarkdown: markdown
+    });
+    process.exitCode = 1;
+    return;
+  }
 
   await mkdir(outputDir, { recursive: true });
   await writeFile(productionPackPath, JSON.stringify(body, null, 2), "utf8");
@@ -235,6 +250,7 @@ async function writeFailedArtifacts(input: {
   reason: string;
   responseBody: string;
   productionPack?: ProductionPack;
+  reportMarkdown?: string;
 }) {
   await mkdir(outputDir, { recursive: true });
   const payload = {
@@ -243,7 +259,7 @@ async function writeFailedArtifacts(input: {
     responseBody: input.responseBody,
     productionPack: input.productionPack ?? null
   };
-  const markdown = [
+  const markdown = input.reportMarkdown ?? [
     "# Failed Real Run Audit",
     "",
     `- Reason: ${input.reason}`,

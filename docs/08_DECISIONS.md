@@ -245,3 +245,21 @@
 决定：当显式 fast demo 或开发测试允许 fallback 时，项目可以保存并展示，但 Showcase 必须红色提示不可作为正式成品，主 `production-pack.md` 下载按钮禁用；strict mode 下导出 API 阻止 fallback/mock production-pack 下载。
 
 原因：mock pipeline 仍有开发和链路演示价值，但不能被误用为真实 AI 生产结果。展示层和导出层需要同步表达这一边界。
+
+## D042 - promptBundles 是 Batch 12B 的 canonical prompt count
+
+决定：Batch 12B 将 `assetPrompts.promptBundles` 作为 prompt count 的唯一 canonical 来源；旧项目缺少该字段时，mapper 可由 `imagePrompts` / `videoPrompts` 按 `sceneRef` 合并出 virtual bundles。
+
+原因：一个生产镜头需要同时包含 imagePrompt、videoPrompt 和 negativePrompt。分别统计 image/video prompt 会把一个 shot 计算两次，无法判断 shot 与 prompt 是否一一对应。
+
+## D043 - micro-shots 共存在单一 storyboard 数组
+
+决定：不新增数据库表，不拆分独立 90s/180s storyboard 字段；90s 与 180s micro-shots 共存在 `storyboard.shots` 中，通过 `versionType` 和 `shotNumber` 区分。
+
+原因：保持旧项目可读取，继续使用 `video_projects.production_pack_json` 保存完整结构，避免为了 Batch 12B 做数据库大重构。
+
+## D044 - Production Studio gate 失败不等于 fallback
+
+决定：Batch 12B 中 gate 失败的真实 AI ProductionPack 仍可下载，但必须在 Showcase、Export 和 Audit 中显示“需要重跑 / 人工修正”。这不同于 Batch 12A 的 fallback/mock 阻断。
+
+原因：gate 失败说明真实输出需要生产修正，不代表 AI 没有返回真实内容。团队仍需要查看导出内容来定位问题，但不能把它当作 ready 成品。

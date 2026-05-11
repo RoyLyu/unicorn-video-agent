@@ -2,6 +2,7 @@ import Link from "next/link";
 
 const projectNavItems = [
   { label: "Showcase", segment: "showcase" },
+  { label: "Production Studio", segment: "production-studio" },
   { label: "Analysis", segment: "analysis" },
   { label: "Scripts", segment: "scripts" },
   { label: "Shots", segment: "shots" },

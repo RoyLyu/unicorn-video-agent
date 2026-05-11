@@ -33,6 +33,16 @@ export default async function ProjectAgentRunsPage({
         eyebrow="Batch 08 / Agent Runs"
         title="Agent Runs"
         description="展示项目的 Mock / AI pipeline 运行记录、fallback 状态和错误信息。"
+        actions={
+          <div className="action-row">
+            <Link className="primary-link" href={`/projects/${projectId}/production-studio`}>
+              Production Studio
+            </Link>
+            <Link className="ghost-button" href={`/projects/${projectId}/showcase`}>
+              Showcase
+            </Link>
+          </div>
+        }
       />
       <ProjectNav projectId={projectId} />
       <section className="panel">

@@ -6,13 +6,14 @@
 
 ## 成功项目
 
-- projectId: `f966086f-1599-4b30-be3d-231b04d02d45`
-- agentRunId: `1f154db7-7a3b-4eb7-88d7-99f31e60d8aa`
+- projectId: `b3bb3742-101a-4c60-b211-e1697084738e`
+- agentRunId: `c48b27d4-cce7-4cd9-aca4-1b0833841286`
 - generationMode: `ai`
 - fallbackUsed: `false`
 - Demo-ready: yes
-- Showcase: `/projects/f966086f-1599-4b30-be3d-231b04d02d45/showcase`
-- production-pack.md: `/api/projects/f966086f-1599-4b30-be3d-231b04d02d45/exports/production-pack.md`
+- Showcase: `/projects/b3bb3742-101a-4c60-b211-e1697084738e/showcase`
+- Production Studio: `/projects/b3bb3742-101a-4c60-b211-e1697084738e/production-studio`
+- production-pack.md: `/api/projects/b3bb3742-101a-4c60-b211-e1697084738e/exports/production-pack.md`
 
 ## Scores
 
@@ -20,6 +21,20 @@
 - Prompt 5/5
 - Rights 4/5
 - Overall 4/5
+
+## Batch 12B Gate
+
+- Production Studio Gate: pass
+- 90s shots: 30
+- 180s shots: 60
+- promptBundles: 90
+- prompt count equals shot count: yes
+- unmatched shots: 0
+- unmatched prompts: 0
+- red risks without replacementPlan: 0
+- banned output hits: 0
+- needsFix: false
+- 如果后续审计失败或出现“需要重跑 / 人工修正”，不要覆盖本冻结项目；只查看 failed artifacts 定位问题。
 
 ## 当前剩余风险
 
