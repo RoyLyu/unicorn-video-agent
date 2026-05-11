@@ -88,7 +88,26 @@
 - [x] Analysis 和 Agent Runs 展示 generation mode / fallback 状态。
 - [x] 新增 Batch 08 测试。
 
-## Batch 09 建议
+## Batch 09
+
+- [x] 新增 `/projects/[projectId]/showcase` 成品展示页。
+- [x] 新增 Showcase mapper 和展示模型测试。
+- [x] 展示 generation mode、fallback、Agent Run 摘要、核心观点、标题候选、脚本、分镜、Prompt、版权风险和发布文案。
+- [x] Dashboard、ProjectNav、Analysis、Review、Export 增加 Showcase 入口。
+- [x] Showcase 下载 `production-pack.md` 并跳转 Review / Export / Agent Runs。
+- [x] 文档更新为 Batch 09 状态。
+
+## Batch 10A
+
+- [x] 新增 `/quick-demo` Title-only Fast Demo 页面。
+- [x] 根据标题、内容类型和可选行业标签构造合法 `ArticleInput`。
+- [x] `rawText` 明确标注标题演示 brief、事实需核验和“不构成投资建议”。
+- [x] 调用现有 `/api/ai/production-pack` 并成功跳转 Showcase。
+- [x] Dashboard 和 `/demo` 增加 Quick Demo 入口。
+- [x] Showcase 对 `Title-only Demo` 来源项目显示事实核验提示。
+- [x] 新增 Quick Demo helper、导航和 Showcase warning 测试。
+
+## Batch 10 建议
 
 - [ ] 增加 prompt 版本管理和 prompt diff。
 - [ ] 增加真实 AI 输出质量评分和人工批准开关。

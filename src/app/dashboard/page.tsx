@@ -34,6 +34,9 @@ export default function DashboardPage() {
             <Link className="primary-link" href="/articles/new">
               新建文章
             </Link>
+            <Link className="ghost-button" href="/quick-demo">
+              Quick Demo
+            </Link>
             <Link className="ghost-button" href="/demo">
               Public Demo
             </Link>
@@ -150,6 +153,7 @@ function ProjectListItem({ project }: { project: ProjectWithAgentRun }) {
         agent: {project.latestAgentRun?.status ?? "not_started"}
       </StatusBadge>{" "}
       <div className="action-row">
+        <Link href={`/projects/${project.id}/showcase`}>Showcase</Link>
         <Link href={`/projects/${project.id}/analysis`}>Analysis</Link>
         <Link href={`/projects/${project.id}/agent-runs`}>Agent Runs</Link>
         <Link href={`/projects/${project.id}/review`}>Review</Link>

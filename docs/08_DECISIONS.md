@@ -144,11 +144,11 @@
 
 原因：Batch 07 仍不接真实 AI、搜索或素材网站；QA 结果只能作为审阅提示，不代表事实或法律确认。
 
-## D025 - Batch 08 真实 AI 只做文本 structured output
+## D025 - Batch 08 真实 AI 只做文本 Chat Completions JSON output
 
-决定：真实 AI pipeline 只调用 OpenAI 文本 structured output，不做 AI 生图、生视频、TTS、素材下载或自动成片。
+决定：真实 AI pipeline 只调用 MiniMax OpenAI-compatible Chat Completions，并把模型输出清理、JSON.parse 后交给 Zod 校验；不做 AI 生图、生视频、TTS、素材下载或自动成片。
 
-原因：当前产品合同是文章到 ProductionPack，媒体生成和剪辑应在文本包稳定后单独进入后续批次。
+原因：MiniMax M2.7 当前按 OpenAI-compatible Chat Completions 接入，文本包稳定后再单独评估媒体生成和剪辑。
 
 ## D026 - AI_MODEL 只从环境变量读取
 
@@ -161,3 +161,27 @@
 决定：AI 配置缺失、单步调用失败或 schema 校验失败时，Agent Run/Step 标记 `completed_with_fallback` 并使用 mock 输出继续。
 
 原因：公开 demo 和内部审阅流程必须稳定；AI 质量和可用性问题应被记录，而不是让生成闭环中断。
+
+## D028 - MiniMax 默认使用 single-pack 生成
+
+决定：`/api/ai/production-pack` 默认使用 `AI_AGENT_MODE=single_pack`，只调用一次 MiniMax OpenAI-compatible Chat Completions 生成完整 `ProductionPack`；只有显式设置 `AI_AGENT_MODE=sequential` 时才走旧的 7-step remote runner。
+
+原因：MiniMax-M2.7 的单次 JSON 生成更稳定，减少多轮 schema 失败和 token 分散导致的 fallback。
+
+## D029 - AI schema 错误必须暴露安全 path 摘要
+
+决定：MiniMax 输出在 JSON.parse 后必须通过 Zod 校验；校验失败时 Agent Run Step 写入 `path=... message=...` 摘要，development API response 可返回 `safeErrorSummary`。
+
+原因：只记录 generic fallback 无法判断是字段缺失、类型错误还是模板文案污染，影响后续 prompt 修复。
+
+## D030 - Showcase 是展示视图，不是生成或发布层
+
+决定：Batch 09 的 `/projects/[projectId]/showcase` 只读取 SQLite 中已有 ProductionPack、Review、Export 和 Agent Run 数据，整理为外部展示页；不调用 AI、不生成媒体、不写导出文件、不自动发布。
+
+原因：Showcase 的价值是让已有生产包更适合演示和录屏，而不是扩大生成链路或改变发布合规边界。
+
+## D031 - Title-only Demo 使用 sourceName 标记
+
+决定：Batch 10A 的快速演示项目通过 `sourceName = "Title-only Demo"` 识别，不新增数据库字段或 API。
+
+原因：本批只做外部展示用快速入口；复用现有 ArticleInput、AI API、SQLite 和 Showcase 数据流，可以避免扩大 schema 变更，同时让 Showcase 明确提示标题生成项目需要人工核验事实。

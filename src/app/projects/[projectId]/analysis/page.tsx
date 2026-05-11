@@ -36,9 +36,14 @@ export default async function AnalysisPage({
         title="分析结果"
         description="从 SQLite 读取 ProductionPack，展示 analysis 与 thesis，并标记 AI / Mock / fallback 生成状态。"
         actions={
-          <Link className="primary-link" href={`/projects/${projectId}/review`}>
-            进入 Review
-          </Link>
+          <div className="action-row">
+            <Link className="primary-link" href={`/projects/${projectId}/showcase`}>
+              进入 Showcase
+            </Link>
+            <Link className="ghost-button" href={`/projects/${projectId}/review`}>
+              进入 Review
+            </Link>
+          </div>
         }
       />
       <ProjectNav projectId={projectId} />

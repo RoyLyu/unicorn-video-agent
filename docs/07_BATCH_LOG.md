@@ -1,5 +1,59 @@
 # 07 Batch Log
 
+## Batch 10A - Title-only Fast Demo
+
+目标：新增一个极简演示入口，只输入标题即可生成 AI 视频号生产包，并直接进入 Showcase。
+
+完成内容：
+
+- `/quick-demo`
+- Title-only ArticleInput 构造 helper
+- 内容类型默认标签和行业标签 normalize
+- 标题演示 brief，明确事实需人工核验和“不构成投资建议”
+- 调用现有 `/api/ai/production-pack`
+- 成功后跳转 `/projects/[projectId]/showcase`
+- Dashboard 和 `/demo` Quick Demo 入口
+- Showcase 对 Title-only 项目显示事实核验提示
+- Quick Demo、导航和 Showcase warning 测试
+
+明确不做：
+
+- AI 生图
+- AI 生视频
+- TTS
+- Remotion 自动成片
+- 自动下载网络素材
+- 自动发布视频号
+- 公网部署
+- prompt versioning
+- 修改 `/articles/new` 主流程
+
+## Batch 09 - Showcase 成品展示页
+
+目标：把 AI 或 Mock 生成的 ProductionPack 整理成适合外部展示、录屏和讲解的成品展示页。
+
+完成内容：
+
+- `/projects/[projectId]/showcase`
+- Showcase 数据映射层
+- ProjectShowcaseView 和脚本、分镜、风险、Agent 摘要展示组件
+- Dashboard Showcase 快捷入口
+- ProjectNav Showcase 入口
+- Analysis、Review、Export 页面进入 Showcase 按钮
+- `production-pack.md` 下载入口
+- Showcase mapper 和导航测试
+
+明确不做：
+
+- AI 生图
+- AI 生视频
+- TTS
+- Remotion 自动成片
+- 自动下载网络素材
+- 素材网站接入
+- 自动发布视频号
+- 公网部署
+
 ## Batch 08 - Real AI Production Pack Pipeline
 
 目标：跑通真实 AI 文本 Agent 生产包生成，同时保留 mock fallback，保证 demo 稳定。

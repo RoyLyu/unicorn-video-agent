@@ -1,5 +1,22 @@
 # Changelog
 
+## Batch 10A - Title-only Fast Demo
+
+- 新增 `/quick-demo` 极简演示入口，只输入标题、内容类型和可选行业标签即可生成 AI 视频号生产包。
+- 新增 Title-only ArticleInput 构造 helper，自动生成演示 brief、默认标签、当天日期和固定 90s/180s 时长。
+- Quick Demo 调用现有 `POST /api/ai/production-pack`，成功后直接跳转 `/projects/[projectId]/showcase`。
+- Dashboard 和 `/demo` 增加 Quick Demo 入口。
+- Showcase 对 `Title-only Demo` 来源项目显示事实核验提示。
+- 明确该入口只用于外部快速展示，不适合正式发布，不生成图片、视频、音频或自动发布。
+
+## Batch 09 - Showcase 成品展示页
+
+- 新增 `/projects/[projectId]/showcase`，用于外部展示、录屏和讲解视频号生产包。
+- 新增 Showcase mapper，将 ProductionPack、Review 发布文案、Export 下载链接和 Agent Run 摘要整理为展示模型。
+- 新增 Showcase 展示组件，突出核心观点、标题候选、90s/180s 脚本、分镜摘要、Prompt 摘要、版权风险和发布文案。
+- Dashboard、ProjectNav、Analysis、Review 和 Export 页面增加 Showcase 入口。
+- 明确 Showcase 不是最终成片视频，不生成真实图片、视频、音频，不自动发布。
+
 ## Batch 08 - Real AI Production Pack Pipeline
 
 - 新增 `openai` SDK 与 `.env.example`，支持 `OPENAI_API_KEY`、`AI_PROVIDER`、`AI_MODEL`、`GENERATION_MODE`。

@@ -30,9 +30,14 @@ export default async function ReviewPage({
         title="项目审阅"
         description="导出前 checklist、事实核验、版权复核和发布文案编辑。当前不接真实 AI、不自动发布。"
         actions={
-          <Link className="primary-link" href={`/projects/${projectId}/export`}>
-            进入 Export
-          </Link>
+          <div className="action-row">
+            <Link className="primary-link" href={`/projects/${projectId}/showcase`}>
+              进入 Showcase
+            </Link>
+            <Link className="ghost-button" href={`/projects/${projectId}/export`}>
+              进入 Export
+            </Link>
+          </div>
         }
       />
       <ProjectNav projectId={projectId} />

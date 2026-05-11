@@ -28,6 +28,9 @@ export default function PublicDemoPage() {
             <Link className="ghost-button" href="/articles/new">
               创建新 Mock 项目
             </Link>
+            <Link className="ghost-button" href="/quick-demo">
+              Quick Demo
+            </Link>
           </div>
         }
       />
@@ -77,6 +80,7 @@ export default function PublicDemoPage() {
         <h2>当前能力</h2>
         <ul className="info-list">
           <li>本地 mock pipeline 生成 ProductionPack，并写入 SQLite。</li>
+          <li>Title-only Demo 可从一个标题快速进入 AI Agent 生产包 Showcase。</li>
           <li>支持 Review checklist、事实核验、版权复核摘要和发布文案编辑。</li>
           <li>支持 Markdown / CSV / JSON 文本预览、复制和下载。</li>
         </ul>

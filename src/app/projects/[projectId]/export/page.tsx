@@ -31,9 +31,14 @@ export default async function ExportPage({
         title="导出清单"
         description="从 SQLite 读取 ProductionPack。Batch 08 即时生成文本生产包导出，不包含真实视频、图片或音频。"
         actions={
-          <Link className="primary-link" href={`/projects/${projectId}/review`}>
-            进入 Review
-          </Link>
+          <div className="action-row">
+            <Link className="primary-link" href={`/projects/${projectId}/showcase`}>
+              进入 Showcase
+            </Link>
+            <Link className="ghost-button" href={`/projects/${projectId}/review`}>
+              进入 Review
+            </Link>
+          </div>
         }
       />
       <ProjectNav projectId={projectId} />
