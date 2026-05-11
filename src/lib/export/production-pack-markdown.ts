@@ -1,4 +1,5 @@
 import type { ProductionPack } from "@/lib/schemas/production-pack";
+import { analyzeShotPromptAlignment } from "@/lib/production-studio/shot-prompt-alignment";
 import { formatRightsRiskMarkdownLine } from "@/lib/rights/rights-display";
 import {
   investmentDisclaimer,
@@ -16,6 +17,10 @@ export function generateProductionPackMarkdown(
   const warning = options.fallbackWarning
     ? "> 当前文件为 fallback/mock 结果，不可投入使用。\n\n"
     : "";
+  const gate = analyzeShotPromptAlignment(productionPack);
+  const needsFixLine = gate.needsFix
+    ? "需要重跑 / 人工修正"
+    : "pass";
 
   return `${warning}# ${article.title}
 
@@ -26,6 +31,17 @@ export function generateProductionPackMarkdown(
 - 发布日期：${article.publishDate}
 - 行业标签：${article.industryTags.join(" / ")}
 - 目标时长：${article.targetDurations.join("s / ")}s
+
+## Shot / Prompt Gate Summary
+
+- 90s shot count：${gate.shotCount90s}
+- 180s shot count：${gate.shotCount180s}
+- 90s prompt count：${gate.promptCount90s}
+- 180s prompt count：${gate.promptCount180s}
+- alignment：${gate.unmatchedShots.length === 0 && gate.unmatchedPrompts.length === 0 ? "pass" : "fail"}
+- red risk replacement gaps：${gate.redRisksWithoutReplacement.length}
+- needsFix：${needsFixLine}
+${gate.fixReasons.length ? gate.fixReasons.map((reason) => `- ${reason}`).join("\n") : "- 无需重跑。"}
 
 ## 核心摘要
 

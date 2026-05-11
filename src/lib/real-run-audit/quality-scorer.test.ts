@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { demoProductionPack } from "@/lib/mock-pipeline/demo-production-pack";
+import { normalizeProductionPack } from "@/lib/ai-agents/normalize-production-pack";
 
 import {
   createRealRunAuditReport,
@@ -184,6 +185,34 @@ describe("real-run audit quality scorer", () => {
     expect(markdown).toContain("overall_demo_readiness_score");
     expect(markdown).toContain("Top 10 Problems");
     expect(markdown).toContain("Demo-ready");
+  });
+
+  it("requires shot prompt volume gate and marks low scores as needing rerun", () => {
+    const report = createRealRunAuditReport({
+      productionPack: demoProductionPack,
+      projectId: "project-1",
+      agentRunId: "run-1",
+      fallbackUsed: false,
+      generationMode: "ai"
+    });
+    const markdown = renderRealRunAuditMarkdown(report);
+
+    expect(report.demoReady).toBe(false);
+    expect(report.topProblems.some((problem) => problem.id === "shot-prompt-volume-gate")).toBe(true);
+    expect(markdown).toContain("需要重跑 / 人工修正");
+  });
+
+  it("passes shot prompt volume gate for normalized production studio packs", () => {
+    const report = createRealRunAuditReport({
+      productionPack: normalizeProductionPack(demoProductionPack),
+      projectId: "project-1",
+      agentRunId: "run-1",
+      fallbackUsed: false,
+      generationMode: "ai"
+    });
+
+    expect(report.topProblems.some((problem) => problem.id === "shot-prompt-volume-gate")).toBe(false);
+    expect(report.demoReady).toBe(true);
   });
 });
 

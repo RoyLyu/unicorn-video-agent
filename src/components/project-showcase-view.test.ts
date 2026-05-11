@@ -21,6 +21,11 @@ describe("ProjectShowcaseView final demo status", () => {
     expect(html).toContain("不可直接使用素材");
     expect(html).toContain("建议替代");
     expect(html).toContain("red");
+    expect(html).toContain("Shot / Prompt Gate");
+    expect(html).toContain("90s: 30 shots");
+    expect(html).toContain("180s: 60 shots");
+    expect(html).toContain("Production Studio");
+    expect(html).toContain("/projects/project-1/production-studio");
   });
 });
 
@@ -37,6 +42,14 @@ function createShowcase(): ShowcaseViewModel {
     blockProductionDownload: true,
     regenerateUrl: "/articles/new",
     fallbackWarning: "当前使用 fallback 结果，请在演示时说明 AI 结果已降级。",
+    productionStudioGate: {
+      shotCount90s: 30,
+      shotCount180s: 60,
+      promptCount: 90,
+      alignment: "pass",
+      needsFix: false,
+      fixReasons: []
+    },
     generation: {
       generationModeLabel: "Mock",
       productionPackMode: "mock",
@@ -97,6 +110,7 @@ function createShowcase(): ShowcaseViewModel {
     links: {
       downloadProductionPack:
         "/api/projects/project-1/exports/production-pack.md",
+      productionStudio: "/projects/project-1/production-studio",
       review: "/projects/project-1/review",
       export: "/projects/project-1/export",
       agentRuns: "/projects/project-1/agent-runs"

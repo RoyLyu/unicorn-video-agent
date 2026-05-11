@@ -55,6 +55,15 @@ export type ShowcasePromptSummary = {
   searchLeads: string[];
 };
 
+export type ShowcaseProductionStudioGate = {
+  shotCount90s: number;
+  shotCount180s: number;
+  promptCount: number;
+  alignment: "pass" | "fail";
+  needsFix: boolean;
+  fixReasons: string[];
+};
+
 export type ShowcaseRiskSummary = {
   counts: Record<RightsRiskLevel, number>;
   items: Array<{
@@ -79,6 +88,7 @@ export type ShowcasePublishCopy = {
 
 export type ShowcaseLinks = {
   downloadProductionPack: string;
+  productionStudio: string;
   review: string;
   export: string;
   agentRuns: string;
@@ -96,6 +106,7 @@ export type ShowcaseViewModel = {
   fallbackBlockedWarning: string | null;
   blockProductionDownload: boolean;
   regenerateUrl: string;
+  productionStudioGate: ShowcaseProductionStudioGate;
   generation: ShowcaseGenerationSummary;
   agentSummary: ShowcaseAgentSummary;
   coreSummary: string;

@@ -1,5 +1,51 @@
 # 07 Batch Log
 
+## Batch 12B - Shot / Prompt Volume Gate and Production Studio Core
+
+目标：把分镜头脚本与 Prompt Generator 升级为内部产品核心能力，真实 AI 输出必须满足 90s 至少 30 shots、180s 至少 60 shots、每个 shot 一个 prompt bundle，且 red rights risk 必须有替代方案。
+
+完成内容：
+
+- ProductionPack schema 最小兼容升级
+- `storyboard.shots` 新增 versionType、shotNumber、camera、composition、motion、chartNeed、copyrightRisk、replacementPlan
+- `assetPrompts.promptBundles` canonical prompt bundle
+- single-pack prompt 更新到 30/60 micro-shots
+- normalization 扩展到 90 个 micro-shots
+- promptBundles、imagePrompts、videoPrompts 一一覆盖所有 shots
+- red rights replacementPlan 补齐
+- Production Studio alignment、mapper 和 score 工具
+- `/projects/[projectId]/production-studio`
+- ProjectNav、Dashboard、Showcase、Review、Export、Agent Runs 入口
+- Showcase Shot / Prompt Gate 摘要
+- `production-pack.md` Shot / Prompt Gate Summary
+- `storyboard.csv` versionType 字段
+- `prompt-pack.md` 按 versionType + shotNumber 输出
+- real-run audit shot/prompt gate
+
+明确不做：
+
+- AI 生图
+- AI 生视频
+- TTS
+- Remotion
+- 部署
+- 用户系统
+- 自动发布视频号
+- 真实素材下载
+- 数据库大重构或迁移
+- mock 内容补正式真实输出
+
+验收口径：
+
+- `fallbackUsed=false`
+- `generationMode=ai`
+- `ProductionPack.mode=ai`
+- 90s shots >= 30
+- 180s shots >= 60
+- prompt bundle count == shot count
+- red rights risk 全部有 replacementPlan
+- gate 失败时页面、导出和审计报告显示“需要重跑 / 人工修正”
+
 ## Batch 12A - Strict Real Output and Audit Failure Gate
 
 目标：建立严格真实输出边界，真实生产、真实审计和默认 Quick Demo 不能把 fallback/mock 结果保存成成功项目、覆盖 latest audit、进入 Showcase 成品展示，或作为 `production-pack.md` 主下载。

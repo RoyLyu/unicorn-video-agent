@@ -9,7 +9,7 @@ import {
 } from "./normalize-production-pack";
 
 describe("normalizeProductionPack", () => {
-  it("expands short storyboards to at least 8 executable shots", () => {
+  it("expands short storyboards into production-studio micro-shots", () => {
     const normalized = normalizeProductionPack({
       ...demoProductionPack,
       storyboard: {
@@ -17,7 +17,7 @@ describe("normalizeProductionPack", () => {
       }
     });
 
-    expect(normalized.storyboard.shots).toHaveLength(8);
+    expect(normalized.storyboard.shots.length).toBeGreaterThanOrEqual(90);
     for (const shot of normalized.storyboard.shots) {
       expect(shot.visual).toContain("主体：");
       expect(shot.visual).toContain("场景：");
@@ -51,5 +51,69 @@ describe("normalizeProductionPack", () => {
     for (const risk of redRisks) {
       expect(risk.action).toMatch(/替换|自制图表|抽象 AI 画面|placeholder/);
     }
+  });
+
+  it("expands production studio micro-shots to 30 for 90s and 60 for 180s", () => {
+    const normalized = normalizeProductionPack(demoProductionPack);
+    const shots90 = normalized.storyboard.shots.filter((shot) => shot.versionType === "90s");
+    const shots180 = normalized.storyboard.shots.filter((shot) => shot.versionType === "180s");
+
+    expect(shots90.length).toBeGreaterThanOrEqual(30);
+    expect(shots180.length).toBeGreaterThanOrEqual(60);
+    expect(shots90[0]).toMatchObject({
+      versionType: "90s",
+      shotNumber: 1
+    });
+    expect(shots180[0]).toMatchObject({
+      versionType: "180s",
+      shotNumber: 1
+    });
+  });
+
+  it("creates one prompt bundle per shot and keeps legacy prompt arrays aligned", () => {
+    const normalized = normalizeProductionPack(demoProductionPack);
+    const shotKeys = normalized.storyboard.shots.map(
+      (shot) => `${shot.versionType}:${shot.shotNumber}:${shot.id}`
+    );
+    const bundleKeys = normalized.assetPrompts.promptBundles?.map(
+      (prompt) => `${prompt.versionType}:${prompt.shotNumber}:${prompt.shotId}`
+    );
+
+    expect(bundleKeys).toEqual(shotKeys);
+    expect(normalized.assetPrompts.imagePrompts).toHaveLength(normalized.storyboard.shots.length);
+    expect(normalized.assetPrompts.videoPrompts).toHaveLength(normalized.storyboard.shots.length);
+    for (const bundle of normalized.assetPrompts.promptBundles ?? []) {
+      expect(bundle.imagePrompt).toContain(visualStyleLock);
+      expect(bundle.videoPrompt).toContain(visualStyleLock);
+      for (const term of requiredNegativePromptTerms) {
+        expect(bundle.negativePrompt).toContain(term);
+      }
+    }
+  });
+
+  it("adds replacementPlan to red rights checks and red shots", () => {
+    const normalized = normalizeProductionPack({
+      ...demoProductionPack,
+      storyboard: {
+        shots: [
+          {
+            ...demoProductionPack.storyboard.shots[0],
+            rightsLevel: "red"
+          }
+        ]
+      },
+      rightsChecks: [
+        {
+          item: "真实新闻配图",
+          level: "red",
+          reason: "未确认授权",
+          action: "不能直接使用"
+        }
+      ]
+    });
+    const redShots = normalized.storyboard.shots.filter((shot) => shot.rightsLevel === "red");
+
+    expect(normalized.rightsChecks[0].replacementPlan).toMatch(/替换|自制图表|抽象 AI 画面|placeholder/);
+    expect(redShots[0]?.replacementPlan).toMatch(/替换|自制图表|抽象 AI 画面|placeholder/);
   });
 });

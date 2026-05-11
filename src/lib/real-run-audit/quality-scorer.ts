@@ -3,6 +3,7 @@ import type {
   GenerationMode,
   ProductionPack
 } from "@/lib/schemas/production-pack";
+import { analyzeShotPromptAlignment, type ProductionStudioSummary } from "@/lib/production-studio/shot-prompt-alignment";
 
 export type RealRunAuditScorecard = {
   fact_structure_score: number;
@@ -42,6 +43,7 @@ export type RealRunAuditReport = {
   agentSections: AgentAuditSection[];
   topProblems: AuditProblem[];
   demoReady: boolean;
+  productionStudioSummary: ProductionStudioSummary;
 };
 
 type CreateRealRunAuditReportInput = {
@@ -76,6 +78,8 @@ export function createRealRunAuditReport({
   const prompt = auditPromptGenerator(productionPack);
   const assetFinder = auditAssetFinder(productionPack);
   const qa = auditQaAgent(productionPack);
+  const productionStudioSummary = analyzeShotPromptAlignment(productionPack);
+  const studioProblems = auditProductionStudioGate(productionStudioSummary);
   const agentSections = [
     article,
     thesis,
@@ -83,7 +87,8 @@ export function createRealRunAuditReport({
     storyboard,
     prompt,
     assetFinder,
-    qa
+    qa,
+    studioProblems
   ];
   const topProblems = agentSections
     .flatMap((section) => section.problems)
@@ -111,6 +116,7 @@ export function createRealRunAuditReport({
   };
   const demoReady =
     !fallbackUsed &&
+    !productionStudioSummary.needsFix &&
     scorecard.overall_demo_readiness_score >= 4 &&
     topProblems.every((problem) => problem.severity !== "high");
 
@@ -124,7 +130,8 @@ export function createRealRunAuditReport({
     scorecard,
     agentSections,
     topProblems,
-    demoReady
+    demoReady,
+    productionStudioSummary
   };
 }
 
@@ -139,12 +146,25 @@ export function renderRealRunAuditMarkdown(report: RealRunAuditReport) {
     `- Showcase: ${report.showcaseUrl}`,
     `- production-pack.md: ${report.productionPackDownloadUrl}`,
     `- Demo-ready: ${report.demoReady ? "yes" : "no"}`,
+    `- Production Studio Gate: ${report.productionStudioSummary.needsFix ? "需要重跑 / 人工修正" : "pass"}`,
     "",
     "## Scores",
     "",
     ...Object.entries(report.scorecard).map(
       ([key, value]) => `- ${key}: ${value}/5`
     ),
+    "",
+    "## Shot / Prompt Gate",
+    "",
+    `- 90s shots: ${report.productionStudioSummary.shotCount90s}`,
+    `- 180s shots: ${report.productionStudioSummary.shotCount180s}`,
+    `- 90s prompts: ${report.productionStudioSummary.promptCount90s}`,
+    `- 180s prompts: ${report.productionStudioSummary.promptCount180s}`,
+    `- unmatched shots: ${report.productionStudioSummary.unmatchedShots.length}`,
+    `- unmatched prompts: ${report.productionStudioSummary.unmatchedPrompts.length}`,
+    `- red risks without replacement: ${report.productionStudioSummary.redRisksWithoutReplacement.length}`,
+    `- needsFix: ${report.productionStudioSummary.needsFix ? "需要重跑 / 人工修正" : "false"}`,
+    ...report.productionStudioSummary.fixReasons.map((reason) => `- ${reason}`),
     "",
     "## Agent Audit",
     "",
@@ -169,6 +189,30 @@ export function renderRealRunAuditMarkdown(report: RealRunAuditReport) {
     "",
     "Use this report to prioritize prompt/schema/mapper adjustments. Batch 11A does not optimize agent output."
   ].join("\n");
+}
+
+function auditProductionStudioGate(summary: ProductionStudioSummary): AgentAuditSection {
+  const problems: AuditProblem[] = summary.needsFix
+    ? [
+        problem(
+          "shot-prompt-volume-gate",
+          "high",
+          "Production Studio Gate",
+          `Shot / Prompt gate 未通过，需要重跑 / 人工修正。${summary.fixReasons.join(" ")}`,
+          "P1",
+          "QA rule",
+          [...summary.unmatchedShots, ...summary.unmatchedPrompts]
+        )
+      ]
+    : [];
+
+  return section("Production Studio Gate", summary.scores.overallScore, [
+    `90s shots ${summary.shotCount90s}`,
+    `180s shots ${summary.shotCount180s}`,
+    `90s prompts ${summary.promptCount90s}`,
+    `180s prompts ${summary.promptCount180s}`,
+    `needsFix ${summary.needsFix ? "需要重跑 / 人工修正" : "false"}`
+  ], problems);
 }
 
 function auditArticleAnalyst(productionPack: ProductionPack): AgentAuditSection {

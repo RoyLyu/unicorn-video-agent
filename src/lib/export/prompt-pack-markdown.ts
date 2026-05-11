@@ -1,40 +1,34 @@
 import type { ProductionPack } from "@/lib/schemas/production-pack";
+import { getPromptBundles } from "@/lib/production-studio/shot-prompt-alignment";
 
 export function generatePromptPackMarkdown(productionPack: ProductionPack) {
-  const imagePrompts = productionPack.assetPrompts.imagePrompts
+  const bundles = [...getPromptBundles(productionPack)]
+    .sort((a, b) => {
+      if (a.versionType !== b.versionType) {
+        return a.versionType === "90s" ? -1 : 1;
+      }
+
+      return a.shotNumber - b.shotNumber;
+    })
     .map(
-      (prompt) => `## ${prompt.id}
+      (prompt) => `## ${prompt.versionType} #${prompt.shotNumber} / ${prompt.shotId}
 
-- sceneRef：${prompt.sceneRef}
-- imagePrompt：${prompt.prompt}
+- versionType：${prompt.versionType}
+- shotNumber：${prompt.shotNumber}
+- shotId：${prompt.shotId}
+- imagePrompt：${prompt.imagePrompt}
+- videoPrompt：${prompt.videoPrompt}
 - negativePrompt：${prompt.negativePrompt}
-- aspectRatio：9:16
-- stylePreset：财经编辑部 / clean editorial
-- notes：${prompt.notes}`
-    )
-    .join("\n\n");
-
-  const videoPrompts = productionPack.assetPrompts.videoPrompts
-    .map(
-      (prompt) => `## ${prompt.id}
-
-- sceneRef：${prompt.sceneRef}
-- videoPrompt：${prompt.prompt}
-- negativePrompt：${prompt.negativePrompt}
-- aspectRatio：9:16
-- stylePreset：财经短视频 / restrained motion
-- notes：${prompt.notes}`
+- styleLock：${prompt.styleLock}
+- aspectRatio：${prompt.aspectRatio}
+- usageWarning：${prompt.usageWarning}`
     )
     .join("\n\n");
 
   return `# Prompt Pack
 
-# Image Prompts
+# Shot Prompt Bundles
 
-${imagePrompts}
-
-# Video Prompts
-
-${videoPrompts}
+${bundles}
 `;
 }

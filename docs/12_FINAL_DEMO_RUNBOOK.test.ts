@@ -12,6 +12,9 @@ describe("Final demo runbook", () => {
     expect(source).toContain("/quick-demo");
     expect(source).toContain("推荐 5 个标题");
     expect(source).toContain("出错时如何处理");
+    expect(source).toContain("Production Studio");
+    expect(source).toContain("90s shots 必须 >= 30");
+    expect(source).toContain("需要重跑 / 人工修正");
     expect(source).toContain("不可承诺事项");
   });
 

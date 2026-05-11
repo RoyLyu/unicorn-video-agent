@@ -23,7 +23,7 @@ OPENAI_API_KEY=
 OPENAI_BASE_URL=https://api.minimaxi.com/v1
 AI_AGENT_MODE=single_pack
 AI_REQUEST_TIMEOUT_MS=180000
-AI_MAX_TOKENS=4000
+AI_MAX_TOKENS=16000
 AI_REQUIRE_REAL_OUTPUT=true
 AI_ALLOW_MOCK_FALLBACK=false
 AI_BANNED_OUTPUT_TERMS=mock,Batch 02,后续补齐,demo-data,不是真实 AI,只生成 JSON 生产包,本地 mock,Mock Pipeline
@@ -51,8 +51,10 @@ http://localhost:3000
 3. 输入一个标题，选择内容类型，可选填写行业标签。
 4. 点击生成，等待 AI Agent 生成。
 5. 进入 `/projects/[projectId]/showcase`，先确认 generationMode 为 AI、fallbackUsed 为 false，再讲解核心观点、标题候选、脚本、分镜、Prompt、版权风险和发布文案。
-6. 点击下载 `production-pack.md`。
-7. 点击 Export，展示其余文本导出文件。
+6. 检查 Shot / Prompt Gate：90s 至少 30 shots、180s 至少 60 shots、prompt count 等于 shot count。
+7. 点击 Production Studio，展示 shot / prompt 对应表和 red replacementPlan。
+8. 点击下载 `production-pack.md`。
+9. 点击 Export，展示其余文本导出文件。
 
 ## 真实运行审计
 
@@ -87,6 +89,11 @@ pnpm audit:real-run -- --title "新消费品牌上市背后：中国品牌全球
 - `fallbackUsed` 必须为 `false` 才能说明真实 AI 质量达标。
 - `generationMode` 与 `ProductionPack.mode` 必须为 `ai`。
 - 输出中不得出现 `mock`、`Batch 02`、`后续补齐`、`demo-data`、`不是真实 AI` 等禁用词。
+- 90s shots 必须 >= 30。
+- 180s shots 必须 >= 60。
+- prompt bundle count 必须等于 shot count。
+- red rights risk 必须全部有 replacementPlan。
+- 报告中不得出现“需要重跑 / 人工修正”。
 - `storyboard_actionability_score`、`prompt_usability_score`、`rights_safety_score`、`overall_demo_readiness_score` 应达到 4/5 或以上。
 - `production-pack.md` 下载路径应出现在报告中，并可从 Showcase 或 Export 进入。
 - 如果报告列出低分 shotId / promptId，优先检查 single-pack prompt 和 normalization 规则。
@@ -111,6 +118,7 @@ pnpm audit:real-run -- --title "新消费品牌上市背后：中国品牌全球
 
 - 看到 `.env.local` 配置提示：暂停演示真实 AI，检查环境变量是否完整。
 - 看到 strict 生成失败：不要继续当成成品展示；检查 `.env.local`、模型响应或 schema 错误后重新生成。
+- 看到“需要重跑 / 人工修正”：说明真实 AI 返回了内容，但 shot/prompt gate 未达标；不要当成 ready 成品，进入 Production Studio 查看缺口。
 - 看到“当前使用 fallback 结果”：只能作为快速演示链路说明，不能作为真实 AI 结果或正式成品。
 - 看到超时提示：改用更短标题，或稍后重试。
 - 如果 `/quick-demo` 请求失败：切到 `/demo` 的公开安全样例，继续展示 Showcase、Review 和 Export。

@@ -157,6 +157,7 @@ function ProjectListItem({ project }: { project: ProjectWithAgentRun }) {
       </StatusBadge>{" "}
       <div className="action-row">
         <Link href={`/projects/${project.id}/showcase`}>Showcase</Link>
+        <Link href={`/projects/${project.id}/production-studio`}>Production Studio</Link>
         <Link href={`/projects/${project.id}/analysis`}>Analysis</Link>
         <Link href={`/projects/${project.id}/agent-runs`}>Agent Runs</Link>
         <Link href={`/projects/${project.id}/review`}>Review</Link>

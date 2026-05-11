@@ -4,7 +4,8 @@ import {
   type ProductionPack,
   type RightsCheckResult,
   type RightsRiskLevel,
-  type StoryboardResult
+  type StoryboardResult,
+  type StoryboardVersionType
 } from "@/lib/schemas/production-pack";
 
 import {
@@ -30,6 +31,14 @@ const cameraMotions = [
   "俯拍",
   "跟拍"
 ];
+const minimumShotsByVersion: Record<StoryboardVersionType, number> = {
+  "90s": 30,
+  "180s": 60
+};
+const defaultReplacementPlan =
+  "替换为自制图表、抽象 AI 商业画面或 placeholder 复核项，不使用真实素材。";
+const usageWarning =
+  "仅作为后续素材生成提示，不代表已生成素材；不得生成真实 Logo、新闻图、创始人肖像、招股书截图或可读品牌文字。";
 
 export function normalizeProductionPack(pack: ProductionPack): ProductionPack {
   const storyboard = ensureStoryboardMinimumShots(pack.storyboard, pack);
@@ -48,34 +57,11 @@ export function ensureStoryboardMinimumShots(
   storyboard: StoryboardResult,
   pack: ProductionPack
 ): StoryboardResult {
-  const sourceLines = pack.scripts.video90s.lines;
-  const shots = [...storyboard.shots];
-
-  while (shots.length < 8) {
-    const index = shots.length;
-    const line = sourceLines[index % sourceLines.length] ?? sourceLines[0];
-    const id = `S${String(index + 1).padStart(2, "0")}`;
-
-    shots.push({
-      id,
-      timeRange: line?.timeRange ?? `00:${String(index * 10).padStart(2, "0")}-00:${String(index * 10 + 10).padStart(2, "0")}`,
-      scene: line?.visual || `第 ${index + 1} 段观点视觉化`,
-      narration: line?.narration || `第 ${index + 1} 段旁白，承接核心观点。`,
-      visual: line?.visual || "行业数据与观点摘要",
-      assetType: index % 2 === 0 ? "ai-image" : "ai-video",
-      rightsLevel: index % 3 === 0 ? "placeholder" : "green"
-    });
-  }
-
   return {
-    shots: shots.slice(0, Math.max(shots.length, 8)).map((shot, index) => ({
-      ...shot,
-      id: shot.id || `S${String(index + 1).padStart(2, "0")}`,
-      scene: shot.scene || `第 ${index + 1} 段观点视觉化`,
-      visual: ensureExecutableVisual(shot.visual, shot.scene, index),
-      assetType: assetTypes.includes(shot.assetType) ? shot.assetType : "ai-image",
-      rightsLevel: normalizeRightsLevel(shot.rightsLevel)
-    }))
+    shots: [
+      ...normalizeVersionShots(storyboard, pack, "90s"),
+      ...normalizeVersionShots(storyboard, pack, "180s")
+    ]
   };
 }
 
@@ -85,36 +71,50 @@ export function ensurePromptCoverage(
 ): AssetPromptResult {
   const imageByShot = new Map(prompts.imagePrompts.map((prompt) => [prompt.sceneRef, prompt]));
   const videoByShot = new Map(prompts.videoPrompts.map((prompt) => [prompt.sceneRef, prompt]));
+  const bundleByShot = new Map(
+    (prompts.promptBundles ?? []).map((prompt) => [prompt.shotId, prompt])
+  );
+  const promptBundles = storyboard.shots.map((shot, index) => {
+    const existing = bundleByShot.get(shot.id);
+    const imagePrompt = ensureStyleLock(
+      existing?.imagePrompt ||
+        imageByShot.get(shot.id)?.prompt ||
+        `vertical image frame for ${shot.visual}, unbranded abstract business documentary visuals`
+    );
+    const videoPrompt = ensureStyleLock(
+      existing?.videoPrompt ||
+        videoByShot.get(shot.id)?.prompt ||
+        `vertical video movement for ${shot.visual}, ${shot.motion ?? cameraMotions[index % cameraMotions.length]}, unbranded abstract business documentary footage`
+    );
+
+    return {
+      versionType: shot.versionType ?? "90s",
+      shotNumber: shot.shotNumber ?? index + 1,
+      shotId: shot.id,
+      imagePrompt,
+      videoPrompt,
+      negativePrompt: ensureNegativePrompt(existing?.negativePrompt ?? imageByShot.get(shot.id)?.negativePrompt ?? videoByShot.get(shot.id)?.negativePrompt),
+      styleLock: existing?.styleLock || visualStyleLock,
+      aspectRatio: existing?.aspectRatio || "9:16",
+      usageWarning: existing?.usageWarning || usageWarning
+    };
+  });
 
   return {
-    imagePrompts: storyboard.shots.map((shot) => {
-      const existing = imageByShot.get(shot.id);
-
-      return {
-        id: existing?.id || `IMG-${shot.id}`,
-        sceneRef: shot.id,
-        prompt: ensureStyleLock(
-          existing?.prompt ||
-            `vertical image frame for ${shot.visual}, unbranded abstract business documentary visuals`
-        ),
-        negativePrompt: ensureNegativePrompt(existing?.negativePrompt),
-        notes: existing?.notes || `对应 ${shot.id}，只作为后续图像生成提示，不代表已生成素材。`
-      };
-    }),
-    videoPrompts: storyboard.shots.map((shot) => {
-      const existing = videoByShot.get(shot.id);
-
-      return {
-        id: existing?.id || `VID-${shot.id}`,
-        sceneRef: shot.id,
-        prompt: ensureStyleLock(
-          existing?.prompt ||
-            `vertical video movement for ${shot.visual}, ${cameraMotions[Number(shot.id.slice(1)) % cameraMotions.length]}, unbranded abstract business documentary footage`
-        ),
-        negativePrompt: ensureNegativePrompt(existing?.negativePrompt),
-        notes: existing?.notes || `对应 ${shot.id}，只作为后续视频生成提示，不代表已生成素材。`
-      };
-    }),
+    imagePrompts: promptBundles.map((bundle) => ({
+      id: `IMG-${bundle.shotId}`,
+      sceneRef: bundle.shotId,
+      prompt: bundle.imagePrompt,
+      negativePrompt: bundle.negativePrompt,
+      notes: `对应 ${bundle.versionType} #${bundle.shotNumber}，${usageWarning}`
+    })),
+    videoPrompts: promptBundles.map((bundle) => ({
+      id: `VID-${bundle.shotId}`,
+      sceneRef: bundle.shotId,
+      prompt: bundle.videoPrompt,
+      negativePrompt: bundle.negativePrompt,
+      notes: `对应 ${bundle.versionType} #${bundle.shotNumber}，${usageWarning}`
+    })),
     searchLeads:
       prompts.searchLeads.length > 0
         ? prompts.searchLeads
@@ -125,7 +125,8 @@ export function ensurePromptCoverage(
               intendedUse: "寻找非特定公司、非新闻现场的抽象商业氛围素材。",
               licenseRequirement: "必须人工确认可商用、可二创和署名要求。"
             }
-          ]
+          ],
+    promptBundles
   };
 }
 
@@ -133,15 +134,90 @@ export function ensureRightsAlternatives(
   rightsChecks: RightsCheckResult[]
 ): RightsCheckResult[] {
   return rightsChecks.map((risk) => {
-    if (risk.level !== "red" || hasReplacementAlternative(risk.action)) {
+    if (risk.level !== "red") {
+      return risk;
+    }
+
+    if (risk.replacementPlan?.trim() && hasReplacementAlternative(`${risk.action} ${risk.replacementPlan}`)) {
       return risk;
     }
 
     return {
       ...risk,
-      action: `${risk.action} 替换为自制图表、抽象 AI 画面或 placeholder 复核项，不使用真实素材。`
+      action: hasReplacementAlternative(risk.action)
+        ? risk.action
+        : `${risk.action} ${defaultReplacementPlan}`,
+      replacementPlan: defaultReplacementPlan
     };
   });
+}
+
+function normalizeVersionShots(
+  storyboard: StoryboardResult,
+  pack: ProductionPack,
+  versionType: StoryboardVersionType
+) {
+  const targetCount = minimumShotsByVersion[versionType];
+  const sourceLines = versionType === "90s"
+    ? pack.scripts.video90s.lines
+    : pack.scripts.video180s.lines;
+  const explicitlyVersioned = storyboard.shots.filter(
+    (shot) => shot.versionType === versionType
+  );
+  const sourceShots = explicitlyVersioned.length > 0 ? explicitlyVersioned : storyboard.shots;
+
+  return Array.from({ length: targetCount }, (_, index) => {
+    const shotNumber = index + 1;
+    const sourceShot = sourceShots[index % Math.max(1, sourceShots.length)];
+    const line = sourceLines[index % Math.max(1, sourceLines.length)] ?? sourceLines[0];
+    const id = `${versionType === "90s" ? "S90" : "S180"}-${String(shotNumber).padStart(2, "0")}`;
+    const scene = sourceShot?.scene || line?.visual || `${versionType} 第 ${shotNumber} 个节拍`;
+    const narration = sourceShot?.voiceover || sourceShot?.narration || line?.narration || `${versionType} 第 ${shotNumber} 段旁白，承接核心观点。`;
+    const motion = sourceShot?.motion || sourceShot?.camera || cameraMotions[index % cameraMotions.length];
+    const composition = sourceShot?.composition || "竖屏中近景，信息卡与商业场景分层";
+    const chartNeed = sourceShot?.chartNeed || line?.onScreenText || "自制信息图承载事实";
+    const rightsLevel = normalizeRightsLevel(sourceShot?.rightsLevel ?? sourceShot?.copyrightRisk ?? (index % 11 === 0 ? "placeholder" : "green"));
+    const replacementPlan = rightsLevel === "red"
+      ? sourceShot?.replacementPlan || defaultReplacementPlan
+      : sourceShot?.replacementPlan;
+
+    return {
+      id,
+      timeRange: buildTimeRange(versionType, index),
+      scene,
+      narration,
+      visual: ensureExecutableVisual(sourceShot?.visual || line?.visual || scene, scene, index),
+      assetType: sourceShot && assetTypes.includes(sourceShot.assetType) ? sourceShot.assetType : index % 3 === 0 ? "chart" as const : index % 2 === 0 ? "ai-image" as const : "ai-video" as const,
+      rightsLevel,
+      versionType,
+      shotNumber,
+      beat: sourceShot?.beat || line?.onScreenText || `Beat ${shotNumber}`,
+      duration: sourceShot?.duration || "3s",
+      voiceover: narration,
+      overlayText: sourceShot?.overlayText || line?.onScreenText || narration.slice(0, 18),
+      camera: sourceShot?.camera || motion,
+      composition,
+      motion,
+      visualType: sourceShot?.visualType || sourceShot?.assetType || "business-documentary",
+      chartNeed,
+      copyrightRisk: rightsLevel,
+      replacementPlan
+    };
+  });
+}
+
+function buildTimeRange(versionType: StoryboardVersionType, index: number) {
+  const seconds = index * 3;
+  const end = Math.min(seconds + 3, versionType === "90s" ? 90 : 180);
+
+  return `${formatSeconds(seconds)}-${formatSeconds(end)}`;
+}
+
+function formatSeconds(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
 function ensureExecutableVisual(visual: string, scene: string, index: number) {

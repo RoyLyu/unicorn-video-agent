@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { normalizeProductionPack } from "../ai-agents/normalize-production-pack";
 import { demoProductionPack } from "../mock-pipeline/demo-production-pack";
 import { generateExportFile } from "./generate-export-file";
 
@@ -45,15 +46,23 @@ describe("Batch 04 export generation", () => {
     expect(file?.content).toMatch(/^> 当前文件为 fallback\/mock 结果，不可投入使用。/);
   });
 
+  it("adds Shot / Prompt Gate Summary to production-pack.md", () => {
+    const file = generateExportFile("production-pack.md", normalizeProductionPack(demoProductionPack));
+
+    expect(file?.content).toContain("Shot / Prompt Gate Summary");
+    expect(file?.content).toContain("90s shot count");
+    expect(file?.content).toContain("180s shot count");
+    expect(file?.content).toContain("needsFix");
+  });
+
   it("generates storyboard.csv with required header and storyboard rows", () => {
-    const file = generateExportFile("storyboard.csv", demoProductionPack);
+    const file = generateExportFile("storyboard.csv", normalizeProductionPack(demoProductionPack));
 
     expect(file?.contentType).toBe("text/csv; charset=utf-8");
-    expect(file?.content.split("\n")[0]).toBe(
-      "shotNumber,duration,voiceover,visualDescription,overlayText,visualType,copyrightRisk"
-    );
-    expect(file?.content).toContain(demoProductionPack.storyboard.shots[0].id);
-    expect(file?.content).toContain(demoProductionPack.storyboard.shots[0].narration);
+    expect(file?.content.split("\n")[0]).toContain("versionType");
+    expect(file?.content.split("\n")[0]).toContain("replacementPlan");
+    expect(file?.content).toContain("90s");
+    expect(file?.content).toContain("180s");
   });
 
   it("generates rights-check.csv with only allowed risk levels", () => {
@@ -82,11 +91,13 @@ describe("Batch 04 export generation", () => {
   });
 
   it("generates prompt-pack.md with image, video and negative prompts", () => {
-    const file = generateExportFile("prompt-pack.md", demoProductionPack);
+    const file = generateExportFile("prompt-pack.md", normalizeProductionPack(demoProductionPack));
 
     expect(file?.content).toContain("imagePrompt");
     expect(file?.content).toContain("videoPrompt");
     expect(file?.content).toContain("negativePrompt");
+    expect(file?.content).toContain("versionType：90s");
+    expect(file?.content).toContain("shotNumber：1");
   });
 
   it("generates publish-copy.md with investment advice disclaimer", () => {

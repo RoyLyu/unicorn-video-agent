@@ -1,5 +1,18 @@
 # TODO
 
+## Batch 12B
+
+- [x] 扩展 ProductionPack schema，支持 versionType、shotNumber 和 promptBundles。
+- [x] 更新 single-pack prompt，要求 90s 30 shots、180s 60 shots 和一一对应 prompt bundle。
+- [x] normalization 补齐 30/60 micro-shots、promptBundles、legacy prompts 和 red replacementPlan。
+- [x] 新增 Production Studio alignment、mapper 和 score 工具。
+- [x] 新增 `/projects/[projectId]/production-studio` 页面。
+- [x] ProjectNav、Dashboard、Showcase、Review、Export、Agent Runs 增加 Production Studio 入口。
+- [x] Showcase 展示 Shot / Prompt Gate 摘要和“需要重跑 / 人工修正”。
+- [x] Export 增加 Shot / Prompt Gate Summary、storyboard versionType 和 prompt-pack bundle 输出。
+- [x] real-run audit 增加 shot/prompt gate 失败门禁。
+- [x] 新增 schema、normalization、Studio、Export、Showcase 和 Audit 测试。
+
 ## Batch 12A
 
 - [x] 新增 strict AI policy，默认真实输出必需、mock fallback 不允许。

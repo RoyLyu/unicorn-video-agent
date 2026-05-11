@@ -84,8 +84,9 @@ describe("runAiSinglePackPipeline", () => {
       if (isAiSinglePackFailure(result)) {
         throw new Error(result.safeErrorSummary);
       }
-      expect(result.productionPack.assetPrompts.imagePrompts).toHaveLength(8);
-      expect(result.productionPack.assetPrompts.videoPrompts).toHaveLength(8);
+      expect(result.productionPack.assetPrompts.imagePrompts).toHaveLength(result.productionPack.storyboard.shots.length);
+      expect(result.productionPack.assetPrompts.videoPrompts).toHaveLength(result.productionPack.storyboard.shots.length);
+      expect(result.productionPack.assetPrompts.promptBundles).toHaveLength(result.productionPack.storyboard.shots.length);
     } finally {
       client.close();
     }

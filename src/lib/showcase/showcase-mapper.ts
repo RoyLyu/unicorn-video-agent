@@ -11,6 +11,7 @@ import {
   TITLE_ONLY_WARNING
 } from "@/lib/quick-demo/title-only-article";
 import { formatRightsRiskDisplay } from "@/lib/rights/rights-display";
+import { analyzeShotPromptAlignment } from "@/lib/production-studio/shot-prompt-alignment";
 import type { ProductionPack, RightsRiskLevel } from "@/lib/schemas/production-pack";
 
 import type {
@@ -43,6 +44,7 @@ export function mapShowcaseViewModel({
     project.sourceName === TITLE_ONLY_DEMO_SOURCE_NAME ||
     productionPack.articleInput.sourceName === TITLE_ONLY_DEMO_SOURCE_NAME;
   const generation = mapGenerationSummary(project, productionPack, latestAgentRun);
+  const productionStudioSummary = analyzeShotPromptAlignment(productionPack);
 
   return {
     projectId: project.id,
@@ -62,6 +64,18 @@ export function mapShowcaseViewModel({
       : null,
     blockProductionDownload: generation.fallbackUsed,
     regenerateUrl: "/articles/new",
+    productionStudioGate: {
+      shotCount90s: productionStudioSummary.shotCount90s,
+      shotCount180s: productionStudioSummary.shotCount180s,
+      promptCount: productionStudioSummary.promptCount90s + productionStudioSummary.promptCount180s,
+      alignment:
+        productionStudioSummary.unmatchedShots.length === 0 &&
+        productionStudioSummary.unmatchedPrompts.length === 0
+          ? "pass"
+          : "fail",
+      needsFix: productionStudioSummary.needsFix,
+      fixReasons: productionStudioSummary.fixReasons
+    },
     generation,
     agentSummary: mapAgentSummary(latestAgentRun, latestAgentRunDetail),
     coreSummary: productionPack.analysis.summary,
@@ -94,6 +108,7 @@ export function mapShowcaseViewModel({
     disclaimer: investmentDisclaimer,
     links: {
       downloadProductionPack: `/api/projects/${project.id}/exports/production-pack.md`,
+      productionStudio: `/projects/${project.id}/production-studio`,
       review: `/projects/${project.id}/review`,
       export: `/projects/${project.id}/export`,
       agentRuns: `/projects/${project.id}/agent-runs`

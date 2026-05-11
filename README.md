@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-Batch 12A：Strict Real Output and Audit Failure Gate。
+Batch 12B：Shot / Prompt Volume Gate and Production Studio Core。
 
 当前仓库提供：
 
@@ -29,6 +29,8 @@ Batch 12A：Strict Real Output and Audit Failure Gate。
 - 最终演示路径提示、fallback 风险提示和 `docs/12_FINAL_DEMO_RUNBOOK.md`
 - 真实 AI 端到端审计命令 `pnpm audit:real-run`
 - Storyboard / Prompt / Rights 输出质量 normalization 与审计评分
+- 90s / 180s micro-shot 与 prompt bundle 对齐门禁
+- Production Studio 页面 `/projects/[projectId]/production-studio`
 - 冻结成功 Demo 项目和版权风险替代方案展示
 - fallback/mock 成品门禁：Showcase、Export 和 real-run audit 不再把 fallback 当作成功成品
 - 纯函数 mock Agent pipeline
@@ -39,7 +41,7 @@ Batch 12A：Strict Real Output and Audit Failure Gate。
 
 ## MVP 范围
 
-第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 12A 只建立严格真实输出边界和审计失败门禁，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
+第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 12B 只升级分镜、Prompt、Audit、Showcase、Export 和 Production Studio，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
 
 ## 环境变量
 
@@ -55,13 +57,13 @@ OPENAI_API_KEY=
 OPENAI_BASE_URL=https://api.minimaxi.com/v1
 AI_AGENT_MODE=single_pack
 AI_REQUEST_TIMEOUT_MS=180000
-AI_MAX_TOKENS=4000
+AI_MAX_TOKENS=16000
 AI_REQUIRE_REAL_OUTPUT=true
 AI_ALLOW_MOCK_FALLBACK=false
 AI_BANNED_OUTPUT_TERMS=mock,Batch 02,后续补齐,demo-data,不是真实 AI,只生成 JSON 生产包,本地 mock,Mock Pipeline
 ```
 
-`AI_MODEL` 必须从环境变量读取，业务逻辑不写默认模型。MiniMax OpenAI-compatible client 会优先读取 `MINIMAX_API_KEY` 与 `MINIMAX_BASE_URL`，再 fallback 到 `OPENAI_API_KEY` 与 `OPENAI_BASE_URL`。`AI_AGENT_MODE` 默认 `single_pack`，即一次 Chat Completions 调用生成完整 `ProductionPack`；只有显式设置为 `sequential` 时才走旧的 7-step remote runner。single-pack 请求会使用至少 8000 output tokens，避免 MiniMax 可见思考内容导致 JSON 截断；`AI_MAX_TOKENS` 可设置更高值。
+`AI_MODEL` 必须从环境变量读取，业务逻辑不写默认模型。MiniMax OpenAI-compatible client 会优先读取 `MINIMAX_API_KEY` 与 `MINIMAX_BASE_URL`，再 fallback 到 `OPENAI_API_KEY` 与 `OPENAI_BASE_URL`。`AI_AGENT_MODE` 默认 `single_pack`，即一次 Chat Completions 调用生成完整 `ProductionPack`；只有显式设置为 `sequential` 时才走旧的 7-step remote runner。Batch 12B 建议 `AI_MAX_TOKENS=16000`，以承载 90 个 micro-shots 和对应 prompt bundles。
 
 Batch 12A 默认启用 strict real output：`AI_REQUIRE_REAL_OUTPUT=true` 且 `AI_ALLOW_MOCK_FALLBACK=false`。缺少 key、baseURL、model、AI schema 失败、provider 失败或命中 `AI_BANNED_OUTPUT_TERMS` 时，`/api/ai/production-pack` 返回 422，不保存 mock 项目为成功成品。只有 `/quick-demo` 中显式选择“快速演示”或设置允许 fallback 时，mock fallback 才会保存，并且页面和导出会标红提示不可投入使用。
 
@@ -143,6 +145,15 @@ Batch 11B 默认使用 `AI_AGENT_MODE=single_pack`。生成后的 ProductionPack
 - Showcase 对 fallback/mock 项目显示红色诊断或风险提示，禁用主 `production-pack.md` 下载按钮。
 - Export 在 fallback/mock markdown 顶部写入“当前文件为 fallback/mock 结果，不可投入使用。”；strict mode 下会阻止 fallback/mock 的 `production-pack.md` 下载。
 
+## Batch 12B Shot / Prompt Gate
+
+- ProductionPack 支持 90s / 180s micro-shots：90s 至少 30 个，180s 至少 60 个。
+- `assetPrompts.promptBundles` 是 canonical prompt 数量来源，每个 shot 对应一个 bundle，包含 imagePrompt、videoPrompt、negativePrompt、styleLock、aspectRatio 和 usageWarning。
+- normalization 只基于真实 AI 输出、脚本、观点和文章输入扩展 micro-shots，不调用 mock pipeline 补正式输出。
+- red rights risk 必须包含 replacementPlan。
+- Showcase 和 `production-pack.md` 展示 Shot / Prompt Gate Summary；低于标准时显示“需要重跑 / 人工修正”。
+- Production Studio 页面展示 shot / prompt 对应表、版权等级汇总、red replacementPlan 和 gate score。
+
 ## Batch 10B 最终演示验收路径
 
 1. 打开 `/dashboard` 或 `/demo`，确认展示最终演示路径：Quick Demo → AI Generate → Showcase → Export。
@@ -168,6 +179,7 @@ Batch 11B 默认使用 `AI_AGENT_MODE=single_pack`。生成后的 ProductionPack
 - `/projects/demo/rights`
 - `/projects/demo/export`
 - `/projects/[projectId]/showcase`
+- `/projects/[projectId]/production-studio`
 - `/projects/[projectId]/analysis`
 - `/projects/[projectId]/scripts`
 - `/projects/[projectId]/shots`

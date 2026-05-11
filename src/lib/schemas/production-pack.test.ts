@@ -68,6 +68,60 @@ describe("Batch 02 mock pipeline", () => {
     expect(pack.rightsChecks.length).toBeGreaterThan(0);
   });
 
+  it("accepts Batch 12B shot and prompt bundle fields without breaking old packs", () => {
+    const pack = runMockPipeline(demoArticleInput);
+    const parsed = ProductionPackSchema.parse({
+      ...pack,
+      storyboard: {
+        shots: [
+          {
+            ...pack.storyboard.shots[0],
+            versionType: "90s",
+            shotNumber: 1,
+            beat: "开场判断",
+            duration: "3s",
+            voiceover: "开场旁白",
+            overlayText: "核心判断",
+            camera: "slow push-in",
+            composition: "center framed data card",
+            motion: "subtle chart reveal",
+            visualType: "ai-video",
+            chartNeed: "自制行业趋势图",
+            copyrightRisk: "placeholder",
+            replacementPlan: "替换为自制图表或抽象 AI 商业画面。"
+          }
+        ]
+      },
+      assetPrompts: {
+        ...pack.assetPrompts,
+        promptBundles: [
+          {
+            versionType: "90s",
+            shotNumber: 1,
+            shotId: pack.storyboard.shots[0].id,
+            imagePrompt: "cinematic business documentary style image prompt",
+            videoPrompt: "cinematic business documentary style video prompt",
+            negativePrompt: "fake logo, unreadable text",
+            styleLock: "cinematic business documentary style",
+            aspectRatio: "9:16",
+            usageWarning: "不得直接生成真实 Logo 或新闻图。"
+          }
+        ]
+      },
+      rightsChecks: [
+        {
+          ...pack.rightsChecks[0],
+          replacementPlan: "替换为自制图表、抽象 AI 商业画面或 placeholder 复核项。"
+        }
+      ]
+    });
+
+    expect(parsed.storyboard.shots[0].versionType).toBe("90s");
+    expect(parsed.assetPrompts.promptBundles?.[0].shotNumber).toBe(1);
+    expect(parsed.rightsChecks[0].replacementPlan).toContain("替换");
+    expect(() => ProductionPackSchema.parse(pack)).not.toThrow();
+  });
+
   it("always includes 90s and 180s scripts for display", () => {
     const pack = runMockPipeline({
       ...demoArticleInput,

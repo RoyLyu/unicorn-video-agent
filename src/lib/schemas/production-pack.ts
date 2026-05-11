@@ -14,6 +14,7 @@ export const RightsRiskLevelSchema = z.enum([
   "red",
   "placeholder"
 ]);
+export const StoryboardVersionTypeSchema = z.enum(["90s", "180s"]);
 
 export const ArticleInputSchema = z.object({
   title: NonEmptyString,
@@ -76,7 +77,20 @@ export const StoryboardResultSchema = z.object({
         narration: NonEmptyString,
         visual: NonEmptyString,
         assetType: z.enum(["chart", "ai-image", "ai-video", "stock", "screen", "text"]),
-        rightsLevel: RightsRiskLevelSchema
+        rightsLevel: RightsRiskLevelSchema,
+        versionType: StoryboardVersionTypeSchema.optional(),
+        shotNumber: z.number().int().positive().optional(),
+        beat: NonEmptyString.optional(),
+        duration: NonEmptyString.optional(),
+        voiceover: NonEmptyString.optional(),
+        overlayText: NonEmptyString.optional(),
+        camera: NonEmptyString.optional(),
+        composition: NonEmptyString.optional(),
+        motion: NonEmptyString.optional(),
+        visualType: NonEmptyString.optional(),
+        chartNeed: NonEmptyString.optional(),
+        copyrightRisk: RightsRiskLevelSchema.optional(),
+        replacementPlan: NonEmptyString.optional()
       })
     )
     .min(1)
@@ -108,14 +122,30 @@ export const AssetPromptResultSchema = z.object({
       intendedUse: NonEmptyString,
       licenseRequirement: NonEmptyString
     })
-  )
+  ),
+  promptBundles: z
+    .array(
+      z.object({
+        versionType: StoryboardVersionTypeSchema,
+        shotNumber: z.number().int().positive(),
+        shotId: NonEmptyString,
+        imagePrompt: NonEmptyString,
+        videoPrompt: NonEmptyString,
+        negativePrompt: NonEmptyString,
+        styleLock: NonEmptyString,
+        aspectRatio: NonEmptyString,
+        usageWarning: NonEmptyString
+      })
+    )
+    .optional()
 });
 
 export const RightsCheckResultSchema = z.object({
   item: NonEmptyString,
   level: RightsRiskLevelSchema,
   reason: NonEmptyString,
-  action: NonEmptyString
+  action: NonEmptyString,
+  replacementPlan: NonEmptyString.optional()
 });
 
 export const ExportManifestSchema = z.object({
@@ -155,3 +185,4 @@ export type ExportManifest = z.infer<typeof ExportManifestSchema>;
 export type ProductionPack = z.infer<typeof ProductionPackSchema>;
 export type GenerationMode = z.infer<typeof GenerationModeSchema>;
 export type RightsRiskLevel = z.infer<typeof RightsRiskLevelSchema>;
+export type StoryboardVersionType = z.infer<typeof StoryboardVersionTypeSchema>;
