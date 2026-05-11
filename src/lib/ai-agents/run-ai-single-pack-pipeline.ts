@@ -4,6 +4,7 @@ import {
   bindAgentRunToProject,
   completeAgentRun,
   createAgentRun,
+  failAgentRun,
   recordAgentRunStep,
   saveAgentContextSnapshot
 } from "@/db/repositories/agent-run-repository";
@@ -22,7 +23,13 @@ import {
   type AiEnvironment
 } from "@/lib/ai/ai-config";
 import { normalizeAiError } from "@/lib/ai/ai-errors";
+import {
+  readAiPolicy,
+  shouldAllowMockFallback,
+  type GenerationProfile
+} from "@/lib/ai/ai-policy";
 import { createOpenAiClient } from "@/lib/ai/openai-client";
+import { scanOutputContamination } from "@/lib/ai/output-contamination";
 import { parseAiJsonObject } from "@/lib/ai/structured-output";
 import { runMockPipeline } from "@/lib/mock-pipeline/run-mock-pipeline";
 import {
@@ -44,6 +51,10 @@ type SaveOptions = {
   status?: string;
 };
 
+type ScriptBlockLike =
+  | ProductionPack["scripts"]["video90s"]
+  | ProductionPack["scripts"]["video180s"];
+
 export type ChatCompletionExecutor = (input: {
   config: Extract<AiConfig, { ok: true }>;
   systemPrompt: string;
@@ -54,10 +65,11 @@ type RunAiSinglePackPipelineOptions = {
   client?: DbClient;
   env?: AiEnvironment;
   saveOptions?: SaveOptions;
+  generationProfile?: GenerationProfile;
   chatCompletionExecutor?: ChatCompletionExecutor;
 };
 
-export type RunAiSinglePackPipelineResult = {
+export type RunAiSinglePackPipelineSuccessResult = {
   projectId: string;
   agentRunId: string;
   productionPack: ProductionPack;
@@ -67,6 +79,27 @@ export type RunAiSinglePackPipelineResult = {
   agentMode: "single_pack";
   saved: ReturnType<typeof saveProductionPack>;
 };
+
+export type RunAiSinglePackPipelineFailureResult = {
+  projectId?: never;
+  agentRunId: string;
+  productionPack?: never;
+  qaSummary?: never;
+  fallbackUsed: false;
+  generationMode: "ai";
+  agentMode: "single_pack";
+  failureReason:
+    | "ai_config"
+    | "provider"
+    | "schema"
+    | "contaminated_output"
+    | "unknown";
+  safeErrorSummary: string;
+};
+
+export type RunAiSinglePackPipelineResult =
+  | RunAiSinglePackPipelineSuccessResult
+  | RunAiSinglePackPipelineFailureResult;
 
 const agentSteps: Array<{ slug: AgentSlug; output: (pack: ProductionPack) => unknown }> = [
   { slug: "article-analyst", output: (pack) => pack.analysis },
@@ -91,12 +124,30 @@ export async function runAiSinglePackPipeline(
   const articleInput = ArticleInputSchema.parse(input);
   const client = options.client;
   const config = readAiConfig(options.env);
+  const policy = readAiPolicy(options.env);
+  const generationProfile = options.generationProfile ?? "real_output";
+  const allowMockFallback = shouldAllowMockFallback({
+    policy,
+    generationProfile
+  });
 
   syncAgentDefinitions(client);
   const run = createAgentRun(articleInput.title, client);
 
   try {
     if (!config.ok) {
+      if (!allowMockFallback) {
+        return failStrictRealOutput({
+          articleInput,
+          runId: run.id,
+          client,
+          failureReason: "ai_config",
+          errorMessage: config.error.message,
+          safeErrorSummary:
+            "AI 配置缺失或不完整，请检查 .env.local 中的 AI_PROVIDER、AI_MODEL、MINIMAX_API_KEY / OPENAI_API_KEY 和 baseURL 配置。"
+        });
+      }
+
       return saveFallbackPack({
         articleInput,
         runId: run.id,
@@ -115,6 +166,32 @@ export async function runAiSinglePackPipeline(
       : await requestChatCompletionJson(config, { articleInput });
     const parsedPack = coerceAiProductionPack(parseAiJsonObject(rawText), articleInput);
     const productionPack = normalizeProductionPack(parsedPack);
+    const contamination = scanOutputContamination(
+      productionPack,
+      policy.bannedOutputTerms
+    );
+
+    if (contamination.contaminated && !allowMockFallback) {
+      return failStrictRealOutput({
+        articleInput,
+        runId: run.id,
+        client,
+        failureReason: "contaminated_output",
+        errorMessage: contamination.safeErrorSummary ?? "contaminated_output",
+        safeErrorSummary: contamination.safeErrorSummary ?? "contaminated_output"
+      });
+    }
+
+    if (contamination.contaminated) {
+      return saveFallbackPack({
+        articleInput,
+        runId: run.id,
+        client,
+        saveOptions: options.saveOptions,
+        errorMessage: contamination.safeErrorSummary ?? "contaminated_output"
+      });
+    }
+
     const qaSummary = createQaSummary(productionPack);
     const saved = saveProductionPack(productionPack, client, {
       ...options.saveOptions,
@@ -146,6 +223,17 @@ export async function runAiSinglePackPipeline(
   } catch (error) {
     const normalized = normalizeAiError(error);
 
+    if (!allowMockFallback) {
+      return failStrictRealOutput({
+        articleInput,
+        runId: run.id,
+        client,
+        failureReason: failureReasonFromErrorCode(normalized.code),
+        errorMessage: `${normalized.code}: ${normalized.message}`,
+        safeErrorSummary: `${normalized.code}: ${normalized.message}`
+      });
+    }
+
     return saveFallbackPack({
       articleInput,
       runId: run.id,
@@ -154,6 +242,64 @@ export async function runAiSinglePackPipeline(
       errorMessage: `${normalized.code}: ${normalized.message}`
     });
   }
+}
+
+export function isAiSinglePackFailure(
+  result: RunAiSinglePackPipelineResult
+): result is RunAiSinglePackPipelineFailureResult {
+  return "failureReason" in result;
+}
+
+function failStrictRealOutput(input: {
+  articleInput: ArticleInput;
+  runId: string;
+  client?: DbClient;
+  failureReason: RunAiSinglePackPipelineFailureResult["failureReason"];
+  errorMessage: string;
+  safeErrorSummary: string;
+}): RunAiSinglePackPipelineFailureResult {
+  recordAgentRunStep(
+    {
+      runId: input.runId,
+      agentSlug: "article-analyst",
+      stepOrder: 1,
+      status: "failed",
+      inputJson: { articleInput: input.articleInput, mode: "single_pack" },
+      outputJson: null,
+      inputSummary: summarizeJson(input.articleInput),
+      outputSummary: "strict real output blocked",
+      errorMessage: input.errorMessage
+    },
+    input.client
+  );
+  failAgentRun(input.runId, input.errorMessage, input.client);
+
+  return {
+    agentRunId: input.runId,
+    fallbackUsed: false,
+    generationMode: "ai",
+    agentMode: "single_pack",
+    failureReason: input.failureReason,
+    safeErrorSummary: input.safeErrorSummary
+  };
+}
+
+function failureReasonFromErrorCode(
+  code: string
+): RunAiSinglePackPipelineFailureResult["failureReason"] {
+  if (code === "schema_error") {
+    return "schema";
+  }
+
+  if (code === "config_error") {
+    return "ai_config";
+  }
+
+  if (code === "provider_error") {
+    return "provider";
+  }
+
+  return "unknown";
 }
 
 async function requestChatCompletionJson(
@@ -317,8 +463,62 @@ function coerceScripts(value: unknown, basePack: ProductionPack) {
   const record = isRecord(value) ? value : {};
 
   return {
-    video90s: isRecord(record.video90s) ? record.video90s : basePack.scripts.video90s,
-    video180s: isRecord(record.video180s) ? record.video180s : basePack.scripts.video180s
+    video90s: coerceScriptBlock(record.video90s, basePack.scripts.video90s, 90),
+    video180s: coerceScriptBlock(record.video180s, basePack.scripts.video180s, 180)
+  };
+}
+
+function coerceScriptBlock(
+  value: unknown,
+  fallback: ScriptBlockLike,
+  duration: 90 | 180
+) {
+  const record = isRecord(value) ? value : {};
+  const rawLines = Array.isArray(value)
+    ? value
+    : Array.isArray(record.lines)
+      ? record.lines
+      : Array.isArray(record.segments)
+        ? record.segments
+        : Array.isArray(record.script)
+          ? record.script
+          : fallback.lines;
+  const lines = rawLines.length > 0
+    ? rawLines.map((line, index) => coerceScriptLine(line, fallback.lines[index], index))
+    : fallback.lines;
+
+  return {
+    duration,
+    title: String(record.title ?? fallback.title),
+    hook: String(record.hook ?? lines[0]?.narration ?? fallback.hook),
+    lines,
+    closing: String(record.closing ?? record.conclusion ?? lines.at(-1)?.narration ?? fallback.closing)
+  };
+}
+
+function coerceScriptLine(
+  value: unknown,
+  fallback: ScriptBlockLike["lines"][number] | undefined,
+  index: number
+) {
+  if (typeof value === "string") {
+    return {
+      timeRange: fallback?.timeRange ?? `00:${String(index * 15).padStart(2, "0")}-00:${String(index * 15 + 15).padStart(2, "0")}`,
+      narration: value,
+      visual: fallback?.visual ?? "商业纪录片信息卡",
+      onScreenText: fallback?.onScreenText ?? `要点 ${index + 1}`
+    };
+  }
+
+  const record = isRecord(value) ? value : {};
+  const narration = String(record.narration ?? record.voiceover ?? record.text ?? record.line ?? fallback?.narration ?? `第 ${index + 1} 段旁白。`);
+  const visual = String(record.visual ?? record.visualDescription ?? record.scene ?? fallback?.visual ?? "商业纪录片信息卡");
+
+  return {
+    timeRange: String(record.timeRange ?? record.time ?? record.duration ?? fallback?.timeRange ?? `00:${String(index * 15).padStart(2, "0")}-00:${String(index * 15 + 15).padStart(2, "0")}`),
+    narration,
+    visual,
+    onScreenText: String(record.onScreenText ?? record.overlayText ?? record.subtitle ?? record.caption ?? fallback?.onScreenText ?? narration.slice(0, 18))
   };
 }
 
@@ -448,7 +648,11 @@ function sanitizeInternalPhrases(value: unknown): unknown {
     return value
       .replace(/mock/gi, "AI")
       .replace(/Batch\s*02/gi, "当前流程")
-      .replace(/后续会补齐|系统会补齐|demo-data/g, "已生成");
+      .replace(/后续补齐|后续会补齐|系统会补齐|demo-data/g, "已生成")
+      .replace(/不是真实 AI/g, "需人工复核")
+      .replace(/只生成 JSON 生产包/g, "生成文本生产包")
+      .replace(/本地 AI/g, "AI")
+      .replace(/Mock Pipeline/g, "AI Pipeline");
   }
 
   if (Array.isArray(value)) {

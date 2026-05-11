@@ -91,6 +91,38 @@ describe("showcase mapper", () => {
     );
   });
 
+  it("keeps red rights risks and maps replacement display copy", () => {
+    const pack = {
+      ...demoProductionPack,
+      rightsChecks: [
+        {
+          item: "真实新闻配图或融资现场照片",
+          level: "red" as const,
+          reason: "版权归属不明，不能默认用于视频号。",
+          action: "替换为自制图表、抽象 AI 商业画面或 placeholder 复核项。"
+        },
+        ...demoProductionPack.rightsChecks.filter((risk) => risk.level !== "red")
+      ]
+    };
+
+    const viewModel = mapShowcaseViewModel({
+      project,
+      productionPack: pack,
+      reviewData: null,
+      latestAgentRun: null,
+      latestAgentRunDetail: null
+    });
+    const redRisk = viewModel.riskSummary.items.find(
+      (risk) => risk.level === "red"
+    );
+
+    expect(redRisk).toBeDefined();
+    expect(redRisk?.level).toBe("red");
+    expect(redRisk?.displayLabel).toBe("不可直接使用素材");
+    expect(redRisk?.displayText).toContain("不可直接使用");
+    expect(redRisk?.alternativeText).toContain("建议替代");
+  });
+
   it("shows a title-only fact-check warning for Title-only Demo projects", () => {
     const viewModel = mapShowcaseViewModel({
       project: { ...project, sourceName: "Title-only Demo" },
@@ -110,6 +142,9 @@ describe("showcase mapper", () => {
     expect(viewModel.titleOnlyWarning).toBe(
       "该项目由标题生成，事实信息需要人工核验。"
     );
+    expect(viewModel.titleOnlyFactReportWarning).toBe(
+      "该项目由标题生成，不是事实报告。"
+    );
   });
 
   it("does not show a title-only warning for full article projects", () => {
@@ -123,6 +158,7 @@ describe("showcase mapper", () => {
 
     expect(viewModel.isTitleOnlyDemo).toBe(false);
     expect(viewModel.titleOnlyWarning).toBeNull();
+    expect(viewModel.titleOnlyFactReportWarning).toBeNull();
   });
 
   it("does not import AI modules or read server API key names", () => {

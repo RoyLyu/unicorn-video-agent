@@ -10,6 +10,7 @@ import {
   TITLE_ONLY_DEMO_SOURCE_NAME,
   TITLE_ONLY_WARNING
 } from "@/lib/quick-demo/title-only-article";
+import { formatRightsRiskDisplay } from "@/lib/rights/rights-display";
 import type { ProductionPack, RightsRiskLevel } from "@/lib/schemas/production-pack";
 
 import type {
@@ -50,9 +51,17 @@ export function mapShowcaseViewModel({
     isDemo: project.isDemo,
     isTitleOnlyDemo,
     titleOnlyWarning: isTitleOnlyDemo ? TITLE_ONLY_WARNING : null,
+    titleOnlyFactReportWarning: isTitleOnlyDemo
+      ? "该项目由标题生成，不是事实报告。"
+      : null,
     fallbackWarning: generation.fallbackUsed
       ? "当前使用 fallback 结果：该生产包为降级输出，演示时请说明真实 AI 生成未完全成功。"
       : null,
+    fallbackBlockedWarning: generation.fallbackUsed
+      ? "当前为 fallback/mock 结果，不可作为正式成品。"
+      : null,
+    blockProductionDownload: generation.fallbackUsed,
+    regenerateUrl: "/articles/new",
     generation,
     agentSummary: mapAgentSummary(latestAgentRun, latestAgentRunDetail),
     coreSummary: productionPack.analysis.summary,
@@ -99,7 +108,9 @@ function mapGenerationSummary(
 ): ShowcaseGenerationSummary {
   const fallbackUsed =
     latestAgentRun?.status === "completed_with_fallback" ||
-    project.status.includes("fallback");
+    project.status.includes("fallback") ||
+    productionPack.mode === "mock" ||
+    project.status.includes("mock");
 
   return {
     generationModeLabel: productionPack.mode === "ai" ? "AI Agent" : "Mock",
@@ -176,11 +187,6 @@ function mapRiskSummary(productionPack: ProductionPack): ShowcaseRiskSummary {
 
   return {
     counts,
-    items: productionPack.rightsChecks.slice(0, 6).map((risk) => ({
-      item: risk.item,
-      level: risk.level,
-      reason: risk.reason,
-      action: risk.action
-    }))
+    items: productionPack.rightsChecks.slice(0, 6).map(formatRightsRiskDisplay)
   };
 }

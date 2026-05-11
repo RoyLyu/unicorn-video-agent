@@ -62,6 +62,9 @@ export type ShowcaseRiskSummary = {
     level: RightsRiskLevel;
     reason: string;
     action: string;
+    displayLabel: string;
+    displayText: string;
+    alternativeText: string;
   }>;
 };
 
@@ -88,7 +91,11 @@ export type ShowcaseViewModel = {
   isDemo: boolean;
   isTitleOnlyDemo: boolean;
   titleOnlyWarning: string | null;
+  titleOnlyFactReportWarning: string | null;
   fallbackWarning: string | null;
+  fallbackBlockedWarning: string | null;
+  blockProductionDownload: boolean;
+  regenerateUrl: string;
   generation: ShowcaseGenerationSummary;
   agentSummary: ShowcaseAgentSummary;
   coreSummary: string;

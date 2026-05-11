@@ -30,6 +30,7 @@ export type PublishCopyExportData = {
 
 export type ExportGenerationOptions = {
   publishCopy?: PublishCopyExportData;
+  fallbackWarning?: boolean;
 };
 
 export function isExportFileName(fileName: string): fileName is ExportFileName {

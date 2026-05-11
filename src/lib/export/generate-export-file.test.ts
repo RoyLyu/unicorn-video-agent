@@ -13,8 +13,36 @@ describe("Batch 04 export generation", () => {
     expect(file?.content).toContain(demoProductionPack.articleInput.title);
     expect(file?.content).toContain("90s 脚本");
     expect(file?.content).toContain("180s 脚本");
-    expect(file?.content).toContain("版权风险摘要");
+    expect(file?.content).toContain("版权风险与替代方案");
     expect(file?.content).toContain("不构成投资建议");
+  });
+
+  it("keeps red rights level and includes replacement alternatives in production-pack.md", () => {
+    const file = generateExportFile("production-pack.md", {
+      ...demoProductionPack,
+      rightsChecks: [
+        {
+          item: "真实新闻配图或融资现场照片",
+          level: "red",
+          reason: "版权归属不明，不能默认用于视频号。",
+          action: "替换为自制图表、抽象 AI 商业画面或 placeholder 复核项。"
+        }
+      ]
+    });
+
+    expect(file?.content).toContain("版权风险与替代方案");
+    expect(file?.content).toContain("- red：真实新闻配图或融资现场照片");
+    expect(file?.content).toContain("不可直接使用");
+    expect(file?.content).toContain("建议替代");
+    expect(file?.content).not.toContain("- yellow：真实新闻配图或融资现场照片");
+  });
+
+  it("adds a not-for-use warning to fallback production-pack.md", () => {
+    const file = generateExportFile("production-pack.md", demoProductionPack, {
+      fallbackWarning: true
+    });
+
+    expect(file?.content).toMatch(/^> 当前文件为 fallback\/mock 结果，不可投入使用。/);
   });
 
   it("generates storyboard.csv with required header and storyboard rows", () => {

@@ -47,6 +47,11 @@ export default async function ExportPage({
         projectId={projectId}
         reviewSummary={reviewData?.reviewSummary}
         publishCopy={reviewData?.publishCopy}
+        isFallbackProject={
+          saved.productionPack.mode === "mock" ||
+          saved.project.status.includes("fallback") ||
+          saved.project.status.includes("mock")
+        }
       />
     </main>
   );

@@ -1,5 +1,18 @@
 # TODO
 
+## Batch 12A
+
+- [x] 新增 strict AI policy，默认真实输出必需、mock fallback 不允许。
+- [x] 新增 output contamination scanner，递归扫描 ProductionPack 文本字段。
+- [x] `/api/ai/production-pack` 在 strict 失败时返回 422，不保存 fallback mock 成品。
+- [x] `generationProfile=fast_demo` 才允许显式 fallback，并标记不可投入使用。
+- [x] real-run audit 默认 require real，fallback 或污染输出写入 failed artifacts 且不覆盖 latest success。
+- [x] Showcase 对 fallback/mock 项目标红、禁用主下载并提供重新生成入口。
+- [x] Export 在 fallback/mock markdown 顶部写不可投入使用，strict mode 阻止 fallback production-pack 下载。
+- [x] `/quick-demo` 增加“真实生成 / 快速演示”模式，默认真实生成。
+- [x] `/quick-demo` 和 `/articles/new` 明确完整文章正文或事实材料要求。
+- [x] 更新 `.env.example` 与 Batch 12A 文档。
+
 ## Batch 01
 
 - [x] 建立统一 AppShell。
@@ -140,7 +153,17 @@
 - [x] Real Run Audit scorer 输出低分 shotId / promptId。
 - [x] QA scorer 对可执行分镜、完整 prompt 和有替代方案的 red rights 给出 4/5+。
 
-## Batch 10 建议
+## Batch 11C
+
+- [x] 新增 `docs/13_REAL_RUN_AUDIT_SUMMARY.md`。
+- [x] 冻结成功 Demo 项目 Showcase 和 `production-pack.md` 路径。
+- [x] Showcase red rights risk 显示为“不可直接使用素材”。
+- [x] Showcase red rights risk 显示替代方案且不隐藏 red 等级。
+- [x] `production-pack.md` 版权段落改为“版权风险与替代方案”。
+- [x] red rights risk 在导出中保留 red 等级，不自动降级。
+- [x] 更新最终演示标题清单和 Batch 11C 文档。
+
+## Batch 12 后续建议
 
 - [ ] 增加 prompt 版本管理和 prompt diff。
 - [ ] 增加真实 AI 输出质量评分和人工批准开关。

@@ -1,5 +1,68 @@
 # 07 Batch Log
 
+## Batch 12A - Strict Real Output and Audit Failure Gate
+
+目标：建立严格真实输出边界，真实生产、真实审计和默认 Quick Demo 不能把 fallback/mock 结果保存成成功项目、覆盖 latest audit、进入 Showcase 成品展示，或作为 `production-pack.md` 主下载。
+
+完成内容：
+
+- strict AI policy helper
+- `AI_REQUIRE_REAL_OUTPUT`、`AI_ALLOW_MOCK_FALLBACK`、`AI_BANNED_OUTPUT_TERMS`
+- ProductionPack output contamination scanner
+- `/api/ai/production-pack` strict failure 422
+- explicit `generationProfile=fast_demo` fallback
+- real-run audit failure gate
+- failed audit artifacts，不覆盖 latest success
+- Showcase fallback/mock 红色 warning 和主下载禁用
+- strict mode 下 fallback/mock `production-pack.md` 下载阻断
+- Quick Demo “真实生成 / 快速演示”模式
+- `/articles/new` 与 `/quick-demo` 完整文章/事实材料提示
+- strict policy、scanner、API、audit、Showcase、Export 和 UI 测试
+
+明确不做：
+
+- AI 生图
+- AI 生视频
+- TTS
+- Remotion
+- 部署
+- 数据库重构
+- 删除 mock pipeline
+- Storyboard / Prompt 继续优化
+- Batch 12B 或 Batch 13 功能
+
+验收口径：
+
+- 真实审计只有在 `fallbackUsed=false`、`generationMode=ai`、`ProductionPack.mode=ai`、无禁用词污染时才写入 latest success。
+- AI 失败时 strict mode 必须 fail loudly，并保留上一份 latest success。
+
+## Batch 11C - Demo Freeze and Rights Display Polish
+
+目标：不新增生成能力，不修改 AI pipeline，只冻结已验证成功的 Demo 案例，并优化版权风险展示和导出文案。
+
+完成内容：
+
+- 成功 Demo 项目冻结摘要
+- `docs/13_REAL_RUN_AUDIT_SUMMARY.md`
+- Showcase red rights risk 展示口径
+- “不可直接使用素材”与“建议替代”文案
+- `production-pack.md` 版权段落改为“版权风险与替代方案”
+- red/yellow/green/placeholder 原始等级保留
+- 最终演示标题清单更新
+- README、CHANGELOG、TODO、Decisions 和 Runbook 更新
+
+明确不做：
+
+- AI 生图
+- AI 生视频
+- TTS
+- Remotion
+- 部署
+- 素材下载
+- 数据库重构
+- single-pack AI pipeline 修改
+- Batch 12 功能
+
 ## Batch 11B - Storyboard / Prompt Quality Upgrade
 
 目标：根据真实运行审计报告，只优化 Storyboard、Prompt Generator 和 Rights 输出质量，使关键审计分数达到 4/5 或以上。

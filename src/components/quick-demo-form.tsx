@@ -21,10 +21,14 @@ type AiProductionPackResponse = {
   safeErrorSummary?: string;
 };
 
+type QuickDemoGenerationProfile = "real_output" | "fast_demo";
+
 export function QuickDemoForm() {
   const router = useRouter();
   const [contentType, setContentType] =
     useState<QuickDemoContentType>("ipo");
+  const [generationProfile, setGenerationProfile] =
+    useState<QuickDemoGenerationProfile>("real_output");
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,11 +51,15 @@ export function QuickDemoForm() {
       const response = await fetch("/api/ai/production-pack", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(articleInput)
+        body: JSON.stringify({ ...articleInput, generationProfile })
       });
 
       if (!response.ok) {
-        setError("Title-only Demo 生成失败。请稍后重试，或使用完整文章输入流程。");
+        const errorBody = await readErrorBody(response);
+        setError(
+          errorBody?.safeErrorSummary ??
+            "Title-only Demo 真实生成失败。请检查 .env.local，或切换为快速演示。"
+        );
         return;
       }
 
@@ -75,9 +83,35 @@ export function QuickDemoForm() {
   return (
     <section className="panel quick-demo-panel">
       <div className="notice">
-        当前为 Title-only Demo：适合快速展示 AI Agent 工作流，不适合正式发布。正式生产仍应输入完整文章正文。
+        当前为 Title-only Demo：适合快速展示 AI Agent 工作流。Title-only 只能生成待核验策划案；要生成可投入使用的报告，必须输入完整文章正文或事实材料。
       </div>
       <form className="form-grid" onSubmit={handleSubmit}>
+        <fieldset className="field fieldset field--full">
+          <legend>生成模式</legend>
+          <label>
+            <input
+              name="generationProfile"
+              type="radio"
+              value="real_output"
+              checked={generationProfile === "real_output"}
+              onChange={() => setGenerationProfile("real_output")}
+            />
+            真实生成
+          </label>
+          <label>
+            <input
+              name="generationProfile"
+              type="radio"
+              value="fast_demo"
+              checked={generationProfile === "fast_demo"}
+              onChange={() => setGenerationProfile("fast_demo")}
+            />
+            快速演示
+          </label>
+          <p>
+            真实生成不允许 fallback；快速演示允许 fallback，但结果不可投入使用。
+          </p>
+        </fieldset>
         <div className="field field--full">
           <label htmlFor="quick-demo-title">标题</label>
           <input
@@ -122,6 +156,14 @@ export function QuickDemoForm() {
       </form>
     </section>
   );
+}
+
+async function readErrorBody(response: Response) {
+  try {
+    return (await response.json()) as { safeErrorSummary?: string };
+  } catch {
+    return null;
+  }
 }
 
 function createFallbackMessage(result: AiProductionPackResponse) {

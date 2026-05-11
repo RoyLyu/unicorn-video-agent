@@ -10,6 +10,9 @@ describe("ArticleInputForm Batch 08 generation modes", () => {
     expect(source).toContain("/api/mock/production-pack");
     expect(source).toContain("/api/ai/production-pack");
     expect(source).toContain("AI Agent");
+    expect(source).toContain("generationProfile");
+    expect(source).toContain("real_output");
+    expect(source).toContain("完整文章正文或事实材料");
   });
 
   it("does not read server-side OpenAI credentials in the client component", () => {

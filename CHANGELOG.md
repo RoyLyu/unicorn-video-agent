@@ -1,5 +1,23 @@
 # Changelog
 
+## Batch 12A - Strict Real Output and Audit Failure Gate
+
+- 新增 strict AI policy：默认 `AI_REQUIRE_REAL_OUTPUT=true`、`AI_ALLOW_MOCK_FALLBACK=false`，真实模式下 AI 失败不再保存 mock fallback 成功项目。
+- 新增 output contamination scanner，递归扫描 ProductionPack 文本字段，命中 `mock`、`Batch 02`、`后续补齐`、`demo-data` 等禁用词时拒绝作为真实成品保存。
+- 改造 `POST /api/ai/production-pack`：strict 失败返回 422 与安全错误摘要，不返回 fallback mock `projectId`；fast demo 才允许显式 fallback。
+- 改造 real-run audit：默认要求真实 AI 成功，fallback 或污染输出写入 failed artifacts 并 exit 1，不覆盖 latest success。
+- Showcase / Export 对 fallback/mock 项目标红，禁用主 `production-pack.md` 下载；strict mode 下阻止 fallback/mock 的 production-pack 下载。
+- `/quick-demo` 增加“真实生成 / 快速演示”模式，默认真实生成；`/articles/new` 明确完整文章和事实材料要求。
+- 更新 `.env.example`、README、TODO、Batch Log、Decisions、Runbook 和 Real Run Audit Summary。
+
+## Batch 11C - Demo Freeze and Rights Display Polish
+
+- 新增 `docs/13_REAL_RUN_AUDIT_SUMMARY.md`，冻结已验证成功的真实 AI Demo 项目、Showcase 路径、导出路径、审计分数和展示注意事项。
+- Showcase 版权风险摘要保留 red/yellow/green/placeholder 原始等级，并将 red 文案解释为“不可直接使用素材”。
+- red 版权项在 Showcase 和 `production-pack.md` 中显示替代方案，不再只呈现为失败状态。
+- `production-pack.md` 版权段落改为“版权风险与替代方案”，保留所有风险项和原始等级。
+- 更新最终演示标题清单、Runbook、Batch Log、Decisions、README 和 TODO。
+
 ## Batch 11B - Storyboard / Prompt Quality Upgrade
 
 - 补齐 MiniMax OpenAI-compatible single-pack 生成路径，`AI_AGENT_MODE` 默认 `single_pack`，仅显式设置 `sequential` 时走旧 runner。

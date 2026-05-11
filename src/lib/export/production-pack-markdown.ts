@@ -1,4 +1,5 @@
 import type { ProductionPack } from "@/lib/schemas/production-pack";
+import { formatRightsRiskMarkdownLine } from "@/lib/rights/rights-display";
 import {
   investmentDisclaimer,
   markdownList,
@@ -6,10 +7,17 @@ import {
   titleCandidates
 } from "./export-utils";
 
-export function generateProductionPackMarkdown(productionPack: ProductionPack) {
+export function generateProductionPackMarkdown(
+  productionPack: ProductionPack,
+  options: { fallbackWarning?: boolean } = {}
+) {
   const article = productionPack.articleInput;
 
-  return `# ${article.title}
+  const warning = options.fallbackWarning
+    ? "> 当前文件为 fallback/mock 结果，不可投入使用。\n\n"
+    : "";
+
+  return `${warning}# ${article.title}
 
 ## 文章信息
 
@@ -66,10 +74,10 @@ ${productionPack.storyboard.shots
   )
   .join("\n")}
 
-## 版权风险摘要
+## 版权风险与替代方案
 
 ${productionPack.rightsChecks
-  .map((risk) => `- ${risk.level}：${risk.item}。${risk.action}`)
+  .map(formatRightsRiskMarkdownLine)
   .join("\n")}
 
 ## 发布提示

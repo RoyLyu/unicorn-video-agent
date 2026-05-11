@@ -70,13 +70,17 @@ export function ArticleInputForm({
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parsed.data)
+        body: JSON.stringify(
+          selectedMode === "ai"
+            ? { ...parsed.data, generationProfile: "real_output" }
+            : parsed.data
+        )
       });
 
       if (!response.ok) {
         setError(
           selectedMode === "ai"
-            ? "AI Agent 生成失败。可以改用 Mock 生成，保证 demo 流程不中断。"
+            ? "AI Agent 真实生成失败。请检查配置或输入完整事实材料；Mock 只用于开发测试。"
             : "Mock 生产包生成失败，请检查输入。"
         );
         return;
@@ -87,8 +91,8 @@ export function ArticleInputForm({
       router.push(`/projects/${result.projectId}/analysis`);
     } catch {
       setError(
-        selectedMode === "ai"
-          ? "AI Agent 请求失败。可以改用 Mock 生成。"
+          selectedMode === "ai"
+          ? "AI Agent 请求失败。请检查配置或输入完整事实材料。"
           : "本地 mock 请求失败。"
       );
     } finally {
@@ -115,8 +119,7 @@ export function ArticleInputForm({
   return (
     <section className="panel">
       <div className="notice">
-        当前为 Batch 08：Mock 会使用本地 deterministic pipeline；AI Agent 会调用 server-side
-        OpenAI 文本生成，并在失败时 fallback 到 Mock。不生成图片、视频、音频或真实素材。
+        当前为 Batch 12A：AI Agent 使用严格真实输出模式，不允许 fallback/mock 伪装为成品。Mock 仅用于开发测试。要生成可投入使用的报告，必须输入完整文章正文或事实材料。
       </div>
       <form className="form-grid" onSubmit={handleSubmit}>
         <fieldset className="field fieldset field--full">
@@ -226,7 +229,7 @@ export function ArticleInputForm({
               disabled={isSubmitting}
               onClick={handleMockFallback}
             >
-              改用 Mock 生成
+              开发测试：改用 Mock
             </button>
           ) : null}
         </div>

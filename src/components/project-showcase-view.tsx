@@ -39,16 +39,37 @@ export function ProjectShowcaseView({
               {showcase.fallbackWarning}
             </div>
           ) : null}
+          {showcase.fallbackBlockedWarning ? (
+            <div className="showcase-warning showcase-warning--blocked">
+              {showcase.fallbackBlockedWarning}
+            </div>
+          ) : null}
           {showcase.titleOnlyWarning ? (
             <div className="showcase-warning showcase-warning--title-only">
               {showcase.titleOnlyWarning}
             </div>
           ) : null}
+          {showcase.titleOnlyFactReportWarning ? (
+            <div className="showcase-warning showcase-warning--title-only">
+              {showcase.titleOnlyFactReportWarning}
+            </div>
+          ) : null}
         </div>
         <div className="showcase-cta">
-          <a className="primary-link" href={showcase.links.downloadProductionPack}>
-            下载 production-pack.md
-          </a>
+          {showcase.blockProductionDownload ? (
+            <span className="primary-link is-disabled" aria-disabled="true">
+              下载 production-pack.md
+            </span>
+          ) : (
+            <a className="primary-link" href={showcase.links.downloadProductionPack}>
+              下载 production-pack.md
+            </a>
+          )}
+          {showcase.blockProductionDownload ? (
+            <Link className="ghost-button" href={showcase.regenerateUrl}>
+              重新生成真实 AI 版本
+            </Link>
+          ) : null}
           <Link className="ghost-button" href={showcase.links.review}>
             进入 Review
           </Link>

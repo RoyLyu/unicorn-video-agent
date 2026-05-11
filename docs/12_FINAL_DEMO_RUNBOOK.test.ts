@@ -14,4 +14,19 @@ describe("Final demo runbook", () => {
     expect(source).toContain("出错时如何处理");
     expect(source).toContain("不可承诺事项");
   });
+
+  it("documents Batch 11C frozen demo rights handling", () => {
+    const source = readFileSync("docs/13_REAL_RUN_AUDIT_SUMMARY.md", "utf8");
+
+    expect(source).toContain("f966086f-1599-4b30-be3d-231b04d02d45");
+    expect(source).toContain(
+      "/projects/f966086f-1599-4b30-be3d-231b04d02d45/showcase"
+    );
+    expect(source).toContain("Demo-ready: yes");
+    expect(source).toContain("Storyboard 5/5");
+    expect(source).toContain("Prompt 5/5");
+    expect(source).toContain("Rights 4/5");
+    expect(source).toContain("不可直接使用素材");
+    expect(source).toContain("新消费品牌上市背后：中国品牌全球化的第二轮机会来了");
+  });
 });

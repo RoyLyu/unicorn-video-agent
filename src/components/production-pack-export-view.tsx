@@ -20,19 +20,23 @@ export function ProductionPackExportView({
   productionPack,
   projectId,
   reviewSummary,
-  publishCopy
+  publishCopy,
+  isFallbackProject = false
 }: {
   productionPack?: ProductionPack;
   projectId?: string;
   reviewSummary?: ReviewSummary;
   publishCopy?: PublishCopyRecord;
+  isFallbackProject?: boolean;
 }) {
   const [pack] = useState<ProductionPack>(() => productionPack ?? loadProductionPack());
+  const isFallback = isFallbackProject || pack.mode === "mock";
   const [selectedFileName, setSelectedFileName] =
     useState<ExportFileName>("production-pack.md");
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
   const selectedFile = generateExportFile(selectedFileName, pack, {
-    publishCopy: publishCopy?.isManual ? publishCopy : undefined
+    publishCopy: publishCopy?.isManual ? publishCopy : undefined,
+    fallbackWarning: selectedFileName === "production-pack.md" && isFallback
   });
 
   async function handleCopy() {
@@ -55,6 +59,11 @@ export function ProductionPackExportView({
       <div className="notice">
         Batch 08 显示 Demo、AI/fallback 与审阅状态但不强制禁止下载。若事实、版权或 checklist 未完成，发布前仍需人工复核。
       </div>
+      {isFallback ? (
+        <div className="showcase-warning showcase-warning--blocked">
+          当前为 fallback/mock 结果，不可作为正式成品。production-pack.md 不可投入使用。
+        </div>
+      ) : null}
       <section className="panel">
         <DataTable
           caption="Batch 08 export files"
@@ -110,7 +119,7 @@ export function ProductionPackExportView({
             <button className="ghost-button" type="button" onClick={handleCopy}>
               复制预览
             </button>
-            {projectId ? (
+            {projectId && !(isFallback && selectedFileName === "production-pack.md") ? (
               <a
                 className="primary-link"
                 href={`/api/projects/${projectId}/exports/${selectedFileName}`}

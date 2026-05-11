@@ -25,11 +25,14 @@ export function ShowcaseRiskSummary({
           {riskSummary.items.map((risk) => (
             <li key={`${risk.item}-${risk.level}`}>
               <strong>
-                {risk.item} <StatusBadge tone={risk.level}>{risk.level}</StatusBadge>
+                {risk.item} <StatusBadge tone={risk.level}>{risk.level}</StatusBadge>{" "}
+                <span>{risk.displayLabel}</span>
               </strong>
-              <span>{risk.reason}</span>
+              <span>{risk.displayText}</span>
               <br />
-              <small>{risk.action}</small>
+              <small>
+                {risk.level === "red" ? risk.alternativeText : risk.action}
+              </small>
             </li>
           ))}
         </ul>

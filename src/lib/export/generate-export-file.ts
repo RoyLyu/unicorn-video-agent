@@ -44,7 +44,9 @@ function generateContent(
 ) {
   switch (fileName) {
     case "production-pack.md":
-      return generateProductionPackMarkdown(productionPack);
+      return generateProductionPackMarkdown(productionPack, {
+        fallbackWarning: options.fallbackWarning
+      });
     case "storyboard.csv":
       return generateStoryboardCsv(productionPack);
     case "project.json":

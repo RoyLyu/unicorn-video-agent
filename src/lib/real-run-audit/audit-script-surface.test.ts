@@ -13,13 +13,25 @@ describe("real-run audit script surface", () => {
     );
   });
 
-  it("does not read or print API key environment variables directly", () => {
+  it("prints a safe env summary without reading API key values directly", () => {
     const source = readFileSync("scripts/real-run-audit.ts", "utf8");
 
-    expect(source).not.toContain("MINIMAX_API_KEY");
-    expect(source).not.toContain("OPENAI_API_KEY");
+    expect(source).toContain("safe env summary");
+    expect(source).toContain("MINIMAX_API_KEY exists");
+    expect(source).toContain("AI_REQUIRE_REAL_OUTPUT");
+    expect(source).toContain("--allowFallback");
     expect(source).not.toContain("process.env.MINIMAX");
     expect(source).not.toContain("process.env.OPENAI");
+  });
+
+  it("uses failed artifacts for fallback audits without overwriting latest success", () => {
+    const source = readFileSync("scripts/real-run-audit.ts", "utf8");
+
+    expect(source).toContain("failed-production-pack.json");
+    expect(source).toContain("failed-qa-report.md");
+    expect(source).toContain("latest-production-pack.json");
+    expect(source).toContain("latest-qa-report.md");
+    expect(source).toContain("process.exitCode = 1");
   });
 
   it("keeps real audit artifacts out of git", () => {

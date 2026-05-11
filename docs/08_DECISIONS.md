@@ -221,3 +221,27 @@
 决定：AI JSON 通过基础 schema 后，在保存 SQLite 前执行 ProductionPack normalization，补足 8 个分镜、prompt 覆盖、style lock、negativePrompt 和 red rights 替代方案。
 
 原因：MiniMax 输出可能局部缺项；确定性 normalization 能稳定 demo 质量，同时保留 fallback 和审计记录。
+
+## D038 - red 版权项保留等级但展示替代方案
+
+决定：Batch 11C 不把 red rights risk 解释为生产包失败，也不自动降级为 yellow；Showcase 和 `production-pack.md` 保留原始 red 等级，并显示“不可直接使用素材”与替代方案。
+
+原因：red 的业务含义是“该素材不可直接使用”，不是“该 Demo 不可展示”。外部演示需要清楚说明风险边界，同时给出自制图表、抽象 AI 商业画面或 placeholder 复核项等可执行替代路径。
+
+## D039 - 真实输出模式不允许 fallback 冒充成品
+
+决定：Batch 12A 默认启用 `AI_REQUIRE_REAL_OUTPUT=true` 与 `AI_ALLOW_MOCK_FALLBACK=false`。真实生产、真实审计和 Quick Demo 默认真实生成时，AI 失败、schema 失败、provider 失败或输出污染都返回失败，不保存 mock fallback 项目为成功成品。
+
+原因：fallback 能保证开发流程不中断，但会把 mock / Batch / 占位模板文案带入 Showcase 和导出文件。真实演示和生产验收必须 fail loudly，避免把非真实 AI 结果误认为可投入使用的生产包。
+
+## D040 - latest real-run audit 只记录真实成功
+
+决定：`pnpm audit:real-run` 默认要求真实 AI 成功。fallback、非 AI mode、mock mode、API 非 2xx 或禁用词污染只写入 failed artifacts，并 exit 1，不覆盖 `latest-production-pack.json` 和 `latest-qa-report.md`。
+
+原因：latest success 是演示和质量验收锚点，不能被失败或 fallback 运行污染。失败产物仍保留诊断价值，但必须与成功快照隔离。
+
+## D041 - fallback/mock 可以展示但不能作为正式成品
+
+决定：当显式 fast demo 或开发测试允许 fallback 时，项目可以保存并展示，但 Showcase 必须红色提示不可作为正式成品，主 `production-pack.md` 下载按钮禁用；strict mode 下导出 API 阻止 fallback/mock production-pack 下载。
+
+原因：mock pipeline 仍有开发和链路演示价值，但不能被误用为真实 AI 生产结果。展示层和导出层需要同步表达这一边界。

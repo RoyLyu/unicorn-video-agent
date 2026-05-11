@@ -1,6 +1,8 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import { readAiPolicy } from "@/lib/ai/ai-policy";
+import { scanOutputContamination } from "@/lib/ai/output-contamination";
 import { generateExportFile } from "@/lib/export/generate-export-file";
 import {
   createTitleOnlyArticleInput,
@@ -16,7 +18,10 @@ type AuditArgs = {
   title: string;
   templateType: QuickDemoContentType;
   industryTags: string;
+  allowFallback: boolean;
 };
+
+const allowFallbackFlag = "--allowFallback";
 
 type AiProductionPackResponse = {
   projectId: string;
@@ -31,9 +36,12 @@ type AiProductionPackResponse = {
 const outputDir = path.join(process.cwd(), "tmp", "real-run-audit");
 const productionPackPath = path.join(outputDir, "latest-production-pack.json");
 const qaReportPath = path.join(outputDir, "latest-qa-report.md");
+const failedProductionPackPath = path.join(outputDir, "failed-production-pack.json");
+const failedQaReportPath = path.join(outputDir, "failed-qa-report.md");
 
 async function main() {
   await loadLocalEnv();
+  printSafeEnvSummary();
   const { handleAiProductionPackRequest } = await import(
     "@/app/api/ai/production-pack/route"
   );
@@ -47,16 +55,48 @@ async function main() {
     new Request("http://localhost/api/ai/production-pack", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(articleInput)
+      body: JSON.stringify({
+        ...articleInput,
+        generationProfile: args.allowFallback ? "fast_demo" : "real_output"
+      })
     })
   );
 
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(`Audit AI request failed with ${response.status}: ${body}`);
+    await writeFailedArtifacts({
+      reason: `Audit AI request failed with ${response.status}`,
+      responseBody: body
+    });
+    process.exitCode = 1;
+    return;
   }
 
   const body = (await response.json()) as AiProductionPackResponse;
+  const policy = readAiPolicy();
+  const contamination = scanOutputContamination(
+    body.productionPack,
+    policy.bannedOutputTerms
+  );
+
+  if (
+    !args.allowFallback &&
+    (body.fallbackUsed ||
+      body.generationMode !== "ai" ||
+      body.productionPack.mode !== "ai" ||
+      contamination.contaminated)
+  ) {
+    await writeFailedArtifacts({
+      reason: body.fallbackUsed
+        ? "fallbackUsed=true"
+        : contamination.safeErrorSummary ?? "real output gate failed",
+      responseBody: JSON.stringify(body, null, 2),
+      productionPack: body.productionPack
+    });
+    process.exitCode = 1;
+    return;
+  }
+
   const productionPackExport = generateExportFile(
     "production-pack.md",
     body.productionPack
@@ -105,6 +145,11 @@ function parseArgs(argv: string[]): AuditArgs {
     const key = token.slice(2);
     const value = argv[index + 1];
 
+    if (`--${key}` === allowFallbackFlag) {
+      args.set(key, "true");
+      continue;
+    }
+
     if (!value || value.startsWith("--")) {
       throw new Error(`Missing value for --${key}`);
     }
@@ -127,7 +172,12 @@ function parseArgs(argv: string[]): AuditArgs {
     );
   }
 
-  return { title, templateType, industryTags };
+  return {
+    title,
+    templateType,
+    industryTags,
+    allowFallback: args.get("allowFallback") === "true"
+  };
 }
 
 function isQuickDemoContentType(
@@ -165,6 +215,53 @@ async function loadLocalEnv() {
   } catch {
     // The route handler will report missing configuration and fallback.
   }
+}
+
+function printSafeEnvSummary() {
+  const env = process.env as Record<string, string | undefined>;
+  const getEnv = (key: string) => env[key];
+
+  console.log("safe env summary");
+  console.log(`AI_PROVIDER=${getEnv("AI_PROVIDER") ?? ""}`);
+  console.log(`AI_MODEL=${getEnv("AI_MODEL") ?? ""}`);
+  console.log(`AI_AGENT_MODE=${getEnv("AI_AGENT_MODE") ?? ""}`);
+  console.log(`MINIMAX_BASE_URL exists=${Boolean(getEnv("MINIMAX_BASE_URL"))}`);
+  console.log(`MINIMAX_API_KEY exists=${Boolean(getEnv("MINIMAX_API_KEY"))}`);
+  console.log(`AI_REQUIRE_REAL_OUTPUT=${getEnv("AI_REQUIRE_REAL_OUTPUT") ?? ""}`);
+  console.log(`AI_ALLOW_MOCK_FALLBACK=${getEnv("AI_ALLOW_MOCK_FALLBACK") ?? ""}`);
+}
+
+async function writeFailedArtifacts(input: {
+  reason: string;
+  responseBody: string;
+  productionPack?: ProductionPack;
+}) {
+  await mkdir(outputDir, { recursive: true });
+  const payload = {
+    failed: true,
+    reason: input.reason,
+    responseBody: input.responseBody,
+    productionPack: input.productionPack ?? null
+  };
+  const markdown = [
+    "# Failed Real Run Audit",
+    "",
+    `- Reason: ${input.reason}`,
+    "- latest-production-pack.json was not overwritten.",
+    "- latest-qa-report.md was not overwritten.",
+    "",
+    "## Response",
+    "",
+    "```json",
+    input.responseBody,
+    "```"
+  ].join("\n");
+
+  await writeFile(failedProductionPackPath, JSON.stringify(payload, null, 2), "utf8");
+  await writeFile(failedQaReportPath, markdown, "utf8");
+  console.error(`Real run audit failed: ${input.reason}`);
+  console.error(`Failed response: ${failedProductionPackPath}`);
+  console.error(`Failed QA report: ${failedQaReportPath}`);
 }
 
 main().catch((error: unknown) => {

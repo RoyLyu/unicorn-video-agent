@@ -1,5 +1,6 @@
 import { getProductionPackByProjectId } from "@/db/repositories/production-pack-repository";
 import { getPublishCopyByProjectId } from "@/db/repositories/publish-copy-repository";
+import { readAiPolicy } from "@/lib/ai/ai-policy";
 import { generateExportFile } from "@/lib/export/generate-export-file";
 
 export const runtime = "nodejs";
@@ -18,8 +19,25 @@ export async function GET(
       return Response.json({ error: "Project not found" }, { status: 404 });
     }
 
+    const isFallback = isFallbackProject(saved);
+    const policy = readAiPolicy();
+
+    if (
+      fileName === "production-pack.md" &&
+      isFallback &&
+      policy.requireRealOutput
+    ) {
+      return Response.json(
+        {
+          error: "Fallback production-pack.md is blocked in strict real output mode."
+        },
+        { status: 422 }
+      );
+    }
+
     const generatedFile = generateExportFile(fileName, saved.productionPack, {
-      publishCopy: getPublishCopyByProjectId(projectId) ?? undefined
+      publishCopy: getPublishCopyByProjectId(projectId) ?? undefined,
+      fallbackWarning: fileName === "production-pack.md" && isFallback
     });
 
     if (!generatedFile) {
@@ -39,4 +57,12 @@ export async function GET(
       { status: 500 }
     );
   }
+}
+
+function isFallbackProject(saved: NonNullable<ReturnType<typeof getProductionPackByProjectId>>) {
+  return (
+    saved.productionPack.mode === "mock" ||
+    saved.project.status.includes("fallback") ||
+    saved.project.status.includes("mock")
+  );
 }

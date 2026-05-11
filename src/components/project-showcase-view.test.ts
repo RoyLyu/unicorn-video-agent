@@ -13,8 +13,14 @@ describe("ProjectShowcaseView final demo status", () => {
 
     expect(html).toContain("fallback: yes");
     expect(html).toContain("当前使用 fallback 结果");
+    expect(html).toContain("当前为 fallback/mock 结果，不可作为正式成品。");
     expect(html).toContain("该项目由标题生成，事实信息需要人工核验。");
-    expect(html).toContain("/api/projects/project-1/exports/production-pack.md");
+    expect(html).toContain("该项目由标题生成，不是事实报告。");
+    expect(html).toContain("aria-disabled=\"true\"");
+    expect(html).toContain("重新生成真实 AI 版本");
+    expect(html).toContain("不可直接使用素材");
+    expect(html).toContain("建议替代");
+    expect(html).toContain("red");
   });
 });
 
@@ -26,6 +32,10 @@ function createShowcase(): ShowcaseViewModel {
     isDemo: false,
     isTitleOnlyDemo: true,
     titleOnlyWarning: "该项目由标题生成，事实信息需要人工核验。",
+    titleOnlyFactReportWarning: "该项目由标题生成，不是事实报告。",
+    fallbackBlockedWarning: "当前为 fallback/mock 结果，不可作为正式成品。",
+    blockProductionDownload: true,
+    regenerateUrl: "/articles/new",
     fallbackWarning: "当前使用 fallback 结果，请在演示时说明 AI 结果已降级。",
     generation: {
       generationModeLabel: "Mock",
@@ -68,8 +78,20 @@ function createShowcase(): ShowcaseViewModel {
       searchLeads: []
     },
     riskSummary: {
-      counts: { green: 0, yellow: 0, red: 0, placeholder: 0 },
-      items: []
+      counts: { green: 0, yellow: 0, red: 1, placeholder: 0 },
+      items: [
+        {
+          item: "真实新闻配图或融资现场照片",
+          level: "red",
+          reason: "版权归属不明，不能默认用于视频号。",
+          action: "替换为自制图表、抽象 AI 商业画面或 placeholder 复核项。",
+          displayLabel: "不可直接使用素材",
+          displayText:
+            "不可直接使用：真实新闻配图或融资现场照片。建议替代：自制图表、抽象 AI 商业画面或 placeholder 复核项。",
+          alternativeText:
+            "建议替代：自制图表、抽象 AI 商业画面或 placeholder 复核项。"
+        }
+      ]
     },
     disclaimer: "不构成投资建议",
     links: {
