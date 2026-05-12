@@ -10,6 +10,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "audit:real-run": "tsx scripts/real-run-audit.ts",
+    "backup:db": "tsx scripts/backup-db.ts",
+    "internal:smoke": "tsx scripts/internal-smoke.ts",
+    "demo:product": "tsx scripts/product-demo-check.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "mkdir -p data && drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"

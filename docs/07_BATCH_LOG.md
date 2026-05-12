@@ -1,5 +1,18 @@
 # 07 Batch Log
 
+## Batch 13E - Internal Release Freeze + Fixed Mac Product Entry
+
+- 状态：已实现。
+- 目标：冻结 Batch 13D 成功真实审计项目，补齐内部产品入口、固定 Mac 运行、SQLite 备份、smoke test 和 SOP。
+- 完成内容：
+  - 新增 `/product-demo` 只读内部产品入口。
+  - 冻结成功项目 `d0de3657-352b-468b-8304-738229500be1` 和 Agent Run `149300c8-74e0-4ad3-9767-a3f1b3413ddb`。
+  - Dashboard 增加内部产品入口、strict mode、fallback policy、SQLite 位置和固定 Mac 说明。
+  - 新增 `backup:db`、`internal:smoke`、`demo:product`。
+  - 新增 `docs/14_INTERNAL_USE_SOP.md` 和 `docs/15_PRODUCT_DEMO_FREEZE.md`。
+  - `.gitignore` 忽略 `backups/` 与 `data/material-candidates/`。
+- 未做：AI pipeline、single-pack prompt、normalization、数据库 schema、AI 生图、生视频、TTS、Remotion、部署、用户系统、素材抓取或下载。
+
 ## Batch 13D - Shot Function Coverage Stabilization
 
 - 状态：已实现。

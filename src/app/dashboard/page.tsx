@@ -16,8 +16,10 @@ import {
 } from "@/db/repositories/project-repository";
 import { getReviewData, type ReviewSummary } from "@/db/repositories/review-repository";
 import { attachLatestAgentRunStatus, type ProjectWithAgentRun } from "@/lib/agents/dashboard-agent-runs";
+import { readAiPolicy } from "@/lib/ai/ai-policy";
 import { splitDashboardProjects } from "@/lib/demo-public/dashboard-projects";
 import { dashboardMetrics, exportFiles } from "@/lib/demo-data";
+import { frozenProductDemo } from "@/lib/product-demo/frozen-product-demo";
 import { getProductionStudioPayload } from "@/lib/server/production-studio-service";
 
 export const runtime = "nodejs";
@@ -35,6 +37,9 @@ export default function DashboardPage() {
           <div className="action-row">
             <Link className="primary-link" href="/articles/new">
               新建文章
+            </Link>
+            <Link className="ghost-button" href="/product-demo">
+              Product Demo
             </Link>
             <Link className="ghost-button" href="/quick-demo">
               Quick Demo
@@ -54,6 +59,8 @@ export default function DashboardPage() {
           <MetricCard key={metric.label} {...metric} />
         ))}
       </section>
+
+      <InternalProductEntry />
 
       <FinalDemoPath />
 
@@ -76,7 +83,7 @@ export default function DashboardPage() {
         )}
       </section>
 
-      <section className="panel">
+      <section className="panel" id="recent-projects">
         <h2>最近项目</h2>
         {recentProjects.length > 0 ? (
           <ul className="info-list">
@@ -108,6 +115,43 @@ export default function DashboardPage() {
         />
       </section>
     </main>
+  );
+}
+
+function InternalProductEntry() {
+  const policy = readAiPolicy();
+
+  return (
+    <section className="panel">
+      <div className="section-heading">
+        <h2>内部产品入口</h2>
+        <StatusBadge tone="green">Fixed Mac v0.1</StatusBadge>
+      </div>
+      <p>
+        当前内部投产锚点为真实 audit 成功项目，只读展示，不调用 AI，不允许 fallback/mock 冒充正式成品。
+      </p>
+      <div className="action-row">
+        <Link className="primary-link" href="/product-demo">
+          打开 Product Demo
+        </Link>
+        <Link className="ghost-button" href="/articles/new">
+          新建真实文章项目
+        </Link>
+        <Link className="ghost-button" href="/quick-demo">
+          Quick Demo
+        </Link>
+        <Link className="ghost-button" href="/dashboard#recent-projects">
+          查看待审阅项目
+        </Link>
+      </div>
+      <ul className="info-list">
+        <li>AI strict mode：{policy.requireRealOutput ? "enabled" : "disabled"}</li>
+        <li>允许 fallback：{policy.allowMockFallback ? "yes" : "no"}</li>
+        <li>最近成功真实 audit projectId：{frozenProductDemo.projectId}</li>
+        <li>SQLite 数据库位置：data/unicorn-video-agent.sqlite</li>
+        <li>固定 Mac 运行：pnpm build 后使用 pnpm start 或 pm2 托管本机服务。</li>
+      </ul>
+    </section>
   );
 }
 

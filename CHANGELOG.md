@@ -1,5 +1,13 @@
 # Changelog
 
+## Batch 13E - Internal Release Freeze + Fixed Mac Product Entry
+
+- 新增 `/product-demo` 内部产品入口，只读冻结成功项目，不调用 AI。
+- Dashboard 顶部增加内部产品入口、固定 Mac 状态、strict mode / fallback policy 和最新成功真实 audit projectId。
+- 新增 `backup:db`、`internal:smoke`、`demo:product` 脚本，覆盖 SQLite 备份、本机 smoke 和固定路径输出。
+- 新增 `docs/14_INTERNAL_USE_SOP.md` 与 `docs/15_PRODUCT_DEMO_FREEZE.md`，记录固定 Mac 使用、恢复、gate fail 处理和冻结 demo 路径。
+- `.gitignore` 补齐 `backups/` 与 `data/material-candidates/`，确保本地备份和素材候选不进入 Git。
+
 ## Batch 13D - Shot Function Coverage Stabilization
 
 - 新增 shotFunction coverage planner，按 90s / 180s 输出 function distribution、missing functions、over repeated functions、coverage score 和 fix reasons。

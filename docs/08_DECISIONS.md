@@ -371,3 +371,27 @@
 决定：Production Studio lock 必须依赖 Shot Function Coverage pass。coverage fail 时，Studio、Showcase、Export 和 audit 都必须显示“需要重跑 / 人工修正：镜头功能分工不足”。
 
 原因：锁版意味着该 ProductionPack 可作为交付版本。若镜头功能分工不足，后续剪辑和 AIGC 制作会缺少结构依据，不能进入 locked 状态。
+
+## D063 - 内部投产 v0.1 使用固定 Mac + SQLite
+
+决定：Batch 13E 内部投产先采用固定 Mac、本地 SQLite 和 `pnpm start` / pm2，不做公网部署、用户系统或云数据库。
+
+原因：当前目标是内部稳定使用和演示冻结，不需要引入部署、权限和云端数据复杂度。
+
+## D064 - `/product-demo` 是只读内部产品入口
+
+决定：`/product-demo` 只读冻结成功项目 `d0de3657-352b-468b-8304-738229500be1`，不调用 AI、不触发重新生成。
+
+原因：内部演示需要稳定入口。现场模型或网络波动不能影响已验证成功的 Product Demo。
+
+## D065 - `internal:smoke` 不调用外部 API
+
+决定：`pnpm internal:smoke` 只检查 `.env.local`、SQLite、冻结 projectId、Product Demo 配置和 SOP 文档，不读取 API key、不调用 AI、不调用外部 API、不修改数据库。
+
+原因：smoke test 是固定 Mac 启动前的本地健康检查，不能产生费用、网络依赖或数据库副作用。
+
+## D066 - `backup:db` 是内部投产必需操作
+
+决定：`pnpm backup:db` 将 `data/unicorn-video-agent.sqlite` 复制到 `backups/`，数据库文件与备份目录都不进入 Git。
+
+原因：内部投产的真实项目、edits、gate runs 和锁版状态都在 SQLite 中；固定 Mac 使用前后必须可备份和恢复。

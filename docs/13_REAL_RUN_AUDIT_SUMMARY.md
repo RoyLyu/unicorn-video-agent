@@ -11,6 +11,7 @@
 - generationMode: `ai`
 - fallbackUsed: `false`
 - Demo-ready: yes
+- Product Demo: `/product-demo`
 - Showcase: `/projects/d0de3657-352b-468b-8304-738229500be1/showcase`
 - Production Studio: `/projects/d0de3657-352b-468b-8304-738229500be1/production-studio`
 - production-pack.md: `/api/projects/d0de3657-352b-468b-8304-738229500be1/exports/production-pack.md`
@@ -72,6 +73,7 @@
 
 ## 展示注意事项
 
+- Batch 13E 起，先打开 `/product-demo`。该入口不调用 AI，只读冻结成功项目。
 - 先打开 Showcase，说明这是视频号生产包展示，不是最终成片视频。
 - 顶部确认 `AI Agent`、`fallback: no` 和 Agent Run `completed`。
 - 讲解版权段落时，不把 red 解读为“失败”，而是解释为“不可直接使用真实素材，需要替代方案”。
