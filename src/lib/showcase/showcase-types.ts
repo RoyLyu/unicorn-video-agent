@@ -56,12 +56,26 @@ export type ShowcasePromptSummary = {
 };
 
 export type ShowcaseProductionStudioGate = {
+  densityProfile: string;
+  lockStatus: string;
+  latestGateStatus: string;
+  editedCount: number;
   shotCount90s: number;
   shotCount180s: number;
   promptCount: number;
   alignment: "pass" | "fail";
   needsFix: boolean;
   fixReasons: string[];
+  visualBibleScore: number;
+  continuityScore: number;
+  shotFunctionCoverageScore: number;
+  productionMethodScore: number;
+  editingReadinessScore: number;
+  promptFieldCompletenessScore: number;
+  reportCompletenessScore: number;
+  reportFieldCompleteness: "pass" | "fail";
+  shotFunctionCounts: Record<string, number>;
+  productionMethodCounts: Record<string, number>;
 };
 
 export type ShowcaseRiskSummary = {
@@ -107,6 +121,13 @@ export type ShowcaseViewModel = {
   blockProductionDownload: boolean;
   regenerateUrl: string;
   productionStudioGate: ShowcaseProductionStudioGate;
+  creativeDirection: {
+    creativeConcept: string;
+    visualMetaphor: string;
+    mainVisualMotif: string;
+  };
+  visualBibleSummary: string;
+  continuityBibleSummary: string;
   generation: ShowcaseGenerationSummary;
   agentSummary: ShowcaseAgentSummary;
   coreSummary: string;

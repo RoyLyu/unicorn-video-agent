@@ -26,6 +26,10 @@ describe("ProjectShowcaseView final demo status", () => {
     expect(html).toContain("180s: 60 shots");
     expect(html).toContain("Production Studio");
     expect(html).toContain("/projects/project-1/production-studio");
+    expect(html).toContain("Prompt 字段完整性：pass");
+    expect(html).toContain("报告字段完整性：pass");
+    expect(html).toContain("查看完整 Production Report");
+    expect(html).toContain("下载完整 production-pack.md");
   });
 });
 
@@ -43,10 +47,24 @@ function createShowcase(): ShowcaseViewModel {
     regenerateUrl: "/articles/new",
     fallbackWarning: "当前使用 fallback 结果，请在演示时说明 AI 结果已降级。",
     productionStudioGate: {
+      densityProfile: "dense",
+      lockStatus: "unlocked",
+      latestGateStatus: "pass",
+      editedCount: 0,
       shotCount90s: 30,
       shotCount180s: 60,
       promptCount: 90,
       alignment: "pass",
+      visualBibleScore: 5,
+      continuityScore: 5,
+      shotFunctionCoverageScore: 5,
+      productionMethodScore: 5,
+      editingReadinessScore: 5,
+      promptFieldCompletenessScore: 5,
+      reportCompletenessScore: 5,
+      reportFieldCompleteness: "pass",
+      shotFunctionCounts: {},
+      productionMethodCounts: {},
       needsFix: false,
       fixReasons: []
     },
@@ -69,6 +87,13 @@ function createShowcase(): ShowcaseViewModel {
     coreViewpoints: ["观点"],
     videoAngle: "角度",
     audienceTakeaway: "收获",
+    creativeDirection: {
+      creativeConcept: "用数据空间展示产业升级",
+      visualMetaphor: "从点状信号汇聚为增长路径",
+      mainVisualMotif: "银色数据线"
+    },
+    visualBibleSummary: "9:16 vertical / 商业纪录片 / 禁止真实 Logo",
+    continuityBibleSummary: "数据空间、信息卡和图表 HUD 贯穿全片",
     publishCopy: {
       coverTitle: "封面",
       titleCandidates: ["标题 1"],

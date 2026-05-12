@@ -56,11 +56,33 @@ export function ProjectShowcaseView({
           ) : null}
           <div className="showcase-warning">
             <strong>Shot / Prompt Gate：</strong>
+            profile: {showcase.productionStudioGate.densityProfile} / lock:{" "}
+            {showcase.productionStudioGate.lockStatus} / last gate:{" "}
+            {showcase.productionStudioGate.latestGateStatus} / edits:{" "}
+            {showcase.productionStudioGate.editedCount} /{" "}
             90s: {showcase.productionStudioGate.shotCount90s} shots / 180s:{" "}
             {showcase.productionStudioGate.shotCount180s} shots / prompts:{" "}
             {showcase.productionStudioGate.promptCount} / alignment:{" "}
             {showcase.productionStudioGate.alignment}
           </div>
+          <div className="showcase-warning">
+            <strong>AIGC Production Contract：</strong>
+            Visual Bible {showcase.productionStudioGate.visualBibleScore}/5 / Continuity{" "}
+            {showcase.productionStudioGate.continuityScore}/5 / Shot Function{" "}
+            {showcase.productionStudioGate.shotFunctionCoverageScore}/5 / Production Method{" "}
+            {showcase.productionStudioGate.productionMethodScore}/5 / Editing{" "}
+            {showcase.productionStudioGate.editingReadinessScore}/5 / Prompt Completeness{" "}
+            {showcase.productionStudioGate.promptFieldCompletenessScore}/5 / Report Completeness{" "}
+            {showcase.productionStudioGate.reportCompletenessScore}/5
+          </div>
+          <div className="showcase-warning">
+            Prompt 字段完整性：{showcase.productionStudioGate.promptFieldCompletenessScore >= 4 ? "pass" : "fail"} / 报告字段完整性：{showcase.productionStudioGate.reportFieldCompleteness}
+          </div>
+          {showcase.productionStudioGate.lockStatus === "locked" ? (
+            <div className="showcase-warning showcase-warning--ready">
+              Production Studio 已锁版：已锁定交付版本。
+            </div>
+          ) : null}
           {showcase.productionStudioGate.needsFix ? (
             <div className="showcase-warning showcase-warning--blocked">
               需要重跑 / 人工修正
@@ -71,13 +93,16 @@ export function ProjectShowcaseView({
         <div className="showcase-cta">
           {showcase.blockProductionDownload ? (
             <span className="primary-link is-disabled" aria-disabled="true">
-              下载 production-pack.md
+              下载完整 production-pack.md
             </span>
           ) : (
             <a className="primary-link" href={showcase.links.downloadProductionPack}>
-              下载 production-pack.md
+              下载完整 production-pack.md
             </a>
           )}
+          <a className="ghost-button" href={showcase.links.downloadProductionPack}>
+            查看完整 Production Report
+          </a>
           {showcase.blockProductionDownload ? (
             <Link className="ghost-button" href={showcase.regenerateUrl}>
               重新生成真实 AI 版本
@@ -102,6 +127,31 @@ export function ProjectShowcaseView({
         generation={showcase.generation}
         agentSummary={showcase.agentSummary}
       />
+
+      <section className="showcase-grid">
+        <article className="panel showcase-highlight">
+          <h2>Creative Concept</h2>
+          <p>{showcase.creativeDirection.creativeConcept}</p>
+          <p>{showcase.creativeDirection.visualMetaphor}</p>
+          <p>{showcase.creativeDirection.mainVisualMotif}</p>
+        </article>
+        <article className="panel">
+          <h2>Visual / Continuity Bible</h2>
+          <p>{showcase.visualBibleSummary}</p>
+          <p>{showcase.continuityBibleSummary}</p>
+          <details className="showcase-details">
+            <summary>Shot Function / Production Method 分布</summary>
+            <PromptList
+              title="Shot Function"
+              items={Object.entries(showcase.productionStudioGate.shotFunctionCounts).map(([key, value]) => `${key}: ${value}`)}
+            />
+            <PromptList
+              title="Production Method"
+              items={Object.entries(showcase.productionStudioGate.productionMethodCounts).map(([key, value]) => `${key}: ${value}`)}
+            />
+          </details>
+        </article>
+      </section>
 
       <section className="showcase-grid">
         <article className="panel showcase-highlight">

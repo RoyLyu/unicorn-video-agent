@@ -15,6 +15,121 @@ export const RightsRiskLevelSchema = z.enum([
   "placeholder"
 ]);
 export const StoryboardVersionTypeSchema = z.enum(["90s", "180s"]);
+export const ShotFunctionSchema = z.enum([
+  "hook_shot",
+  "context_shot",
+  "evidence_shot",
+  "concept_shot",
+  "transition_shot",
+  "emotional_shot",
+  "data_shot",
+  "risk_shot",
+  "summary_shot",
+  "cta_shot"
+]);
+export const ProductionMethodSchema = z.enum([
+  "text_to_video",
+  "image_to_video",
+  "text_to_image_edit",
+  "motion_graphics",
+  "stock_footage",
+  "manual_design",
+  "compositing"
+]);
+export const CutTypeSchema = z.enum([
+  "hard_cut",
+  "dissolve",
+  "wipe",
+  "match_cut",
+  "graphic_match",
+  "push",
+  "zoom_cut"
+]);
+export const PaceSchema = z.enum(["fast", "medium", "slow"]);
+export const RollTypeSchema = z.enum([
+  "a_roll",
+  "b_roll",
+  "graphic_roll",
+  "transition_roll"
+]);
+
+export const CreativeDirectionSchema = z.object({
+  creativeConcept: NonEmptyString,
+  visualMetaphor: NonEmptyString,
+  mainVisualMotif: NonEmptyString,
+  narrativeDevice: NonEmptyString,
+  emotionalCurve: NonEmptyString,
+  visualProgression: NonEmptyString,
+  audienceTakeaway: NonEmptyString,
+  productionNotes: NonEmptyString
+});
+
+export const VisualStyleBibleSchema = z.object({
+  aspectRatio: NonEmptyString,
+  imageType: NonEmptyString,
+  colorSystem: z.object({
+    primaryColor: NonEmptyString,
+    secondaryColor: NonEmptyString,
+    accentColor: NonEmptyString,
+    forbiddenColors: z.array(NonEmptyString).min(1)
+  }),
+  lightingSystem: z.object({
+    contrast: NonEmptyString,
+    temperature: NonEmptyString,
+    keyLightDirection: NonEmptyString,
+    atmosphere: NonEmptyString
+  }),
+  materialSystem: z.object({
+    metal: NonEmptyString,
+    glass: NonEmptyString,
+    dataParticles: NonEmptyString,
+    paperProspectus: NonEmptyString,
+    screenUI: NonEmptyString,
+    otherMaterials: z.array(NonEmptyString).min(1)
+  }),
+  cameraTexture: z.object({
+    realistic: NonEmptyString,
+    semiRealistic: NonEmptyString,
+    motionGraphics: NonEmptyString,
+    threeD: NonEmptyString
+  }),
+  typographyStyle: z.object({
+    fontMood: NonEmptyString,
+    placement: NonEmptyString,
+    sizeRule: NonEmptyString,
+    motionRule: NonEmptyString
+  }),
+  chartStyle: z.object({
+    flat: NonEmptyString,
+    threeD: NonEmptyString,
+    transparentHUD: NonEmptyString,
+    infoCard: NonEmptyString
+  }),
+  forbiddenElements: z.array(NonEmptyString).min(1)
+});
+
+export const ContinuityBibleSchema = z.object({
+  mainCharacterBible: NonEmptyString,
+  environmentBible: NonEmptyString,
+  objectBible: NonEmptyString,
+  colorContinuity: NonEmptyString,
+  motionContinuity: NonEmptyString,
+  graphicContinuity: NonEmptyString,
+  typographyContinuity: NonEmptyString,
+  referenceFramePlan: NonEmptyString
+});
+
+export const EditingMetadataSchema = z.object({
+  beat: NonEmptyString,
+  cutType: CutTypeSchema,
+  transitionLogic: NonEmptyString,
+  screenTextTiming: NonEmptyString,
+  graphicTiming: NonEmptyString,
+  musicCue: NonEmptyString,
+  sfxCue: NonEmptyString,
+  pace: PaceSchema,
+  rollType: RollTypeSchema
+});
 
 export const ArticleInputSchema = z.object({
   title: NonEmptyString,
@@ -90,7 +205,17 @@ export const StoryboardResultSchema = z.object({
         visualType: NonEmptyString.optional(),
         chartNeed: NonEmptyString.optional(),
         copyrightRisk: RightsRiskLevelSchema.optional(),
-        replacementPlan: NonEmptyString.optional()
+        replacementPlan: NonEmptyString.optional(),
+        shotCode: NonEmptyString.optional(),
+        shotFunction: ShotFunctionSchema.optional(),
+        productionMethod: ProductionMethodSchema.optional(),
+        methodReason: NonEmptyString.optional(),
+        subject: NonEmptyString.optional(),
+        environment: NonEmptyString.optional(),
+        lighting: NonEmptyString.optional(),
+        style: NonEmptyString.optional(),
+        continuityAssets: z.array(NonEmptyString).optional(),
+        editing: EditingMetadataSchema.optional()
       })
     )
     .min(1)
@@ -134,7 +259,17 @@ export const AssetPromptResultSchema = z.object({
         negativePrompt: NonEmptyString,
         styleLock: NonEmptyString,
         aspectRatio: NonEmptyString,
-        usageWarning: NonEmptyString
+        usageWarning: NonEmptyString,
+        shotCode: NonEmptyString.optional(),
+        duration: NonEmptyString.optional(),
+        subject: NonEmptyString.optional(),
+        environment: NonEmptyString.optional(),
+        camera: NonEmptyString.optional(),
+        lighting: NonEmptyString.optional(),
+        style: NonEmptyString.optional(),
+        negativeConstraints: NonEmptyString.optional(),
+        forbiddenElements: z.array(NonEmptyString).optional(),
+        replacementPlan: NonEmptyString.optional()
       })
     )
     .optional()
@@ -171,7 +306,10 @@ export const ProductionPackSchema = z.object({
   storyboard: StoryboardResultSchema,
   assetPrompts: AssetPromptResultSchema,
   rightsChecks: z.array(RightsCheckResultSchema).min(1),
-  exportManifest: ExportManifestSchema
+  exportManifest: ExportManifestSchema,
+  creativeDirection: CreativeDirectionSchema.optional(),
+  visualStyleBible: VisualStyleBibleSchema.optional(),
+  continuityBible: ContinuityBibleSchema.optional()
 });
 
 export type ArticleInput = z.infer<typeof ArticleInputSchema>;
@@ -186,3 +324,8 @@ export type ProductionPack = z.infer<typeof ProductionPackSchema>;
 export type GenerationMode = z.infer<typeof GenerationModeSchema>;
 export type RightsRiskLevel = z.infer<typeof RightsRiskLevelSchema>;
 export type StoryboardVersionType = z.infer<typeof StoryboardVersionTypeSchema>;
+export type ShotFunction = z.infer<typeof ShotFunctionSchema>;
+export type ProductionMethod = z.infer<typeof ProductionMethodSchema>;
+export type CutType = z.infer<typeof CutTypeSchema>;
+export type Pace = z.infer<typeof PaceSchema>;
+export type RollType = z.infer<typeof RollTypeSchema>;

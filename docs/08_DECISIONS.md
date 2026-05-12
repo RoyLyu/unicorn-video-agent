@@ -263,3 +263,75 @@
 决定：Batch 12B 中 gate 失败的真实 AI ProductionPack 仍可下载，但必须在 Showcase、Export 和 Audit 中显示“需要重跑 / 人工修正”。这不同于 Batch 12A 的 fallback/mock 阻断。
 
 原因：gate 失败说明真实输出需要生产修正，不代表 AI 没有返回真实内容。团队仍需要查看导出内容来定位问题，但不能把它当作 ready 成品。
+
+## D045 - Shot Density 从固定 30/60 改为 profile
+
+决定：Batch 13A 将固定 30/60 shot 规则改为 `lite / standard / dense` 三档：lite 为 20/40/60，standard 为 24/48/72，dense 为 30/60/90。
+
+原因：固定 dense 适合压力测试和高密度剪辑，但日常内部生产需要更可控的默认密度；profile 能让 gate、prompt、normalization、audit 和 Production Studio 统一表达交付标准。
+
+## D046 - 默认内部生产使用 standard
+
+决定：`SHOT_DENSITY_PROFILE` 默认 `standard`，即 90s >= 24、180s >= 48、total >= 72。
+
+原因：standard 比 lite 更接近真实剪辑节奏，又比 dense 更稳定、成本更低；已有 30/60 项目在 standard 与 dense 下都应继续通过。
+
+## D047 - 原始 AI ProductionPack 不被人工编辑覆盖
+
+决定：Production Studio 人工修改写入 `production_studio_edits`，通过 overlay 生成 effective ProductionPack，不回写 `video_projects.production_pack_json`。
+
+原因：原始 AI 输出是审计和回放证据，人工生产修改是后处理状态；两者分离才能比较 original / effective，也能避免误判模型原始质量。
+
+## D048 - Showcase / Export 使用 effective ProductionPack
+
+决定：Showcase、Export、Production Studio 和 `project.json` 优先使用 edits overlay 后的 effective ProductionPack；`project.json` 同时保留 original 和 productionStudio summary。
+
+原因：内部生产交付需要反映人工修正后的可用版本，但仍必须保留原始 AI 包和 Studio 状态，便于审计与复核。
+
+## D049 - Production Studio 重新校验不调用 AI
+
+决定：`POST /api/projects/[projectId]/production-studio/revalidate` 只读取 effective ProductionPack 并执行 deterministic gate check，不调用 AI、不读取 API key、不下载素材。
+
+原因：revalidate 是生产编辑后的结构和合规检查，不是重新生成。这样能保持编辑台响应稳定，也不破坏 strict real output policy。
+
+## D050 - AIGC 视频生产包必须包含 Creative Direction
+
+决定：Batch 13B 起，ProductionPack 必须能表达 `creativeDirection`、`visualStyleBible` 和 `continuityBible`，旧项目可读，normalization 和 effective resolver 负责补齐缺失字段。
+
+原因：分镜和 prompt 不能只逐条存在；AIGC 制作需要全片视觉核心、风格约束和连续性规则，否则镜头之间容易风格漂移。
+
+## D051 - Prompt 是 shot-level production contract
+
+决定：prompt bundle 不再只保存 imagePrompt / videoPrompt / negativePrompt，还要包含 shotCode、duration、subject、environment、camera、lighting、style、negativeConstraints、forbiddenElements 和 replacementPlan。
+
+原因：后续进入文生图、图生视频、动效、stock、手工设计或合成流程时，需要明确镜头主体、环境、镜头语言、禁用元素和使用边界。
+
+## D052 - Production Studio lock 依赖 AIGC contract gate
+
+决定：除了 density、alignment 和 rights gate，lock 还必须依赖 Visual Bible、Continuity、Shot Function、Production Method、Editing Readiness 和 Prompt Completeness 全部达标。
+
+原因：只满足 shot 数量和 prompt 数量不足以交付生产；缺少视觉圣经、连续性、剪辑结构或 prompt 字段完整性时，应进入“需要重跑 / 人工修正”。
+
+## D053 - Production Method 决定后续制作路径
+
+决定：每个 shot 必须声明 `productionMethod` 和 `methodReason`，枚举覆盖 text_to_video、image_to_video、text_to_image_edit、motion_graphics、stock_footage、manual_design 和 compositing。
+
+原因：ProductionPack 需要为后续制作团队判断镜头应进入 AI 视频、AI 图像、动效设计、版权候选池、手工设计还是合成流程。
+
+## D054 - production-pack.md 是主生产报告
+
+决定：Batch 13B-Hotfix 起，`production-pack.md` 必须输出完整逐镜头 AIGC 制作字段，包括主体、环境、摄影机、灯光、风格、Production Method、Editing Metadata、Image / Video / Negative Prompt、Style Lock、Usage Warning、禁止项和 Replacement Plan，不允许只输出分镜摘要。
+
+原因：`production-pack.md` 是交给编导、设计和 AIGC 制作人员的主交付报告。Prompt 信息不能只存在于附件，否则制作人员无法从主报告判断每个镜头的执行方式与风险边界。
+
+## D055 - Prompt completeness 与 Report completeness 分开校验
+
+决定：Production Studio gate 同时保留 Prompt Field Completeness 和 Report Field Completeness。Prompt gate 检查 effective ProductionPack 是否有字段，Report gate 检查导出报告是否完整表达这些字段。
+
+原因：AI 输出字段完整并不代表交付报告完整；serializer 漏字段会造成实际交付失败，因此两个 gate 必须独立存在。
+
+## D056 - 报告缺字段是交付失败
+
+决定：如果 `production-pack.md` 缺少 AIGC 制作总控、视觉风格 Bible、连续性 Bible、逐镜头 AIGC 制作表或关键 shot/prompt 字段，Production Studio、Showcase 和 real-run audit 必须显示“需要重跑 / 人工修正”。
+
+原因：报告缺字段不是模型质量小问题，而是生产交付无法执行。即使 ProductionPack JSON 内部有数据，导出层漏出字段也不能被视为 ready 成品。

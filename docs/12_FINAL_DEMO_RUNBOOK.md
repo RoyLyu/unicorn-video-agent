@@ -24,6 +24,7 @@ OPENAI_BASE_URL=https://api.minimaxi.com/v1
 AI_AGENT_MODE=single_pack
 AI_REQUEST_TIMEOUT_MS=180000
 AI_MAX_TOKENS=16000
+SHOT_DENSITY_PROFILE=standard
 AI_REQUIRE_REAL_OUTPUT=true
 AI_ALLOW_MOCK_FALLBACK=false
 AI_BANNED_OUTPUT_TERMS=mock,Batch 02,后续补齐,demo-data,不是真实 AI,只生成 JSON 生产包,本地 mock,Mock Pipeline
@@ -51,10 +52,11 @@ http://localhost:3000
 3. 输入一个标题，选择内容类型，可选填写行业标签。
 4. 点击生成，等待 AI Agent 生成。
 5. 进入 `/projects/[projectId]/showcase`，先确认 generationMode 为 AI、fallbackUsed 为 false，再讲解核心观点、标题候选、脚本、分镜、Prompt、版权风险和发布文案。
-6. 检查 Shot / Prompt Gate：90s 至少 30 shots、180s 至少 60 shots、prompt count 等于 shot count。
-7. 点击 Production Studio，展示 shot / prompt 对应表和 red replacementPlan。
-8. 点击下载 `production-pack.md`。
-9. 点击 Export，展示其余文本导出文件。
+6. 检查 Shot / Prompt Gate：默认 `standard` profile 下 90s 至少 24 shots、180s 至少 48 shots、prompt count 等于 shot count。
+7. 点击 Production Studio，展示 density profile、shot / prompt 对应表、red replacementPlan、重新校验 Gate 和锁版状态。
+8. 如果需要演示内部生产修正，可编辑一个 shot 或 prompt，保存后重新校验；gate pass 后锁定当前生产包。
+9. 点击下载 `production-pack.md`。
+10. 点击 Export，展示其余文本导出文件。
 
 ## 真实运行审计
 
@@ -81,7 +83,7 @@ pnpm audit:real-run -- --title "虚构家庭医疗公司冲刺上市" --template
 Batch 11B 后，演示前建议使用这条标题做一次质量验收：
 
 ```bash
-pnpm audit:real-run -- --title "新消费品牌上市背后：中国品牌全球化的第二轮机会来了" --templateType ipo --industryTags "IPO,消费,出海,新消费"
+pnpm audit:real-run -- --title "新消费品牌上市背后：中国品牌全球化的第二轮机会来了" --templateType ipo --industryTags "IPO,消费,出海,新消费" --densityProfile standard
 ```
 
 验收口径：
@@ -89,14 +91,44 @@ pnpm audit:real-run -- --title "新消费品牌上市背后：中国品牌全球
 - `fallbackUsed` 必须为 `false` 才能说明真实 AI 质量达标。
 - `generationMode` 与 `ProductionPack.mode` 必须为 `ai`。
 - 输出中不得出现 `mock`、`Batch 02`、`后续补齐`、`demo-data`、`不是真实 AI` 等禁用词。
-- 90s shots 必须 >= 30。
-- 180s shots 必须 >= 60。
+- `SHOT_DENSITY_PROFILE=standard` 时，90s shots 必须 >= 24，180s shots 必须 >= 48，总数 >= 72。
+- `SHOT_DENSITY_PROFILE=dense` 时，90s shots 必须 >= 30，180s shots 必须 >= 60，总数 >= 90。
 - prompt bundle count 必须等于 shot count。
 - red rights risk 必须全部有 replacementPlan。
 - 报告中不得出现“需要重跑 / 人工修正”。
 - `storyboard_actionability_score`、`prompt_usability_score`、`rights_safety_score`、`overall_demo_readiness_score` 应达到 4/5 或以上。
 - `production-pack.md` 下载路径应出现在报告中，并可从 Showcase 或 Export 进入。
 - 如果报告列出低分 shotId / promptId，优先检查 single-pack prompt 和 normalization 规则。
+
+## Batch 13A Production Studio 操作
+
+1. 打开 `/projects/[projectId]/production-studio`。
+2. 选择 density profile：`lite`、`standard` 或 `dense`。
+3. 修改 shot 的 visual、voiceover、overlayText、camera、composition、motion，或修改 imagePrompt、videoPrompt、negativePrompt、replacementPlan。
+4. 点击“批量保存当前页修改”，确认 edited count 增加且 original/effective 差异提示存在。
+5. 点击“重新校验 Gate”，确认最近 gate run 显示 pass 或 needs_fix。
+6. 只有 gate pass 时点击“锁定当前生产包”；锁定后 Showcase 顶部显示“Production Studio 已锁版”，Export 顶部显示锁版状态。
+7. 解除锁定不会删除 edits 或 gate runs，只改变交付锁状态。
+
+## Batch 13B AIGC 生产规格检查
+
+进入 Production Studio 后，除了 shot / prompt 数量，还要检查 AIGC Production Contract：
+
+1. 顶部确认 Creative Concept、Visual Motif、Visual Bible status、Continuity status、Shot Function coverage、Production Method coverage、Editing readiness 和 Prompt completeness。
+2. 用筛选器检查 `shotFunction`、`productionMethod`、riskLevel、needsFix 和 editedOnly。
+3. 每个 shot 卡片应包含 shotCode、duration、shotFunction、productionMethod、subject、environment、camera、lighting、style、editing metadata、imagePrompt、videoPrompt、negativePrompt 和 replacementPlan。
+4. 如果 Visual Bible、Continuity、Editing 或 Prompt Completeness 任一核心项低于 4 分，页面会显示“需要重跑 / 人工修正”，此时不要锁版。
+5. Showcase 会展示 Creative Direction、Visual Bible、Continuity、Shot Function 分布、Production Method 分布和 Prompt Completeness；Export 会把这些信息写入 `production-pack.md`、`storyboard.csv` 和 `prompt-pack.md`。
+
+## Batch 13B-Hotfix 完整 Production Report 检查
+
+演示前下载一次 `production-pack.md`，确认它不是压缩分镜摘要，而是完整 Production Report：
+
+- 包含 `AIGC 制作总控`、`视觉风格 Bible`、`连续性 Bible`。
+- 包含 `逐镜头 AIGC 制作表`。
+- 每个镜头 block 至少能看到镜头编号、时长、画面主体、场景环境、摄影机、灯光、风格、Production Method、Method Reason、Cut Type、Transition Logic、Music Cue、SFX Cue、Image Prompt、Video Prompt、Negative Prompt、Replacement Plan 和禁止项。
+- Showcase 顶部显示 `Prompt 字段完整性：pass` 与 `报告字段完整性：pass`。
+- 如果出现“需要重跑 / 人工修正：报告字段缺失”，不要锁版；优先检查 export serializer 和 report completeness gate，而不是重新生成 AI。
 
 ## 推荐 5 个标题
 

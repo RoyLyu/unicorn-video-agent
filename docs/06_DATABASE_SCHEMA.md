@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-Batch 08 继续使用 SQLite + Drizzle 做本地持久化。数据库服务本地 mock 闭环、真实 AI 文本 ProductionPack、公开受控演示和 Agent run 审阅；不接云数据库、不做登录、不保存真实素材文件、不保存真实导出文件。
+Batch 13A 继续使用 SQLite + Drizzle 做本地持久化。数据库服务本地 mock 闭环、真实 AI 文本 ProductionPack、公开受控演示、Agent run 审阅，以及 Production Studio edits / gate / lock 状态；不接云数据库、不做登录、不保存真实素材文件、不保存真实导出文件。
 
 ## 文件位置
 
@@ -46,6 +46,9 @@ pnpm db:migrate
 - `agent_run_steps`：每个 Agent step 的顺序、状态、输入输出 JSON 和摘要。
 - `agent_context_snapshots`：每个 Agent step 的上下文快照。
 - `qa_results`：deterministic QA summary，包括 red rights risk 数量。
+- `production_studio_edits`：Production Studio 人工编辑 patch，按 projectId、versionType、shotNumber、editType 存储，不覆盖原始 ProductionPack。Batch 13B 复用该表保存 pack-level 编辑，约定 `versionType = "global"`、`shotNumber = 0`，`editType` 可为 `creative_direction`、`visual_bible`、`continuity_bible`。
+- `production_studio_gate_runs`：Production Studio deterministic gate 记录，包括 densityProfile、counts、unmatched shots/prompts、red gaps、scores、needsFix 和 fix reasons。
+- `production_studio_locks`：Production Studio 锁版状态，记录 locked、lockedAt、lockNote 和对应 gateRunId。
 
 ## 数据读取约定
 
@@ -61,6 +64,11 @@ pnpm db:migrate
 - `/api/demo/reset` 只删除并重建 `video_projects.is_demo = true` 的公开 demo 项目。
 - `/projects/[projectId]/agent-runs` 读取项目 agent run。
 - `/agents` 和 `/agents/[agentSlug]` 读取 Agent 注册表和最近运行。
+- `/api/projects/[projectId]/production-studio` 读取 original/effective ProductionPack、edits、最近 gate run 和 lock 状态。
+- `/api/projects/[projectId]/production-studio/edits` 保存 shot、prompt、rights、method、editing patch，以及 Batch 13B 的 Creative Direction / Visual Bible / Continuity Bible pack-level patch。
+- `/api/projects/[projectId]/production-studio/revalidate` 对 effective ProductionPack 执行 deterministic gate check 并写入 gate run。
+- `/api/projects/[projectId]/production-studio/lock` 仅在最近 gate pass 时锁定当前生产包。
+- `/api/projects/[projectId]/production-studio/unlock` 解除锁定，不删除 edits 或 gate runs。
 - `/projects/demo/*` 保留 demo fallback，不作为主存储路径。
 
 ## 不做事项

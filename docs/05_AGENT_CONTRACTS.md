@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-Batch 12B 接入真实 AI 文本 Agent pipeline 的生产工作台门禁。本文件定义本地 mock Agent、真实 AI Agent、Agent 管理层、ProductionPack、文本导出、审阅记录、公开 demo 数据和 Production Studio 的输入输出边界。
+Batch 13A 在 Batch 12B 的真实 AI 文本 Agent pipeline 与生产工作台门禁上，新增 Shot Density Profile、人工 edits overlay、deterministic revalidate 和锁版状态。本文件定义本地 mock Agent、真实 AI Agent、Agent 管理层、ProductionPack、文本导出、审阅记录、公开 demo 数据和 Production Studio 的输入输出边界。
 
 ## Article Input Contract
 
@@ -37,10 +37,11 @@ Batch 12B 起，ProductionPack 还必须支持：
 - `assetPrompts.promptBundles[]`：canonical prompt 单元，按 `versionType + shotNumber + shotId` 对应唯一 shot
 - `rightsChecks[].replacementPlan`：red 项必须存在
 
-真实 AI 成品门禁：
+真实 AI 成品门禁由 Shot Density Profile 决定：
 
-- 90s shots >= 30
-- 180s shots >= 60
+- `lite`：90s shots >= 20，180s shots >= 40，total >= 60
+- `standard`：90s shots >= 24，180s shots >= 48，total >= 72
+- `dense`：90s shots >= 30，180s shots >= 60，total >= 90
 - `promptBundles.length === storyboard.shots.length`
 - 每个 shot 都能找到 prompt bundle，每个 prompt bundle 都能反查 shot
 - red rights risk 必须有替代方案
@@ -63,9 +64,21 @@ AI Agent 执行顺序固定为：
 6. Asset Finder
 7. QA Agent
 
-Batch 12A 起，真实输出模式不允许 fallback/mock 冒充成功成品。Batch 12B 的 shot/prompt gate 失败时，Audit、Showcase 和 Export 必须显示“需要重跑 / 人工修正”。
+Batch 12A 起，真实输出模式不允许 fallback/mock 冒充成功成品。Batch 12B/13A 的 shot/prompt gate 失败时，Audit、Showcase 和 Export 必须显示“需要重跑 / 人工修正”。
 
 单个 AI Agent 失败或 schema 不通过时，只有显式 fast demo 或开发测试才允许 fallback。真实生产和真实审计必须 fail loudly。
+
+## Batch 13B AIGC Production Contract
+
+Batch 13B 后，Prompt Generator 输出不再只是几句生成词，而是 shot-level production contract。真实或 effective ProductionPack 必须包含：
+
+- 全片 `creativeDirection`：creativeConcept、visualMetaphor、mainVisualMotif、narrativeDevice、emotionalCurve、visualProgression、audienceTakeaway、productionNotes。
+- 全片 `visualStyleBible`：9:16 竖屏、色彩、灯光、材质、camera texture、typography、chart style 和 forbiddenElements。
+- 全片 `continuityBible`：mainCharacter、environment、object、color、motion、graphic、typography 和 reference frame plan。
+- 每个 shot 的 `shotFunction`、`productionMethod`、`methodReason`、subject、environment、lighting、style、continuityAssets 和 editing metadata。
+- 每个 prompt bundle 的 shotCode、duration、subject、environment、camera、lighting、style、negativeConstraints、forbiddenElements 和 replacementPlan。
+
+Production Studio gate 必须校验 Visual Bible、Continuity、Shot Function coverage、Production Method coverage、Editing Readiness、Prompt Field Completeness 和 Report Field Completeness。任一核心项低于 4 分或报告字段缺失时，结果必须显示“需要重跑 / 人工修正”，并且 Production Studio lock 不允许通过。
 
 ## Mock Pipeline Tracking Contract
 
@@ -80,6 +93,26 @@ Batch 12B 导出要求：
 - `production-pack.md` 必须包含 Shot / Prompt Gate Summary。
 - `storyboard.csv` 必须包含 `versionType`。
 - `prompt-pack.md` 必须按 `versionType + shotNumber` 输出 prompt bundles。
+- Batch 13A 后，导出 API route 必须先解析 Production Studio edits overlay，使用 effective ProductionPack 输出 storyboard、prompt、rights 和 production-pack。
+- `project.json` 必须保留 original ProductionPack 与 productionStudio summary，避免人工编辑覆盖原始 AI 证据。
+
+Batch 13B-Hotfix 后，`production-pack.md` 是主生产报告，必须完整输出：
+
+- AIGC 制作总控
+- 视觉风格 Bible
+- 连续性 Bible
+- 逐镜头 AIGC 制作表
+- 每个 shot 的主体、环境、摄影机、灯光、风格、Production Method、Method Reason、Continuity Assets、Editing Metadata、版权风险、Replacement Plan、Image Prompt、Video Prompt、Negative Prompt、Style Lock、Aspect Ratio、Usage Warning 和禁止项
+
+`prompt-pack.md` 是逐镜头 prompt 附件，`storyboard.csv` 是制作表格，`rights-check.csv` 是版权复核 worksheet。四个导出文件都必须从 effective ProductionPack 读取，不调用 AI、不读写服务器文件。
+
+## Production Studio Contract
+
+- `production_studio_edits` 只保存 patch，不覆盖原始 AI ProductionPack。
+- `production_studio_gate_runs` 记录 density profile、counts、unmatched shots/prompts、red replacement gaps、scores、needsFix 和 fix reasons。
+- `production_studio_locks` 只记录锁版状态；只有最近 gate run 为 pass 时允许 lock。
+- revalidate、lock、unlock 和 edits API 不调用 AI、不读取 API key、不下载素材。
+- Showcase / Export / Studio 使用 effective ProductionPack，同时显示 density、gate、lock 和 edited count。
 
 ## Review Contract
 

@@ -214,6 +214,21 @@ describe("real-run audit quality scorer", () => {
     expect(report.topProblems.some((problem) => problem.id === "shot-prompt-volume-gate")).toBe(false);
     expect(report.demoReady).toBe(true);
   });
+
+  it("includes report completeness score in the markdown report", () => {
+    const report = createRealRunAuditReport({
+      productionPack: normalizeProductionPack(demoProductionPack),
+      projectId: "project-1",
+      agentRunId: "run-1",
+      fallbackUsed: false,
+      generationMode: "ai"
+    });
+    const markdown = renderRealRunAuditMarkdown(report);
+
+    expect(report.scorecard.report_completeness_score).toBeGreaterThanOrEqual(4);
+    expect(markdown).toContain("report_completeness_score");
+    expect(markdown).toContain("report completeness score");
+  });
 });
 
 function makeExecutablePack() {

@@ -9,6 +9,11 @@ import {
   type QuickDemoContentType
 } from "@/lib/quick-demo/title-only-article";
 import {
+  parseShotDensityProfile,
+  type ShotDensityProfile
+} from "@/lib/production-studio/density-profile";
+import { analyzeReportCompleteness } from "@/lib/production-studio/report-completeness";
+import {
   createRealRunAuditReport,
   renderRealRunAuditMarkdown
 } from "@/lib/real-run-audit/quality-scorer";
@@ -19,6 +24,7 @@ type AuditArgs = {
   templateType: QuickDemoContentType;
   industryTags: string;
   allowFallback: boolean;
+  densityProfile: ShotDensityProfile;
 };
 
 const allowFallbackFlag = "--allowFallback";
@@ -41,11 +47,12 @@ const failedQaReportPath = path.join(outputDir, "failed-qa-report.md");
 
 async function main() {
   await loadLocalEnv();
+  const args = parseArgs(process.argv.slice(2));
+  process.env.SHOT_DENSITY_PROFILE = args.densityProfile;
   printSafeEnvSummary();
   const { handleAiProductionPackRequest } = await import(
     "@/app/api/ai/production-pack/route"
   );
-  const args = parseArgs(process.argv.slice(2));
   const articleInput = createTitleOnlyArticleInput({
     title: args.title,
     contentType: args.templateType,
@@ -68,8 +75,7 @@ async function main() {
       reason: `Audit AI request failed with ${response.status}`,
       responseBody: body
     });
-    process.exitCode = 1;
-    return;
+    process.exit(1);
   }
 
   const body = (await response.json()) as AiProductionPackResponse;
@@ -93,8 +99,7 @@ async function main() {
       responseBody: JSON.stringify(body, null, 2),
       productionPack: body.productionPack
     });
-    process.exitCode = 1;
-    return;
+    process.exit(1);
   }
 
   const auditReport = createRealRunAuditReport({
@@ -102,12 +107,14 @@ async function main() {
     projectId: body.projectId,
     agentRunId: body.agentRunId ?? null,
     fallbackUsed: body.fallbackUsed,
-    generationMode: body.generationMode
+    generationMode: body.generationMode,
+    densityProfile: args.densityProfile
   });
   const productionPackExport = generateExportFile(
     "production-pack.md",
     body.productionPack
   );
+  const reportCompleteness = analyzeReportCompleteness(productionPackExport?.content ?? "");
   const markdown = [
     renderRealRunAuditMarkdown(auditReport),
     "",
@@ -115,22 +122,27 @@ async function main() {
     "",
     productionPackExport
       ? "- production-pack.md generated in memory: yes"
-      : "- production-pack.md generated in memory: no"
+      : "- production-pack.md generated in memory: no",
+    `- report_completeness_score: ${reportCompleteness.reportCompletenessScore}/5`,
+    `- report field completeness: ${reportCompleteness.reportFieldCompleteness}`,
+    `- missingReportFields: ${reportCompleteness.missingReportFields.join(" / ") || "none"}`
   ].join("\n");
 
   if (
     !args.allowFallback &&
     (auditReport.productionStudioSummary.needsFix ||
+      reportCompleteness.reportFieldCompleteness === "fail" ||
       auditReport.scorecard.overall_demo_readiness_score < 4)
   ) {
     await writeFailedArtifacts({
-      reason: "需要重跑 / 人工修正",
+      reason: reportCompleteness.reportFieldCompleteness === "fail"
+        ? `需要重跑 / 人工修正：报告字段缺失（${reportCompleteness.missingReportFields.join(" / ")}）`
+        : "需要重跑 / 人工修正",
       responseBody: JSON.stringify(body, null, 2),
       productionPack: body.productionPack,
       reportMarkdown: markdown
     });
-    process.exitCode = 1;
-    return;
+    process.exit(1);
   }
 
   await mkdir(outputDir, { recursive: true });
@@ -141,6 +153,8 @@ async function main() {
   console.log(`ProductionPack response: ${productionPackPath}`);
   console.log(`QA report: ${qaReportPath}`);
   console.log(`Showcase: /projects/${body.projectId}/showcase`);
+  console.log(`Shot Density Profile: ${args.densityProfile}`);
+  process.exit(0);
 }
 
 function parseArgs(argv: string[]): AuditArgs {
@@ -176,6 +190,7 @@ function parseArgs(argv: string[]): AuditArgs {
   const title = args.get("title")?.trim();
   const templateType = args.get("templateType")?.trim() as QuickDemoContentType | undefined;
   const industryTags = args.get("industryTags")?.trim() ?? "";
+  const densityProfile = parseShotDensityProfile(args.get("densityProfile"));
 
   if (!title) {
     throw new Error("Missing required --title");
@@ -191,7 +206,8 @@ function parseArgs(argv: string[]): AuditArgs {
     title,
     templateType,
     industryTags,
-    allowFallback: args.get("allowFallback") === "true"
+    allowFallback: args.get("allowFallback") === "true",
+    densityProfile
   };
 }
 
@@ -244,6 +260,7 @@ function printSafeEnvSummary() {
   console.log(`MINIMAX_API_KEY exists=${Boolean(getEnv("MINIMAX_API_KEY"))}`);
   console.log(`AI_REQUIRE_REAL_OUTPUT=${getEnv("AI_REQUIRE_REAL_OUTPUT") ?? ""}`);
   console.log(`AI_ALLOW_MOCK_FALLBACK=${getEnv("AI_ALLOW_MOCK_FALLBACK") ?? ""}`);
+  console.log(`SHOT_DENSITY_PROFILE=${getEnv("SHOT_DENSITY_PROFILE") ?? ""}`);
 }
 
 async function writeFailedArtifacts(input: {

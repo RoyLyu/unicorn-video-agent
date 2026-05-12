@@ -4,6 +4,7 @@ import type {
   ProductionPack
 } from "@/lib/schemas/production-pack";
 import { analyzeShotPromptAlignment, type ProductionStudioSummary } from "@/lib/production-studio/shot-prompt-alignment";
+import type { ShotDensityProfile } from "@/lib/production-studio/density-profile";
 
 export type RealRunAuditScorecard = {
   fact_structure_score: number;
@@ -12,6 +13,14 @@ export type RealRunAuditScorecard = {
   storyboard_actionability_score: number;
   prompt_usability_score: number;
   rights_safety_score: number;
+  visual_bible_score: number;
+  creative_direction_score: number;
+  shot_function_coverage_score: number;
+  continuity_score: number;
+  production_method_score: number;
+  editing_readiness_score: number;
+  prompt_field_completeness_score: number;
+  report_completeness_score: number;
   overall_demo_readiness_score: number;
 };
 
@@ -52,6 +61,7 @@ type CreateRealRunAuditReportInput = {
   agentRunId?: string | null;
   fallbackUsed: boolean;
   generationMode: GenerationMode;
+  densityProfile?: ShotDensityProfile;
 };
 
 const styleLock =
@@ -69,7 +79,8 @@ export function createRealRunAuditReport({
   projectId,
   agentRunId = null,
   fallbackUsed,
-  generationMode
+  generationMode,
+  densityProfile = "standard"
 }: CreateRealRunAuditReportInput): RealRunAuditReport {
   const article = auditArticleAnalyst(productionPack);
   const thesis = auditThesisAgent(productionPack);
@@ -78,7 +89,7 @@ export function createRealRunAuditReport({
   const prompt = auditPromptGenerator(productionPack);
   const assetFinder = auditAssetFinder(productionPack);
   const qa = auditQaAgent(productionPack);
-  const productionStudioSummary = analyzeShotPromptAlignment(productionPack);
+  const productionStudioSummary = analyzeShotPromptAlignment(productionPack, densityProfile);
   const studioProblems = auditProductionStudioGate(productionStudioSummary);
   const agentSections = [
     article,
@@ -101,16 +112,27 @@ export function createRealRunAuditReport({
     storyboard_actionability_score: storyboard.score,
     prompt_usability_score: prompt.score,
     rights_safety_score: qa.score,
+    visual_bible_score: productionStudioSummary.scores.visualBibleScore,
+    creative_direction_score: productionStudioSummary.scores.creativeDirectionScore,
+    shot_function_coverage_score: productionStudioSummary.scores.shotFunctionCoverageScore,
+    continuity_score: productionStudioSummary.scores.continuityScore,
+    production_method_score: productionStudioSummary.scores.productionMethodScore,
+    editing_readiness_score: productionStudioSummary.scores.editingReadinessScore,
+    prompt_field_completeness_score: productionStudioSummary.scores.promptFieldCompletenessScore,
+    report_completeness_score: productionStudioSummary.scores.reportCompletenessScore,
     overall_demo_readiness_score: clampScore(
-      Math.floor(
-        (article.score +
-          thesis.score +
-          script.score +
-          storyboard.score +
-          prompt.score +
-          qa.score -
-          (fallbackUsed ? 1 : 0)) /
-          6
+      Math.min(
+        Math.floor(
+          (article.score +
+            thesis.score +
+            script.score +
+            storyboard.score +
+            prompt.score +
+            qa.score -
+            (fallbackUsed ? 1 : 0)) /
+            6
+        ),
+        productionStudioSummary.scores.overallScore
       )
     )
   };
@@ -147,6 +169,7 @@ export function renderRealRunAuditMarkdown(report: RealRunAuditReport) {
     `- production-pack.md: ${report.productionPackDownloadUrl}`,
     `- Demo-ready: ${report.demoReady ? "yes" : "no"}`,
     `- Production Studio Gate: ${report.productionStudioSummary.needsFix ? "需要重跑 / 人工修正" : "pass"}`,
+    `- Shot Density Profile: ${report.productionStudioSummary.densityProfile}`,
     "",
     "## Scores",
     "",
@@ -156,6 +179,7 @@ export function renderRealRunAuditMarkdown(report: RealRunAuditReport) {
     "",
     "## Shot / Prompt Gate",
     "",
+    `- density profile: ${report.productionStudioSummary.densityProfile}`,
     `- 90s shots: ${report.productionStudioSummary.shotCount90s}`,
     `- 180s shots: ${report.productionStudioSummary.shotCount180s}`,
     `- 90s prompts: ${report.productionStudioSummary.promptCount90s}`,
@@ -164,6 +188,16 @@ export function renderRealRunAuditMarkdown(report: RealRunAuditReport) {
     `- unmatched prompts: ${report.productionStudioSummary.unmatchedPrompts.length}`,
     `- red risks without replacement: ${report.productionStudioSummary.redRisksWithoutReplacement.length}`,
     `- needsFix: ${report.productionStudioSummary.needsFix ? "需要重跑 / 人工修正" : "false"}`,
+    `- creative direction score: ${report.productionStudioSummary.scores.creativeDirectionScore}/5`,
+    `- visual bible score: ${report.productionStudioSummary.scores.visualBibleScore}/5`,
+    `- continuity score: ${report.productionStudioSummary.scores.continuityScore}/5`,
+    `- shot function coverage score: ${report.productionStudioSummary.scores.shotFunctionCoverageScore}/5`,
+    `- production method score: ${report.productionStudioSummary.scores.productionMethodScore}/5`,
+    `- editing readiness score: ${report.productionStudioSummary.scores.editingReadinessScore}/5`,
+    `- prompt field completeness score: ${report.productionStudioSummary.scores.promptFieldCompletenessScore}/5`,
+    `- report completeness score: ${report.productionStudioSummary.scores.reportCompletenessScore}/5`,
+    `- report field completeness: ${report.productionStudioSummary.reportFieldCompleteness}`,
+    `- missing report fields: ${report.productionStudioSummary.missingReportFields.join(" / ") || "none"}`,
     ...report.productionStudioSummary.fixReasons.map((reason) => `- ${reason}`),
     "",
     "## Agent Audit",
@@ -207,10 +241,20 @@ function auditProductionStudioGate(summary: ProductionStudioSummary): AgentAudit
     : [];
 
   return section("Production Studio Gate", summary.scores.overallScore, [
+    `density profile ${summary.densityProfile}`,
     `90s shots ${summary.shotCount90s}`,
     `180s shots ${summary.shotCount180s}`,
     `90s prompts ${summary.promptCount90s}`,
     `180s prompts ${summary.promptCount180s}`,
+    `creative direction ${summary.scores.creativeDirectionScore}/5`,
+    `visual bible ${summary.scores.visualBibleScore}/5`,
+    `continuity ${summary.scores.continuityScore}/5`,
+    `shot function ${summary.scores.shotFunctionCoverageScore}/5`,
+    `production method ${summary.scores.productionMethodScore}/5`,
+    `editing readiness ${summary.scores.editingReadinessScore}/5`,
+    `prompt completeness ${summary.scores.promptFieldCompletenessScore}/5`,
+    `report completeness ${summary.scores.reportCompletenessScore}/5`,
+    `missing report fields ${summary.missingReportFields.join(" / ") || "none"}`,
     `needsFix ${summary.needsFix ? "需要重跑 / 人工修正" : "false"}`
   ], problems);
 }

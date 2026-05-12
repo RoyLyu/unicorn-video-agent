@@ -1,5 +1,102 @@
 # 07 Batch Log
 
+## Batch 13B-Hotfix - Full AIGC Production Report Export
+
+目标：修复 Export / Report / Gate 层，让 `production-pack.md` 成为交给编导和 AIGC 制作人的主生产报告，而不是压缩分镜摘要。
+
+完成内容：
+
+- `production-pack.md` 改为中文完整章节：AIGC 制作总控、视觉风格 Bible、连续性 Bible、逐镜头 AIGC 制作表。
+- 逐镜头输出 shot 与 prompt bundle 合并后的 production contract：主体、环境、摄影机、灯光、风格、production method、editing metadata、image/video/negative prompt、style lock、禁止项和 replacementPlan。
+- `prompt-pack.md` 增加 Creative Concept、Visual Bible 和 Continuity Bible 摘要，并补齐 productionMethod、methodReason、continuityAssets 等字段。
+- `storyboard.csv` 输出 production method 与 editing fields。
+- `rights-check.csv` 输出 shot-level replacementPlan，red / placeholder 行不得为空。
+- 新增 report completeness gate，缺字段会显示“需要重跑 / 人工修正”，并进入 Production Studio、Showcase 和 audit 报告。
+
+明确不做：
+
+- AI 生图
+- AI 生视频
+- TTS
+- Remotion
+- 公网部署
+- 真实素材下载
+- 抓取
+- 用户系统
+- 数据库重构
+- 修改 AI pipeline 或 single-pack prompt
+
+## Batch 13B - AIGC Visual Bible + Shot Prompt Production Contract
+
+目标：将 ProductionPack 升级为可执行 AIGC 视频制作规格，补齐 Creative Direction、Visual Style Bible、Continuity Bible、shot-level production method、editing metadata 和 8 类 prompt 信息。
+
+完成内容：
+
+- ProductionPack schema 兼容新增全局三大 bible 和 shot/prompt production contract 字段。
+- single-pack prompt 要求输出 Creative Direction、Visual Style Bible、Continuity Bible、shotFunction、productionMethod、editing metadata 和 prompt production contract。
+- normalization 补齐缺失字段，并保持 prompt bundle 与 shot 一一对应。
+- Production Studio gate 新增 creative / visual / continuity / function / method / editing / prompt completeness 分数。
+- Production Studio UI 增加 AIGC contract 总览、pack-level 编辑区、筛选和新增字段编辑。
+- Showcase 展示 Visual Bible、Continuity、Shot Function、Production Method、Editing Readiness 和 Prompt Completeness。
+- Export 输出 Creative Direction、Visual Style Bible、Continuity Bible、Shot Function Summary、Production Method Summary、Editing Structure Summary 和 Prompt Completeness Summary。
+- real-run audit 增加 AIGC production contract 分数和 needsFix 判定。
+
+明确不做：
+
+- AI 生图
+- AI 生视频
+- TTS
+- Remotion 自动成片
+- 公网部署
+- 用户系统
+- 自动发布视频号
+- 真实素材下载
+- 新增数据库表或覆盖原始 AI ProductionPack
+
+## Batch 13A - Production Studio Edit / Density Profile / Revalidate / Lock
+
+目标：把 Production Studio 从只读检查页升级为内部生产编辑台，引入 `lite / standard / dense` Shot Density Profile，默认 `standard`，并通过 edits overlay、deterministic gate revalidate 和 lock 状态驱动 Showcase / Export 的 effective ProductionPack。
+
+完成内容：
+
+- Shot Density Profile：lite 20/40/60、standard 24/48/72、dense 30/60/90
+- `.env.example` 增加 `SHOT_DENSITY_PROFILE=standard`
+- single-pack prompt、normalization、Production Studio scorer 和 real-run audit 支持 density profile
+- `production_studio_edits`
+- `production_studio_gate_runs`
+- `production_studio_locks`
+- effective ProductionPack resolver，人工编辑不覆盖原始 AI JSON
+- Production Studio 可编辑 shot、prompt、replacementPlan
+- 批量保存 edits
+- deterministic “重新校验 Gate”
+- Gate pass 后锁定当前生产包，支持解除锁定
+- Production Studio GET/PATCH/revalidate/lock/unlock API
+- Showcase 展示 density、gate、lock、edited count
+- Export 使用 effective ProductionPack，并在 project JSON 中保留 original + productionStudio summary
+- Dashboard 展示 density、gate、lock 和 needsFix 状态
+
+明确不做：
+
+- AI 生图
+- AI 生视频
+- TTS
+- Remotion
+- 部署
+- 用户系统
+- 自动发布视频号
+- 真实素材下载
+- 调用 AI 重新生成
+- 覆盖原始 AI ProductionPack
+
+验收口径：
+
+- 默认 density profile 为 `standard`
+- 30/60 dense 项目在 standard 和 dense 下继续 pass
+- edits 能形成 effective ProductionPack，original 不变
+- revalidate 不调用 AI，只写入 gate run
+- gate fail 不能 lock，gate pass 可以 lock
+- Showcase / Export 使用 effective ProductionPack
+
 ## Batch 12B - Shot / Prompt Volume Gate and Production Studio Core
 
 目标：把分镜头脚本与 Prompt Generator 升级为内部产品核心能力，真实 AI 输出必须满足 90s 至少 30 shots、180s 至少 60 shots、每个 shot 一个 prompt bundle，且 red rights risk 必须有替代方案。

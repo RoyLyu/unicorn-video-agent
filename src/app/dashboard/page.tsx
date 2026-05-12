@@ -18,6 +18,7 @@ import { getReviewData, type ReviewSummary } from "@/db/repositories/review-repo
 import { attachLatestAgentRunStatus, type ProjectWithAgentRun } from "@/lib/agents/dashboard-agent-runs";
 import { splitDashboardProjects } from "@/lib/demo-public/dashboard-projects";
 import { dashboardMetrics, exportFiles } from "@/lib/demo-data";
+import { getProductionStudioPayload } from "@/lib/server/production-studio-service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -137,6 +138,7 @@ function getDashboardProjectsSafely(): {
 
 function ProjectListItem({ project }: { project: ProjectWithAgentRun }) {
   const reviewSummary = getReviewSummarySafely(project.id);
+  const studio = getProductionStudioSafely(project.id);
 
   return (
     <li>
@@ -155,6 +157,15 @@ function ProjectListItem({ project }: { project: ProjectWithAgentRun }) {
       <StatusBadge tone={agentRunTone(project.latestAgentRun?.status)}>
         agent: {project.latestAgentRun?.status ?? "not_started"}
       </StatusBadge>{" "}
+      <StatusBadge tone={studio?.summary.needsFix ? "red" : "green"}>
+        studio: {studio?.latestGateRun?.status ?? "not_run"}
+      </StatusBadge>{" "}
+      <StatusBadge tone={studio?.lock?.locked ? "green" : "placeholder"}>
+        lock: {studio?.lock?.locked ? "locked" : "unlocked"}
+      </StatusBadge>{" "}
+      <StatusBadge tone="placeholder">
+        density: {studio?.densityProfile ?? "standard"}
+      </StatusBadge>{" "}
       <div className="action-row">
         <Link href={`/projects/${project.id}/showcase`}>Showcase</Link>
         <Link href={`/projects/${project.id}/production-studio`}>Production Studio</Link>
@@ -165,6 +176,14 @@ function ProjectListItem({ project }: { project: ProjectWithAgentRun }) {
       </div>
     </li>
   );
+}
+
+function getProductionStudioSafely(projectId: string) {
+  try {
+    return getProductionStudioPayload(projectId);
+  } catch {
+    return null;
+  }
 }
 
 function getLatestAgentRunSafely(projectId: string): AgentRunSummary | null {

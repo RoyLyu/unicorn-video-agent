@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-Batch 12B：Shot / Prompt Volume Gate and Production Studio Core。
+Batch 13B-Hotfix：Full AIGC Production Report Export。
 
 当前仓库提供：
 
@@ -30,7 +30,12 @@ Batch 12B：Shot / Prompt Volume Gate and Production Studio Core。
 - 真实 AI 端到端审计命令 `pnpm audit:real-run`
 - Storyboard / Prompt / Rights 输出质量 normalization 与审计评分
 - 90s / 180s micro-shot 与 prompt bundle 对齐门禁
-- Production Studio 页面 `/projects/[projectId]/production-studio`
+- Shot Density Profile：`lite` / `standard` / `dense`，默认 `standard`
+- 可编辑 Production Studio 页面 `/projects/[projectId]/production-studio`
+- Production Studio edits overlay、Gate revalidate 和锁版状态
+- AIGC Creative Direction、Visual Style Bible、Continuity Bible
+- shot-level production contract：shotFunction、productionMethod、editing metadata 和 8 类 prompt 信息
+- `production-pack.md` 完整逐镜头 AIGC 制作表、Prompt/Report completeness gate
 - 冻结成功 Demo 项目和版权风险替代方案展示
 - fallback/mock 成品门禁：Showcase、Export 和 real-run audit 不再把 fallback 当作成功成品
 - 纯函数 mock Agent pipeline
@@ -41,7 +46,7 @@ Batch 12B：Shot / Prompt Volume Gate and Production Studio Core。
 
 ## MVP 范围
 
-第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 12B 只升级分镜、Prompt、Audit、Showcase、Export 和 Production Studio，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
+第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 13B-Hotfix 只修复导出报告和 deterministic gate：`production-pack.md` 作为主生产报告必须输出完整逐镜头 AIGC 制作字段，Prompt completeness 与 Report completeness 分开校验；不调用 AI 重新生成，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
 
 ## 环境变量
 
@@ -58,12 +63,13 @@ OPENAI_BASE_URL=https://api.minimaxi.com/v1
 AI_AGENT_MODE=single_pack
 AI_REQUEST_TIMEOUT_MS=180000
 AI_MAX_TOKENS=16000
+SHOT_DENSITY_PROFILE=standard
 AI_REQUIRE_REAL_OUTPUT=true
 AI_ALLOW_MOCK_FALLBACK=false
 AI_BANNED_OUTPUT_TERMS=mock,Batch 02,后续补齐,demo-data,不是真实 AI,只生成 JSON 生产包,本地 mock,Mock Pipeline
 ```
 
-`AI_MODEL` 必须从环境变量读取，业务逻辑不写默认模型。MiniMax OpenAI-compatible client 会优先读取 `MINIMAX_API_KEY` 与 `MINIMAX_BASE_URL`，再 fallback 到 `OPENAI_API_KEY` 与 `OPENAI_BASE_URL`。`AI_AGENT_MODE` 默认 `single_pack`，即一次 Chat Completions 调用生成完整 `ProductionPack`；只有显式设置为 `sequential` 时才走旧的 7-step remote runner。Batch 12B 建议 `AI_MAX_TOKENS=16000`，以承载 90 个 micro-shots 和对应 prompt bundles。
+`AI_MODEL` 必须从环境变量读取，业务逻辑不写默认模型。MiniMax OpenAI-compatible client 会优先读取 `MINIMAX_API_KEY` 与 `MINIMAX_BASE_URL`，再 fallback 到 `OPENAI_API_KEY` 与 `OPENAI_BASE_URL`。`AI_AGENT_MODE` 默认 `single_pack`，即一次 Chat Completions 调用生成完整 `ProductionPack`；只有显式设置为 `sequential` 时才走旧的 7-step remote runner。Batch 12B/13A 建议 `AI_MAX_TOKENS=16000`，以承载 dense profile 的 90 个 micro-shots 和对应 prompt bundles。`SHOT_DENSITY_PROFILE` 默认 `standard`：90s 至少 24 shots、180s 至少 48 shots、总数至少 72；`dense` 继续用于 30/60 高密度剪辑和压力测试。
 
 Batch 12A 默认启用 strict real output：`AI_REQUIRE_REAL_OUTPUT=true` 且 `AI_ALLOW_MOCK_FALLBACK=false`。缺少 key、baseURL、model、AI schema 失败、provider 失败或命中 `AI_BANNED_OUTPUT_TERMS` 时，`/api/ai/production-pack` 返回 422，不保存 mock 项目为成功成品。只有 `/quick-demo` 中显式选择“快速演示”或设置允许 fallback 时，mock fallback 才会保存，并且页面和导出会标红提示不可投入使用。
 
@@ -114,7 +120,21 @@ tmp/real-run-audit/failed-qa-report.md
 
 失败审计不会覆盖 `latest-production-pack.json` 与 `latest-qa-report.md`。只有显式传入 `--allowFallback` 才允许生成 fallback 审计报告，但该报告不能冒充 latest success。
 
+Batch 13B-Hotfix 起，审计还会生成并检查 `production-pack.md` 文本本身。缺少 `AIGC 制作总控`、`视觉风格 Bible`、`连续性 Bible`、`逐镜头 AIGC 制作表` 或关键 shot/prompt 字段时，命令会写入 failed artifacts，不覆盖 latest success。
+
 ## Batch 11B 质量验收
+
+## Batch 13B AIGC Production Contract
+
+Batch 13B 将 ProductionPack 从“shot/prompt 对齐文本包”升级为 AIGC 视频制作规格。真实或 effective ProductionPack 应包含：
+
+- `creativeDirection`：视觉核心、视觉隐喻、主视觉符号、叙事推进和制作总说明。
+- `visualStyleBible`：9:16 竖屏、色彩、灯光、材质、字体、图表和禁止元素。
+- `continuityBible`：人物/空间/物件/色彩/运动/图形/字体连续性和 reference frame plan。
+- 每个 shot 的 `shotFunction`、`productionMethod`、`methodReason`、subject、environment、lighting、style 和 editing metadata。
+- 每个 prompt bundle 的 shotCode、duration、subject、environment、camera、lighting、style、negativeConstraints、forbiddenElements 和 replacementPlan。
+
+Production Studio、Showcase、Export 和 `pnpm audit:real-run` 会显示 Visual Bible、Continuity、Shot Function、Production Method、Editing Readiness 和 Prompt Completeness。任一核心分数低于 4 时，界面和审计报告必须显示“需要重跑 / 人工修正”，且 Production Studio lock 会被拒绝。
 
 Batch 11B 默认使用 `AI_AGENT_MODE=single_pack`。生成后的 ProductionPack 会在保存前做文本 normalization：
 
@@ -147,12 +167,20 @@ Batch 11B 默认使用 `AI_AGENT_MODE=single_pack`。生成后的 ProductionPack
 
 ## Batch 12B Shot / Prompt Gate
 
-- ProductionPack 支持 90s / 180s micro-shots：90s 至少 30 个，180s 至少 60 个。
+- ProductionPack 支持 90s / 180s micro-shots；Batch 13A 后数量由 Shot Density Profile 决定。
 - `assetPrompts.promptBundles` 是 canonical prompt 数量来源，每个 shot 对应一个 bundle，包含 imagePrompt、videoPrompt、negativePrompt、styleLock、aspectRatio 和 usageWarning。
 - normalization 只基于真实 AI 输出、脚本、观点和文章输入扩展 micro-shots，不调用 mock pipeline 补正式输出。
 - red rights risk 必须包含 replacementPlan。
 - Showcase 和 `production-pack.md` 展示 Shot / Prompt Gate Summary；低于标准时显示“需要重跑 / 人工修正”。
 - Production Studio 页面展示 shot / prompt 对应表、版权等级汇总、red replacementPlan 和 gate score。
+
+## Batch 13A Production Studio
+
+- 默认 Shot Density Profile 为 `standard`：90s >= 24、180s >= 48、total >= 72。
+- `lite` 为 20/40/60，适合轻量策划案；`dense` 为 30/60/90，适合高密度剪辑和压力测试。
+- Production Studio 的人工编辑以 overlay 方式保存到 `production_studio_edits`，不覆盖原始 AI `ProductionPack`。
+- “重新校验 Gate”只做 deterministic 检查，不调用 AI、不读取 API key。
+- Gate pass 后可以锁定当前生产包；Showcase 和 Export 优先使用 effective ProductionPack，并显示 density、gate、lock、edited count 状态。
 
 ## Batch 10B 最终演示验收路径
 
@@ -219,6 +247,18 @@ Review API 只保存本地审阅状态、事实核验记录和人工发布文案
 ```text
 POST /api/demo/reset
 ```
+
+## Production Studio API
+
+```text
+GET /api/projects/[projectId]/production-studio
+PATCH /api/projects/[projectId]/production-studio/edits
+POST /api/projects/[projectId]/production-studio/revalidate
+POST /api/projects/[projectId]/production-studio/lock
+POST /api/projects/[projectId]/production-studio/unlock
+```
+
+这些 API 只读取 SQLite 和执行 deterministic gate check，不调用 AI、不下载素材、不读取 API key。
 
 Demo reset API 只删除并重建 `is_demo = true` 的公开演示项目，返回两个 demo `projectId`。普通 mock 项目不会被删除。
 
@@ -299,17 +339,3 @@ src/
     schemas/
     storage/
 ```
-
-## 不做什么
-
-- 不自动抓取公众号全文
-- 不自动下载网络素材
-- 不自动发布视频号
-- 不自动生成完整成片
-- 不接云数据库
-- 不做登录
-- 不做云部署
-- 不生成真实图片、视频、音频
-- 不做 AI 生图、生视频或 TTS
-- 不把导出文件写入仓库或 data 目录
-- 不使用未确认版权的新闻图、视频片段、影视片段、音乐和字体

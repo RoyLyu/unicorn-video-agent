@@ -32,9 +32,13 @@ import { createOpenAiClient } from "@/lib/ai/openai-client";
 import { scanOutputContamination } from "@/lib/ai/output-contamination";
 import { parseAiJsonObject } from "@/lib/ai/structured-output";
 import { runMockPipeline } from "@/lib/mock-pipeline/run-mock-pipeline";
+import { readShotDensityProfile } from "@/lib/production-studio/density-profile";
 import {
   ArticleInputSchema,
+  ContinuityBibleSchema,
+  CreativeDirectionSchema,
   ProductionPackSchema,
+  VisualStyleBibleSchema,
   type ArticleInput,
   type GenerationMode,
   type ProductionPack
@@ -42,6 +46,7 @@ import {
 
 import { normalizeProductionPack } from "./normalize-production-pack";
 import {
+  compactSinglePackProductionPrompt,
   requiredNegativePrompt,
   singlePackProductionPrompt,
   visualStyleLock
@@ -126,6 +131,7 @@ export async function runAiSinglePackPipeline(
   const client = options.client;
   const config = readAiConfig(options.env);
   const policy = readAiPolicy(options.env);
+  const densityProfile = readShotDensityProfile(options.env);
   const generationProfile = options.generationProfile ?? "real_output";
   const allowMockFallback = shouldAllowMockFallback({
     policy,
@@ -161,12 +167,12 @@ export async function runAiSinglePackPipeline(
     const rawText = options.chatCompletionExecutor
       ? await options.chatCompletionExecutor({
           config,
-          systemPrompt: singlePackProductionPrompt(),
+          systemPrompt: singlePackProductionPrompt(densityProfile),
           userInput: { articleInput }
         })
-      : await requestChatCompletionJson(config, { articleInput });
+      : await requestChatCompletionJson(config, { articleInput }, densityProfile);
     const parsedPack = coerceAiProductionPack(parseAiJsonObject(rawText), articleInput);
-    const productionPack = normalizeProductionPack(parsedPack);
+    const productionPack = normalizeProductionPack(parsedPack, densityProfile);
     const contamination = scanOutputContamination(
       productionPack,
       policy.bannedOutputTerms
@@ -305,7 +311,8 @@ function failureReasonFromErrorCode(
 
 async function requestChatCompletionJson(
   config: Extract<AiConfig, { ok: true }>,
-  userInput: unknown
+  userInput: unknown,
+  densityProfile = readShotDensityProfile()
 ) {
   const client = createOpenAiClient(config);
   const response = await withTimeout(
@@ -313,7 +320,7 @@ async function requestChatCompletionJson(
       {
         model: config.model,
         messages: [
-          { role: "system", content: singlePackProductionPrompt() },
+          { role: "system", content: compactSinglePackProductionPrompt(densityProfile) },
           { role: "user", content: JSON.stringify(userInput) }
         ],
         temperature: 0.2,
@@ -408,7 +415,7 @@ function coerceAiProductionPack(rawOutput: unknown, articleInput: ArticleInput):
       assetType: normalizeAssetType(item.assetType, index),
       rightsLevel: normalizeRightsLevel(item.rightsLevel),
       versionType: normalizeVersionType(item.versionType),
-      shotNumber: Number(item.shotNumber ?? index + 1),
+      shotNumber: parseProviderShotNumber(item.shotNumber, index + 1),
       beat: item.beat ? String(item.beat) : undefined,
       duration: item.duration ? String(item.duration) : undefined,
       voiceover: item.voiceover ? String(item.voiceover) : undefined,
@@ -420,6 +427,18 @@ function coerceAiProductionPack(rawOutput: unknown, articleInput: ArticleInput):
       chartNeed: item.chartNeed ? String(item.chartNeed) : undefined,
       copyrightRisk: normalizeRightsLevel(item.copyrightRisk ?? item.rightsLevel),
       replacementPlan: item.replacementPlan ? String(item.replacementPlan) : undefined,
+      shotCode: item.shotCode ? String(item.shotCode) : undefined,
+      shotFunction: item.shotFunction ? String(item.shotFunction) : undefined,
+      productionMethod: item.productionMethod ? String(item.productionMethod) : undefined,
+      methodReason: item.methodReason ? String(item.methodReason) : undefined,
+      subject: item.subject ? String(item.subject) : undefined,
+      environment: item.environment ? String(item.environment) : undefined,
+      lighting: item.lighting ? String(item.lighting) : undefined,
+      style: item.style ? String(item.style) : undefined,
+      continuityAssets: Array.isArray(item.continuityAssets)
+        ? item.continuityAssets.map((asset) => String(asset)).filter(Boolean)
+        : undefined,
+      editing: isRecord(item.editing) ? item.editing : undefined,
       imagePrompt: item.imagePrompt,
       videoPrompt: item.videoPrompt,
       negativePrompt: item.negativePrompt,
@@ -458,12 +477,31 @@ function coerceAiProductionPack(rawOutput: unknown, articleInput: ArticleInput):
         visualType: shot.visualType,
         chartNeed: shot.chartNeed,
         copyrightRisk: shot.copyrightRisk,
-        replacementPlan: shot.replacementPlan
+        replacementPlan: shot.replacementPlan,
+        shotCode: shot.shotCode,
+        shotFunction: shot.shotFunction,
+        productionMethod: shot.productionMethod,
+        methodReason: shot.methodReason,
+        subject: shot.subject,
+        environment: shot.environment,
+        lighting: shot.lighting,
+        style: shot.style,
+        continuityAssets: shot.continuityAssets,
+        editing: shot.editing
       }))
     },
     assetPrompts,
     rightsChecks: coerceRightsChecks(record.rightsChecks, basePack),
-    exportManifest
+    exportManifest,
+    creativeDirection: CreativeDirectionSchema.safeParse(record.creativeDirection).success
+      ? CreativeDirectionSchema.parse(record.creativeDirection)
+      : undefined,
+    visualStyleBible: VisualStyleBibleSchema.safeParse(record.visualStyleBible).success
+      ? VisualStyleBibleSchema.parse(record.visualStyleBible)
+      : undefined,
+    continuityBible: ContinuityBibleSchema.safeParse(record.continuityBible).success
+      ? ContinuityBibleSchema.parse(record.continuityBible)
+      : undefined
   });
 }
 
@@ -595,7 +633,10 @@ function coerceAssetPrompts(
         const bundle = isRecord(item) ? item : {};
         const shot = shots[index] ?? {};
         const versionType = normalizeVersionType(bundle.versionType ?? shot.versionType) ?? "90s";
-        const shotNumber = Number(bundle.shotNumber ?? shot.shotNumber ?? index + 1);
+        const shotNumber = parseProviderShotNumber(
+          bundle.shotNumber ?? shot.shotNumber,
+          index + 1
+        );
         const shotId = String(bundle.shotId ?? bundle.sceneRef ?? shot.id ?? `S${String(index + 1).padStart(2, "0")}`);
 
         return {
@@ -765,6 +806,31 @@ function normalizeRightsLevel(value: unknown) {
 
 function normalizeVersionType(value: unknown) {
   return value === "90s" || value === "180s" ? value : undefined;
+}
+
+function parseProviderShotNumber(value: unknown, fallback: number) {
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    const direct = Number(trimmed);
+
+    if (Number.isFinite(direct) && direct > 0) {
+      return direct;
+    }
+
+    const digitGroups = [...trimmed.matchAll(/\d+/g)].map((match) => match[0]);
+    const lastGroup = digitGroups.at(-1);
+    const parsed = Number(lastGroup);
+
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+
+  return fallback;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

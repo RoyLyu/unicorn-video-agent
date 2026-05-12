@@ -1,5 +1,35 @@
 # Changelog
 
+## Batch 13B-Hotfix - Full AIGC Production Report Export
+
+- `production-pack.md` 从压缩分镜概览升级为主生产报告，新增中文完整章节：AIGC 制作总控、视觉风格 Bible、连续性 Bible、逐镜头 AIGC 制作表。
+- 每个 shot block 合并 shot 与 prompt bundle，输出镜头编号、时长、主体、环境、摄影机、灯光、风格、production method、editing metadata、prompt、禁用项和 replacement plan。
+- `prompt-pack.md` 增加 Creative Concept、Visual Bible、Continuity Bible 摘要，并按镜头输出 production prompt contract。
+- `storyboard.csv` 与 `rights-check.csv` 改为 production contract 字段集合，red / placeholder 行保证 replacementPlan 非空。
+- 新增 report completeness gate，Production Studio summary、Showcase、audit report 和 lock 判断都能识别报告字段缺失。
+- Showcase 顶部展示 Prompt 字段完整性和报告字段完整性，并提供查看/下载完整 Production Report 入口。
+
+## Batch 13B - AIGC Visual Bible + Shot Prompt Production Contract
+
+- 扩展 ProductionPack schema，兼容新增 `creativeDirection`、`visualStyleBible`、`continuityBible`。
+- 扩展 shot / prompt bundle 合同：shotFunction、productionMethod、methodReason、subject、environment、lighting、style、continuityAssets、editing metadata、negativeConstraints 和 forbiddenElements。
+- 更新 single-pack prompt 与 normalization，补齐全片视觉总控、连续性系统、镜头功能、制作方式、剪辑结构和 8 类 prompt 信息。
+- 扩展 Production Studio gate，新增 Creative Direction、Visual Bible、Continuity、Shot Function、Production Method、Editing Readiness 和 Prompt Field Completeness 分数。
+- Production Studio UI 增加 AIGC contract 总览、pack-level 编辑区、shotFunction / productionMethod / risk / needsFix / editedOnly 筛选和更多 shot/prompt 字段编辑。
+- Showcase 展示 Creative Concept、Visual Metaphor、Visual Bible、Continuity、Shot Function 分布、Production Method 分布和 AIGC contract 分数。
+- Export 增强：`production-pack.md` 输出 Creative Direction、Visual Style Bible、Continuity Bible、Shot Function Summary、Production Method Summary、Editing Structure Summary 和 Prompt Completeness Summary；`storyboard.csv` 与 `prompt-pack.md` 输出新增制作字段。
+- real-run audit 增加视觉、连续性、镜头功能、制作方式、剪辑准备度和 prompt 字段完整性评分。
+
+## Batch 13A - Production Studio Edit / Density Profile / Revalidate / Lock
+
+- 新增 Shot Density Profile：`lite`、`standard`、`dense`，默认 `standard`，并让 prompt、normalization、Production Studio gate 和 audit 接收 profile。
+- 新增 `production_studio_edits`、`production_studio_gate_runs`、`production_studio_locks` 三张表和 migration，人工编辑不覆盖原始 AI ProductionPack。
+- 新增 effective ProductionPack resolver，Showcase、Export、Production Studio 和 project JSON 使用 edits overlay 后的 effective 版本。
+- Production Studio 从只读检查页升级为编辑台：支持编辑 shot、prompt、replacementPlan，批量保存、重新校验 Gate、锁定和解除锁定。
+- 新增 Production Studio API：GET state、PATCH edits、POST revalidate、POST lock、POST unlock。
+- Showcase、Export 和 Dashboard 展示 density profile、gate status、lock status、edited count 和 needsFix 状态。
+- Export 增加 Production Studio summary，`storyboard.csv`、`prompt-pack.md`、`rights-check.csv` 使用 effective ProductionPack。
+
 ## Batch 12B - Shot / Prompt Volume Gate and Production Studio Core
 
 - 扩展 ProductionPack schema，支持 90s / 180s micro-shots、shotNumber、camera、composition、motion、copyrightRisk、replacementPlan 和 canonical `promptBundles`。

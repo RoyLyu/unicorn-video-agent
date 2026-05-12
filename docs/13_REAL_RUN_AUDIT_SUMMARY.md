@@ -6,34 +6,51 @@
 
 ## 成功项目
 
-- projectId: `b3bb3742-101a-4c60-b211-e1697084738e`
-- agentRunId: `c48b27d4-cce7-4cd9-aca4-1b0833841286`
+- projectId: `34ead3b2-ed7e-4786-81e5-fc9a78a965e4`
+- agentRunId: `dbd65c6b-82ce-4e8d-b6b7-b005f90674e1`
 - generationMode: `ai`
 - fallbackUsed: `false`
 - Demo-ready: yes
-- Showcase: `/projects/b3bb3742-101a-4c60-b211-e1697084738e/showcase`
-- Production Studio: `/projects/b3bb3742-101a-4c60-b211-e1697084738e/production-studio`
-- production-pack.md: `/api/projects/b3bb3742-101a-4c60-b211-e1697084738e/exports/production-pack.md`
+- Showcase: `/projects/34ead3b2-ed7e-4786-81e5-fc9a78a965e4/showcase`
+- Production Studio: `/projects/34ead3b2-ed7e-4786-81e5-fc9a78a965e4/production-studio`
+- production-pack.md: `/api/projects/34ead3b2-ed7e-4786-81e5-fc9a78a965e4/exports/production-pack.md`
 
 ## Scores
 
 - Storyboard 5/5
 - Prompt 5/5
-- Rights 4/5
-- Overall 4/5
+- Rights 5/5
+- Visual Bible 5/5
+- Creative Direction 5/5
+- Continuity 5/5
+- Shot Function Coverage 5/5
+- Production Method 5/5
+- Editing Readiness 5/5
+- Prompt Field Completeness 5/5
+- Overall 5/5
 
-## Batch 12B Gate
+## Batch 13B AIGC Production Contract / Gate
+
+- Shot Density Profile: `standard`
+- Gate standard: 90s >= 24, 180s >= 48, total >= 72
 
 - Production Studio Gate: pass
-- 90s shots: 30
-- 180s shots: 60
-- promptBundles: 90
+- 90s shots: 24
+- 180s shots: 48
+- promptBundles: 72
 - prompt count equals shot count: yes
 - unmatched shots: 0
 - unmatched prompts: 0
 - red risks without replacementPlan: 0
 - banned output hits: 0
 - needsFix: false
+- creativeDirection exists: yes
+- visualStyleBible exists: yes
+- continuityBible exists: yes
+- every prompt bundle has 8 production fields: yes
+- shotFunction coverage: pass
+- productionMethod coverage: pass
+- editing readiness: pass
 - 如果后续审计失败或出现“需要重跑 / 人工修正”，不要覆盖本冻结项目；只查看 failed artifacts 定位问题。
 
 ## 当前剩余风险

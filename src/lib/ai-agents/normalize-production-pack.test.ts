@@ -17,7 +17,7 @@ describe("normalizeProductionPack", () => {
       }
     });
 
-    expect(normalized.storyboard.shots.length).toBeGreaterThanOrEqual(90);
+    expect(normalized.storyboard.shots.length).toBeGreaterThanOrEqual(72);
     for (const shot of normalized.storyboard.shots) {
       expect(shot.visual).toContain("主体：");
       expect(shot.visual).toContain("场景：");
@@ -53,13 +53,13 @@ describe("normalizeProductionPack", () => {
     }
   });
 
-  it("expands production studio micro-shots to 30 for 90s and 60 for 180s", () => {
+  it("expands production studio micro-shots to standard 24 for 90s and 48 for 180s by default", () => {
     const normalized = normalizeProductionPack(demoProductionPack);
     const shots90 = normalized.storyboard.shots.filter((shot) => shot.versionType === "90s");
     const shots180 = normalized.storyboard.shots.filter((shot) => shot.versionType === "180s");
 
-    expect(shots90.length).toBeGreaterThanOrEqual(30);
-    expect(shots180.length).toBeGreaterThanOrEqual(60);
+    expect(shots90.length).toBeGreaterThanOrEqual(24);
+    expect(shots180.length).toBeGreaterThanOrEqual(48);
     expect(shots90[0]).toMatchObject({
       versionType: "90s",
       shotNumber: 1
@@ -68,6 +68,13 @@ describe("normalizeProductionPack", () => {
       versionType: "180s",
       shotNumber: 1
     });
+  });
+
+  it("keeps dense 30/60 profile available for high-density editing", () => {
+    const normalized = normalizeProductionPack(demoProductionPack, "dense");
+
+    expect(normalized.storyboard.shots.filter((shot) => shot.versionType === "90s")).toHaveLength(30);
+    expect(normalized.storyboard.shots.filter((shot) => shot.versionType === "180s")).toHaveLength(60);
   });
 
   it("creates one prompt bundle per shot and keeps legacy prompt arrays aligned", () => {
@@ -115,5 +122,47 @@ describe("normalizeProductionPack", () => {
 
     expect(normalized.rightsChecks[0].replacementPlan).toMatch(/替换|自制图表|抽象 AI 画面|placeholder/);
     expect(redShots[0]?.replacementPlan).toMatch(/替换|自制图表|抽象 AI 画面|placeholder/);
+  });
+
+  it("normalizes AIGC creative direction, visual bible and continuity bible", () => {
+    const normalized = normalizeProductionPack(demoProductionPack);
+
+    expect(normalized.creativeDirection?.creativeConcept).toBeTruthy();
+    expect(normalized.creativeDirection?.visualMetaphor).toBeTruthy();
+    expect(normalized.creativeDirection?.mainVisualMotif).toBeTruthy();
+    expect(normalized.visualStyleBible?.aspectRatio).toBe("9:16 vertical");
+    expect(normalized.visualStyleBible?.forbiddenElements).toContain("no real logo");
+    expect(normalized.continuityBible?.referenceFramePlan).toBeTruthy();
+  });
+
+  it("normalizes every shot and prompt bundle into an AIGC production contract", () => {
+    const normalized = normalizeProductionPack(demoProductionPack);
+
+    for (const shot of normalized.storyboard.shots) {
+      expect(shot.shotCode).toMatch(/^S(90|180)-\d{2}$/);
+      expect(shot.shotFunction).toBeTruthy();
+      expect(shot.productionMethod).toBeTruthy();
+      expect(shot.methodReason).toBeTruthy();
+      expect(shot.subject).toBeTruthy();
+      expect(shot.environment).toBeTruthy();
+      expect(shot.lighting).toBeTruthy();
+      expect(shot.style).toBeTruthy();
+      expect(shot.continuityAssets?.length).toBeGreaterThan(0);
+      expect(shot.editing?.cutType).toBeTruthy();
+      expect(shot.editing?.transitionLogic).toBeTruthy();
+      expect(shot.editing?.pace).toBeTruthy();
+    }
+
+    for (const bundle of normalized.assetPrompts.promptBundles ?? []) {
+      expect(bundle.shotCode).toBeTruthy();
+      expect(bundle.duration).toBeTruthy();
+      expect(bundle.subject).toBeTruthy();
+      expect(bundle.environment).toBeTruthy();
+      expect(bundle.camera).toBeTruthy();
+      expect(bundle.lighting).toBeTruthy();
+      expect(bundle.style).toBeTruthy();
+      expect(bundle.negativeConstraints).toBeTruthy();
+      expect(bundle.forbiddenElements?.length).toBeGreaterThan(0);
+    }
   });
 });

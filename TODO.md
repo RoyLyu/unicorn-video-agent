@@ -1,5 +1,30 @@
 # TODO
 
+## Batch 13B
+
+- [x] ProductionPack schema 兼容 `creativeDirection`、`visualStyleBible`、`continuityBible`。
+- [x] single-pack prompt 要求全片 Creative Direction、Visual Bible、Continuity Bible 和 shot-level production contract。
+- [x] normalization 补齐 shotFunction、productionMethod、editing metadata、continuityAssets 和 8 类 prompt 信息。
+- [x] Production Studio gate 增加 Visual Bible、Continuity、Shot Function、Production Method、Editing Readiness 和 Prompt Completeness 分数。
+- [x] Production Studio UI 增加 AIGC contract 总览、pack-level 编辑区、筛选和新增字段编辑。
+- [x] Showcase 展示视觉总控、连续性、镜头功能、制作方式、剪辑准备度和 prompt 完整性。
+- [x] Export 输出 Creative Direction、Visual Style Bible、Continuity Bible、editing summary 和新增 CSV/Prompt 字段。
+- [x] real-run audit 增加 AIGC production contract 分数和 needsFix 判定。
+- [x] 新增/更新 schema、normalization、Studio gate、effective edits、Showcase 和 Export 测试。
+
+## Batch 13A
+
+- [x] 新增 Shot Density Profile：lite / standard / dense，默认 standard。
+- [x] single-pack prompt、normalization、Production Studio gate 和 audit 支持 density profile。
+- [x] 新增 production_studio_edits、production_studio_gate_runs、production_studio_locks 表。
+- [x] 新增 effective ProductionPack resolver，人工 edits 不覆盖原始 AI 输出。
+- [x] Production Studio 支持编辑 shot、prompt 和 replacementPlan。
+- [x] Production Studio 支持批量保存、重新校验 Gate、锁定和解除锁定。
+- [x] 新增 Production Studio GET/PATCH/revalidate/lock/unlock API。
+- [x] Showcase、Export 和 Dashboard 显示 density、gate、lock、edited count 和 needsFix 状态。
+- [x] Export 使用 effective ProductionPack，并在 project.json 中包含 productionStudio summary。
+- [x] 新增 density、effective pack、repository、API no-AI 和 export 联动测试。
+
 ## Batch 12B
 
 - [x] 扩展 ProductionPack schema，支持 versionType、shotNumber 和 promptBundles。
@@ -176,13 +201,18 @@
 - [x] red rights risk 在导出中保留 red 等级，不自动降级。
 - [x] 更新最终演示标题清单和 Batch 11C 文档。
 
-## Batch 12 后续建议
+## Batch 13B 后续建议
 
+- [x] Batch 13B-Hotfix：`production-pack.md` 输出完整逐镜头 AIGC 制作表。
+- [x] Batch 13B-Hotfix：`prompt-pack.md`、`storyboard.csv`、`rights-check.csv` 输出 production contract 字段。
+- [x] Batch 13B-Hotfix：新增 report completeness gate，并接入 Production Studio、Showcase 和 real-run audit。
 - [ ] 增加 prompt 版本管理和 prompt diff。
 - [ ] 增加真实 AI 输出质量评分和人工批准开关。
 - [ ] 增加浏览器端流程测试。
 - [ ] 增加审阅历史和审阅人字段。
 - [ ] 增加导出前事实核验 checklist 的锁定/确认流程。
+- [ ] 增加 Production Studio 编辑 diff 视图和撤销能力。
+- [ ] 增加按 shot 批量替换 style lock / negativePrompt 的工具。
 
 ## 暂不做
 
