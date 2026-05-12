@@ -192,6 +192,12 @@ export function renderRealRunAuditMarkdown(report: RealRunAuditReport) {
     `- visual bible score: ${report.productionStudioSummary.scores.visualBibleScore}/5`,
     `- continuity score: ${report.productionStudioSummary.scores.continuityScore}/5`,
     `- shot function coverage score: ${report.productionStudioSummary.scores.shotFunctionCoverageScore}/5`,
+    `- 90s function distribution: ${formatCountMap(report.productionStudioSummary.distribution90s)}`,
+    `- 180s function distribution: ${formatCountMap(report.productionStudioSummary.distribution180s)}`,
+    `- missingFunctions90s: ${report.productionStudioSummary.missingFunctions90s.join(" / ") || "none"}`,
+    `- missingFunctions180s: ${report.productionStudioSummary.missingFunctions180s.join(" / ") || "none"}`,
+    `- overRepeatedFunctions90s: ${report.productionStudioSummary.overRepeatedFunctions90s.join(" / ") || "none"}`,
+    `- overRepeatedFunctions180s: ${report.productionStudioSummary.overRepeatedFunctions180s.join(" / ") || "none"}`,
     `- production method score: ${report.productionStudioSummary.scores.productionMethodScore}/5`,
     `- editing readiness score: ${report.productionStudioSummary.scores.editingReadinessScore}/5`,
     `- prompt field completeness score: ${report.productionStudioSummary.scores.promptFieldCompletenessScore}/5`,
@@ -199,6 +205,16 @@ export function renderRealRunAuditMarkdown(report: RealRunAuditReport) {
     `- report field completeness: ${report.productionStudioSummary.reportFieldCompleteness}`,
     `- missing report fields: ${report.productionStudioSummary.missingReportFields.join(" / ") || "none"}`,
     ...report.productionStudioSummary.fixReasons.map((reason) => `- ${reason}`),
+    "",
+    "## Shot Function Coverage Debug",
+    "",
+    `- distribution90s: ${formatCountMap(report.productionStudioSummary.distribution90s)}`,
+    `- distribution180s: ${formatCountMap(report.productionStudioSummary.distribution180s)}`,
+    `- missingFunctions90s: ${report.productionStudioSummary.missingFunctions90s.join(" / ") || "none"}`,
+    `- missingFunctions180s: ${report.productionStudioSummary.missingFunctions180s.join(" / ") || "none"}`,
+    `- overRepeatedFunctions90s: ${report.productionStudioSummary.overRepeatedFunctions90s.join(" / ") || "none"}`,
+    `- overRepeatedFunctions180s: ${report.productionStudioSummary.overRepeatedFunctions180s.join(" / ") || "none"}`,
+    `- shotFunctionCoverage: ${report.productionStudioSummary.scores.shotFunctionCoverageScore >= 4 ? "pass" : "fail"}`,
     "",
     "## Agent Audit",
     "",
@@ -250,6 +266,12 @@ function auditProductionStudioGate(summary: ProductionStudioSummary): AgentAudit
     `visual bible ${summary.scores.visualBibleScore}/5`,
     `continuity ${summary.scores.continuityScore}/5`,
     `shot function ${summary.scores.shotFunctionCoverageScore}/5`,
+    `90s function distribution ${formatCountMap(summary.distribution90s)}`,
+    `180s function distribution ${formatCountMap(summary.distribution180s)}`,
+    `missingFunctions90s ${summary.missingFunctions90s.join(" / ") || "none"}`,
+    `missingFunctions180s ${summary.missingFunctions180s.join(" / ") || "none"}`,
+    `overRepeatedFunctions90s ${summary.overRepeatedFunctions90s.join(" / ") || "none"}`,
+    `overRepeatedFunctions180s ${summary.overRepeatedFunctions180s.join(" / ") || "none"}`,
     `production method ${summary.scores.productionMethodScore}/5`,
     `editing readiness ${summary.scores.editingReadinessScore}/5`,
     `prompt completeness ${summary.scores.promptFieldCompletenessScore}/5`,
@@ -257,6 +279,14 @@ function auditProductionStudioGate(summary: ProductionStudioSummary): AgentAudit
     `missing report fields ${summary.missingReportFields.join(" / ") || "none"}`,
     `needsFix ${summary.needsFix ? "需要重跑 / 人工修正" : "false"}`
   ], problems);
+}
+
+function formatCountMap(values: Record<string, number>) {
+  const entries = Object.entries(values).filter(([, value]) => value > 0);
+
+  return entries.length
+    ? entries.map(([key, value]) => `${key}:${value}`).join(" / ")
+    : "none";
 }
 
 function auditArticleAnalyst(productionPack: ProductionPack): AgentAuditSection {

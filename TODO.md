@@ -1,5 +1,13 @@
 # TODO
 
+## Batch 13D
+
+- [x] 新增 shotFunction coverage planner，输出 90s / 180s 分布、缺失项、重复项和 coverage score。
+- [x] single-pack prompt 增加 standard profile shotFunction sequencing plan。
+- [x] normalization 基于真实 AI 输出重平衡 shotFunction，不引入 mock / Batch / demo-data 污染词。
+- [x] Production Studio、Showcase、Export 和 audit 接入 Shot Function Coverage diagnostics。
+- [x] 保留 strict real output gate、13C enum canonicalization 和 full Production Report export。
+
 ## Batch 13B
 
 - [x] ProductionPack schema 兼容 `creativeDirection`、`visualStyleBible`、`continuityBible`。

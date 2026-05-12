@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { normalizeProductionPack } from "../ai-agents/normalize-production-pack";
 import { demoProductionPack } from "../mock-pipeline/demo-production-pack";
+import { analyzeShotPromptAlignment } from "../production-studio/shot-prompt-alignment";
 import { generateExportFile } from "./generate-export-file";
 
 const allowedRiskLevels = new Set(["green", "yellow", "red", "placeholder"]);
@@ -48,64 +49,14 @@ describe("Batch 04 export generation", () => {
 
   it("adds Shot / Prompt Gate Summary to production-pack.md", () => {
     const pack = normalizeProductionPack(demoProductionPack, "standard");
+    const summary = analyzeShotPromptAlignment(pack, "standard");
     const file = generateExportFile("production-pack.md", pack, {
       productionStudio: {
         densityProfile: "standard",
         lockStatus: "unlocked",
         latestGateStatus: "pass",
         editedCount: 1,
-        summary: {
-          densityProfile: "standard",
-          shotCount90s: 24,
-          shotCount180s: 48,
-          totalShots: 72,
-          promptCount90s: 24,
-          promptCount180s: 48,
-          totalPrompts: 72,
-          unmatchedShots: [],
-          unmatchedPrompts: [],
-          redRisksWithoutReplacement: [],
-          riskCounts: { green: 0, yellow: 0, red: 0, placeholder: 0 },
-          shotFunctionCounts: {
-            hook_shot: 1,
-            context_shot: 1,
-            evidence_shot: 1,
-            concept_shot: 1,
-            transition_shot: 1,
-            emotional_shot: 1,
-            data_shot: 1,
-            risk_shot: 1,
-            summary_shot: 1,
-            cta_shot: 1
-          },
-          productionMethodCounts: {
-            text_to_video: 1,
-            image_to_video: 1,
-            text_to_image_edit: 1,
-            motion_graphics: 1,
-            stock_footage: 1,
-            manual_design: 1,
-            compositing: 1
-          },
-          scores: {
-            volumeScore: 5,
-            alignmentScore: 5,
-            rightsScore: 5,
-            creativeDirectionScore: 5,
-            visualBibleScore: 5,
-            continuityScore: 5,
-            shotFunctionCoverageScore: 5,
-            productionMethodScore: 5,
-            editingReadinessScore: 5,
-            promptFieldCompletenessScore: 5,
-            reportCompletenessScore: 5,
-            overallScore: 5
-          },
-          missingReportFields: [],
-          reportFieldCompleteness: "pass",
-          needsFix: false,
-          fixReasons: []
-        },
+        summary,
         originalProductionPack: pack
       }
     });
@@ -130,6 +81,36 @@ describe("Batch 04 export generation", () => {
     expect(file?.content).toContain("Production Method Summary");
     expect(file?.content).toContain("Editing Structure Summary");
     expect(file?.content).toContain("Prompt Completeness Summary");
+  });
+
+  it("adds Shot Function Coverage diagnostics to production-pack.md", () => {
+    const pack = normalizeProductionPack(demoProductionPack, "standard");
+    const file = generateExportFile("production-pack.md", pack);
+
+    expect(file?.content).toContain("Shot Function Coverage");
+    expect(file?.content).toContain("90s function distribution");
+    expect(file?.content).toContain("180s function distribution");
+    expect(file?.content).toContain("missingFunctions90s");
+    expect(file?.content).toContain("overRepeatedFunctions180s");
+    expect(file?.content).toContain("shot_function_coverage_score");
+  });
+
+  it("marks production-pack.md when shot function coverage fails", () => {
+    const pack = normalizeProductionPack(demoProductionPack, "standard");
+    const broken = {
+      ...pack,
+      storyboard: {
+        shots: pack.storyboard.shots.map((shot) => ({
+          ...shot,
+          shotFunction: "context_shot" as const
+        }))
+      }
+    };
+    const file = generateExportFile("production-pack.md", broken);
+
+    expect(file?.content).toContain("需要重跑 / 人工修正：镜头功能分工不足");
+    expect(file?.content).toContain("missingFunctions90s");
+    expect(file?.content).toContain("overRepeatedFunctions90s");
   });
 
   it("writes full per-shot AIGC production blocks in production-pack.md", () => {
@@ -220,64 +201,14 @@ describe("Batch 04 export generation", () => {
 
   it("generates project.json with productionStudio summary when provided", () => {
     const pack = normalizeProductionPack(demoProductionPack, "standard");
+    const summary = analyzeShotPromptAlignment(pack, "standard");
     const file = generateExportFile("project.json", pack, {
       productionStudio: {
         densityProfile: "standard",
         lockStatus: "locked",
         latestGateStatus: "pass",
         editedCount: 2,
-        summary: {
-          densityProfile: "standard",
-          shotCount90s: 24,
-          shotCount180s: 48,
-          totalShots: 72,
-          promptCount90s: 24,
-          promptCount180s: 48,
-          totalPrompts: 72,
-          unmatchedShots: [],
-          unmatchedPrompts: [],
-          redRisksWithoutReplacement: [],
-          riskCounts: { green: 0, yellow: 0, red: 0, placeholder: 0 },
-          shotFunctionCounts: {
-            hook_shot: 1,
-            context_shot: 1,
-            evidence_shot: 1,
-            concept_shot: 1,
-            transition_shot: 1,
-            emotional_shot: 1,
-            data_shot: 1,
-            risk_shot: 1,
-            summary_shot: 1,
-            cta_shot: 1
-          },
-          productionMethodCounts: {
-            text_to_video: 1,
-            image_to_video: 1,
-            text_to_image_edit: 1,
-            motion_graphics: 1,
-            stock_footage: 1,
-            manual_design: 1,
-            compositing: 1
-          },
-          scores: {
-            volumeScore: 5,
-            alignmentScore: 5,
-            rightsScore: 5,
-            creativeDirectionScore: 5,
-            visualBibleScore: 5,
-            continuityScore: 5,
-            shotFunctionCoverageScore: 5,
-            productionMethodScore: 5,
-            editingReadinessScore: 5,
-            promptFieldCompletenessScore: 5,
-            reportCompletenessScore: 5,
-            overallScore: 5
-          },
-          missingReportFields: [],
-          reportFieldCompleteness: "pass",
-          needsFix: false,
-          fixReasons: []
-        },
+        summary,
         originalProductionPack: pack
       }
     });

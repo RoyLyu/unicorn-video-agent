@@ -56,6 +56,17 @@ export function generateProductionPackMarkdown(
 ${options.productionStudio?.lockStatus === "locked" ? "- lock：已锁定交付版本" : "- lock：未锁版，建议先完成 Production Studio 校验。"}
 ${gate.fixReasons.length ? gate.fixReasons.map((reason) => `- ${reason}`).join("\n") : "- 无需重跑。"}
 
+## Shot Function Coverage
+
+- shot_function_coverage_score：${gate.scores.shotFunctionCoverageScore}/5
+- needsFix：${gate.scores.shotFunctionCoverageScore < 4 ? "需要重跑 / 人工修正：镜头功能分工不足" : "pass"}
+- 90s function distribution：${formatCountMap(gate.distribution90s ?? gate.shotFunctionCounts)}
+- 180s function distribution：${formatCountMap(gate.distribution180s ?? gate.shotFunctionCounts)}
+- missingFunctions90s：${formatList(gate.missingFunctions90s)}
+- missingFunctions180s：${formatList(gate.missingFunctions180s)}
+- overRepeatedFunctions90s：${formatList(gate.overRepeatedFunctions90s)}
+- overRepeatedFunctions180s：${formatList(gate.overRepeatedFunctions180s)}
+
 ## AIGC 制作总控
 
 - Creative Concept：${productionPack.creativeDirection?.creativeConcept ?? "未提供"}
@@ -286,4 +297,16 @@ function promptKey(versionType: string, shotNumber: number, shotId: string) {
 
 function formatList(values?: string[]) {
   return values?.length ? values.join(" / ") : "未提供";
+}
+
+function formatCountMap(values?: Record<string, number>) {
+  if (!values) {
+    return "未提供";
+  }
+
+  const entries = Object.entries(values).filter(([, value]) => value > 0);
+
+  return entries.length
+    ? entries.map(([key, value]) => `${key}:${value}`).join(" / ")
+    : "未提供";
 }

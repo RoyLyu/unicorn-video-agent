@@ -1,5 +1,17 @@
 # 07 Batch Log
 
+## Batch 13D - Shot Function Coverage Stabilization
+
+- 状态：已实现。
+- 目标：修复真实审计中 `shot_function_coverage_score=2/5` 的阻断问题，让 90s / 180s 分镜具备明确镜头功能分工。
+- 完成内容：
+  - 新增 shotFunction coverage planner，输出 90s / 180s distribution、missing functions、over repeated functions、score 和 fix reasons。
+  - single-pack prompt 增加 standard profile shotFunction sequencing plan。
+  - normalization 增加 deterministic shotFunction rebalance，基于真实 AI 输出和位置规则重标 function 标签。
+  - Production Studio、Showcase、production-pack.md 和 real-run audit 显示 Shot Function Coverage diagnostics。
+  - strict audit 继续 fail loudly，不允许 fallback/mock 成功覆盖 latest success。
+- 未做：AI 生图、生视频、TTS、Remotion、素材下载、部署、用户系统、schema enum 放宽。
+
 ## Batch 13C - AI Output Canonicalization Gate
 
 目标：修复 MiniMax 真实输出中自然语言 enum 导致 strict schema 失败的问题，在不放宽 `ProductionPackSchema` 的前提下增加 deterministic canonicalization。

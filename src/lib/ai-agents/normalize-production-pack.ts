@@ -18,6 +18,10 @@ import {
   getShotDensitySpec,
   type ShotDensityProfile
 } from "@/lib/production-studio/density-profile";
+import {
+  analyzeShotFunctionCoverage,
+  buildShotFunctionSequence
+} from "@/lib/production-studio/shot-function-coverage";
 
 export { visualStyleLock };
 
@@ -80,15 +84,34 @@ const productionMethodPattern: ProductionMethod[] = [
   "stock_footage"
 ];
 
+export type ProductionPackNormalizationReport = {
+  changedFields: Array<{
+    path: string;
+    before: string | undefined;
+    after: string;
+    reason: "shot_function_rebalance";
+  }>;
+  shotFunctionCoverageBefore: ReturnType<typeof analyzeShotFunctionCoverage>;
+  shotFunctionCoverageAfter: ReturnType<typeof analyzeShotFunctionCoverage>;
+};
+
 export function normalizeProductionPack(
   pack: ProductionPack,
   densityProfile: ShotDensityProfile = "standard"
 ): ProductionPack {
-  const storyboard = ensureStoryboardMinimumShots(pack.storyboard, pack, densityProfile);
+  return normalizeProductionPackWithReport(pack, densityProfile).productionPack;
+}
+
+export function normalizeProductionPackWithReport(
+  pack: ProductionPack,
+  densityProfile: ShotDensityProfile = "standard"
+): { productionPack: ProductionPack; normalizationReport: ProductionPackNormalizationReport } {
+  const storyboardResult = ensureStoryboardMinimumShotsWithReport(pack.storyboard, pack, densityProfile);
+  const storyboard = storyboardResult.storyboard;
   const assetPrompts = ensurePromptCoverage(pack.assetPrompts, storyboard);
   const rightsChecks = ensureRightsAlternatives(pack.rightsChecks);
 
-  return ProductionPackSchema.parse({
+  const productionPack = ProductionPackSchema.parse({
     ...pack,
     creativeDirection: pack.creativeDirection ?? buildCreativeDirection(pack),
     visualStyleBible: pack.visualStyleBible ?? buildVisualStyleBible(),
@@ -97,6 +120,11 @@ export function normalizeProductionPack(
     assetPrompts,
     rightsChecks
   });
+
+  return {
+    productionPack,
+    normalizationReport: storyboardResult.normalizationReport
+  };
 }
 
 export function ensureStoryboardMinimumShots(
@@ -104,11 +132,25 @@ export function ensureStoryboardMinimumShots(
   pack: ProductionPack,
   densityProfile: ShotDensityProfile = "standard"
 ): StoryboardResult {
+  return ensureStoryboardMinimumShotsWithReport(storyboard, pack, densityProfile).storyboard;
+}
+
+function ensureStoryboardMinimumShotsWithReport(
+  storyboard: StoryboardResult,
+  pack: ProductionPack,
+  densityProfile: ShotDensityProfile = "standard"
+): { storyboard: StoryboardResult; normalizationReport: ProductionPackNormalizationReport } {
+  const generatedShots = [
+    ...normalizeVersionShots(storyboard, pack, "90s", densityProfile),
+    ...normalizeVersionShots(storyboard, pack, "180s", densityProfile)
+  ];
+  const rebalanceResult = rebalanceShotFunctions(generatedShots, densityProfile);
+
   return {
-    shots: [
-      ...normalizeVersionShots(storyboard, pack, "90s", densityProfile),
-      ...normalizeVersionShots(storyboard, pack, "180s", densityProfile)
-    ]
+    storyboard: {
+      shots: rebalanceResult.shots
+    },
+    normalizationReport: rebalanceResult.normalizationReport
   };
 }
 
@@ -291,6 +333,61 @@ function normalizeVersionShots(
       }
     };
   });
+}
+
+function rebalanceShotFunctions(
+  shots: StoryboardResult["shots"],
+  densityProfile: ShotDensityProfile
+): { shots: StoryboardResult["shots"]; normalizationReport: ProductionPackNormalizationReport } {
+  const coverageBefore = analyzeShotFunctionCoverage(shots);
+
+  if (!coverageBefore.needsFix) {
+    return {
+      shots,
+      normalizationReport: {
+        changedFields: [],
+        shotFunctionCoverageBefore: coverageBefore,
+        shotFunctionCoverageAfter: coverageBefore
+      }
+    };
+  }
+
+  const changedFields: ProductionPackNormalizationReport["changedFields"] = [];
+  const rebalancedShots = shots.map((shot) => ({ ...shot }));
+
+  for (const versionType of ["90s", "180s"] as const) {
+    const versionIndexes = rebalancedShots
+      .map((shot, index) => ({ shot, index }))
+      .filter(({ shot }) => shot.versionType === versionType)
+      .sort((a, b) => (a.shot.shotNumber ?? 0) - (b.shot.shotNumber ?? 0));
+    const sequence = buildShotFunctionSequence(versionType, densityProfile, versionIndexes.length);
+
+    versionIndexes.forEach(({ shot, index }, position) => {
+      const nextFunction = sequence[position] ?? shotFunctionFor(versionType, position);
+
+      if (shot.shotFunction !== nextFunction) {
+        changedFields.push({
+          path: `storyboard.shots.${index}.shotFunction`,
+          before: shot.shotFunction,
+          after: nextFunction,
+          reason: "shot_function_rebalance"
+        });
+      }
+      rebalancedShots[index] = {
+        ...shot,
+        shotFunction: nextFunction
+      };
+    });
+  }
+
+  return {
+    shots: rebalancedShots,
+    normalizationReport: {
+      changedFields,
+      shotFunctionCoverageBefore: coverageBefore,
+      shotFunctionCoverageAfter: analyzeShotFunctionCoverage(rebalancedShots)
+    }
+  };
 }
 
 function buildCreativeDirection(pack: ProductionPack) {

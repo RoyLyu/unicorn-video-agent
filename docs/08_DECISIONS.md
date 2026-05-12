@@ -353,3 +353,21 @@
 决定：canonicalization report 记录 changedFields、unknownEnumFields 和 warnings，可进入 Agent Run、API safe response 与 audit failed report，但不得包含 API key、baseURL 或敏感环境配置。
 
 原因：团队需要知道模型原始输出被怎样规范化，也需要定位 strict schema 失败原因；该报告是审计证据，不是配置日志。
+
+## D060 - shotFunction coverage 是内部投产硬 gate
+
+决定：Batch 13D 起，90s / 180s 分镜必须通过 Shot Function Coverage gate。90s 至少覆盖 hook、context、evidence、concept、data、risk、summary；180s 必须覆盖 hook、context、evidence、concept、transition、emotional、data、risk、summary、cta。单一 function 超过该版本 35% 时视为重复过多。
+
+原因：shot 数量和 prompt 对齐不能保证可剪辑节奏。大量重复同一镜头职责会让视频缺少叙事推进、风险段落、数据段落和收束段落。
+
+## D061 - normalization 可以重平衡 shotFunction
+
+决定：normalization 可以基于真实 AI 输出、shot 位置、versionType 和 density profile 重平衡 `shotFunction` 标签，但不得改写事实、旁白、visual、prompt，也不得引入 mock、Batch、demo-data 或占位污染词。
+
+原因：shotFunction 是生产组织标签，常见失败来自模型把多个 source shot 的同一标签循环扩展。确定性重平衡能修复标签分布，同时保留真实 AI 生成的内容主体。
+
+## D062 - Production Studio lock 依赖 shotFunction coverage
+
+决定：Production Studio lock 必须依赖 Shot Function Coverage pass。coverage fail 时，Studio、Showcase、Export 和 audit 都必须显示“需要重跑 / 人工修正：镜头功能分工不足”。
+
+原因：锁版意味着该 ProductionPack 可作为交付版本。若镜头功能分工不足，后续剪辑和 AIGC 制作会缺少结构依据，不能进入 locked 状态。

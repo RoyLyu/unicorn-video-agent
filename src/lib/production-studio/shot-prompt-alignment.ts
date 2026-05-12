@@ -9,6 +9,10 @@ import {
   type ShotDensityProfile
 } from "./density-profile";
 import { analyzeProductionPackReportCompleteness } from "./report-completeness";
+import {
+  analyzeShotFunctionCoverage,
+  type ShotFunctionCoverageResult
+} from "./shot-function-coverage";
 
 export type ProductionStudioScores = {
   volumeScore: number;
@@ -38,6 +42,13 @@ export type ProductionStudioSummary = {
   redRisksWithoutReplacement: string[];
   riskCounts: Record<RightsRiskLevel, number>;
   shotFunctionCounts: Record<ShotFunction, number>;
+  shotFunctionCoverage: ShotFunctionCoverageResult;
+  distribution90s: Record<ShotFunction, number>;
+  distribution180s: Record<ShotFunction, number>;
+  missingFunctions90s: ShotFunction[];
+  missingFunctions180s: ShotFunction[];
+  overRepeatedFunctions90s: ShotFunction[];
+  overRepeatedFunctions180s: ShotFunction[];
   productionMethodCounts: Record<ProductionMethod, number>;
   missingReportFields: string[];
   reportFieldCompleteness: "pass" | "fail";
@@ -49,28 +60,6 @@ export type ProductionStudioSummary = {
 export type ProductionPromptBundle = NonNullable<
   ProductionPack["assetPrompts"]["promptBundles"]
 >[number];
-
-const required90Functions: ShotFunction[] = [
-  "hook_shot",
-  "context_shot",
-  "evidence_shot",
-  "concept_shot",
-  "data_shot",
-  "risk_shot",
-  "summary_shot"
-];
-const required180Functions: ShotFunction[] = [
-  "hook_shot",
-  "context_shot",
-  "evidence_shot",
-  "concept_shot",
-  "transition_shot",
-  "emotional_shot",
-  "data_shot",
-  "risk_shot",
-  "summary_shot",
-  "cta_shot"
-];
 
 export function analyzeShotPromptAlignment(
   productionPack: ProductionPack,
@@ -110,6 +99,7 @@ export function analyzeShotPromptAlignment(
     riskCounts[risk.level] += 1;
   }
   const shotFunctionCounts = countShotFunctions(shots);
+  const shotFunctionCoverage = analyzeShotFunctionCoverage(shots);
   const productionMethodCounts = countProductionMethods(shots);
   const contractScores = scoreAigcContract(productionPack, promptBundles);
   const reportCompleteness = analyzeProductionPackReportCompleteness(productionPack);
@@ -125,7 +115,8 @@ export function analyzeShotPromptAlignment(
     contractScores.creativeDirectionScore < 4 ? "需要重跑 / 人工修正：Creative Direction 不完整。" : null,
     contractScores.visualBibleScore < 4 ? "需要重跑 / 人工修正：Visual Bible 不完整。" : null,
     contractScores.continuityScore < 4 ? "需要重跑 / 人工修正：连续性控制系统不完整。" : null,
-    contractScores.shotFunctionCoverageScore < 4 ? "需要重跑 / 人工修正：镜头功能覆盖不足或重复过多。" : null,
+    contractScores.shotFunctionCoverageScore < 4 ? "需要重跑 / 人工修正：镜头功能分工不足。" : null,
+    ...shotFunctionCoverage.fixReasons,
     contractScores.productionMethodScore < 4 ? "需要重跑 / 人工修正：Production Method 覆盖不足。" : null,
     contractScores.editingReadinessScore < 4 ? "需要重跑 / 人工修正：剪辑结构字段不完整。" : null,
     contractScores.promptFieldCompletenessScore < 4 ? "需要重跑 / 人工修正：Prompt production contract 字段不完整。" : null,
@@ -171,6 +162,13 @@ export function analyzeShotPromptAlignment(
     redRisksWithoutReplacement,
     riskCounts,
     shotFunctionCounts,
+    shotFunctionCoverage,
+    distribution90s: shotFunctionCoverage.distribution90s,
+    distribution180s: shotFunctionCoverage.distribution180s,
+    missingFunctions90s: shotFunctionCoverage.missingFunctions90s,
+    missingFunctions180s: shotFunctionCoverage.missingFunctions180s,
+    overRepeatedFunctions90s: shotFunctionCoverage.overRepeatedFunctions90s,
+    overRepeatedFunctions180s: shotFunctionCoverage.overRepeatedFunctions180s,
     productionMethodCounts,
     missingReportFields: reportCompleteness.missingReportFields,
     reportFieldCompleteness: reportCompleteness.reportFieldCompleteness,
@@ -261,7 +259,7 @@ function scoreAigcContract(
     productionPack.continuityBible?.referenceFramePlan,
     ...shots.map((shot) => (shot.continuityAssets?.length ? shot.continuityAssets.join(" / ") : ""))
   ]);
-  const shotFunctionCoverageScore = scoreShotFunctionCoverage(shots);
+  const shotFunctionCoverageScore = analyzeShotFunctionCoverage(shots).coverageScore;
   const productionMethodScore = scoreRatio(
     shots.filter((shot) => shot.productionMethod && shot.methodReason).length,
     shots.length
@@ -307,27 +305,6 @@ function scoreAigcContract(
     editingReadinessScore,
     promptFieldCompletenessScore
   };
-}
-
-function scoreShotFunctionCoverage(shots: ProductionPack["storyboard"]["shots"]) {
-  const score90 = requiredCoverageScore(shots, "90s", required90Functions);
-  const score180 = requiredCoverageScore(shots, "180s", required180Functions);
-
-  return Math.min(score90, score180);
-}
-
-function requiredCoverageScore(
-  shots: ProductionPack["storyboard"]["shots"],
-  versionType: "90s" | "180s",
-  required: ShotFunction[]
-) {
-  const versionShots = shots.filter((shot) => shot.versionType === versionType);
-  const available = new Set(versionShots.map((shot) => shot.shotFunction).filter(Boolean));
-  const covered = required.filter((item) => available.has(item)).length;
-  const dominantCount = Math.max(0, ...Object.values(countShotFunctions(versionShots)));
-  const repetitionPenalty = dominantCount > versionShots.length * 0.45 ? 1 : 0;
-
-  return Math.max(1, Math.min(5, Math.floor((covered / required.length) * 5) - repetitionPenalty));
 }
 
 function scoreFilled(values: Array<string | undefined>) {

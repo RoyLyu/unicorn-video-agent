@@ -141,6 +141,18 @@ pnpm audit:real-run -- --title "新消费品牌上市背后：中国品牌全球
 
 Batch 13C 只允许 deterministic enum canonicalization，不放宽 `ProductionPackSchema`，也不允许 fallback/mock 成为正式成功。
 
+## Batch 13D Shot Function Coverage 检查
+
+如果真实审计显示 `shot_function_coverage_score < 4`，优先检查报告中的 Shot Function Coverage Debug：
+
+- `distribution90s` / `distribution180s` 显示每个版本的镜头功能分布。
+- `missingFunctions90s` / `missingFunctions180s` 显示必需但缺失的 function。
+- `overRepeatedFunctions90s` / `overRepeatedFunctions180s` 显示超过 35% 的重复 function。
+- 90s 必须覆盖 hook、context、evidence、concept、data、risk、summary。
+- 180s 必须覆盖 hook、context、evidence、concept、transition、emotional、data、risk、summary、cta。
+
+Batch 13D 的 normalization 只允许重平衡 shotFunction 标签，不改写真实 AI 的旁白、visual、prompt 或事实表达。如果仍出现“需要重跑 / 人工修正：镜头功能分工不足”，不要锁版，不要更新成功审计摘要。
+
 ## 推荐 5 个标题
 
 1. 新消费品牌上市背后：中国品牌全球化的第二轮机会来了

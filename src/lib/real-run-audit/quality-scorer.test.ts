@@ -229,6 +229,33 @@ describe("real-run audit quality scorer", () => {
     expect(markdown).toContain("report_completeness_score");
     expect(markdown).toContain("report completeness score");
   });
+
+  it("includes shot function coverage diagnostics in failed markdown", () => {
+    const pack = normalizeProductionPack(demoProductionPack, "standard");
+    const broken = {
+      ...pack,
+      storyboard: {
+        shots: pack.storyboard.shots.map((shot) => ({
+          ...shot,
+          shotFunction: "context_shot" as const
+        }))
+      }
+    };
+    const report = createRealRunAuditReport({
+      productionPack: broken,
+      projectId: "project-1",
+      agentRunId: "run-1",
+      fallbackUsed: false,
+      generationMode: "ai"
+    });
+    const markdown = renderRealRunAuditMarkdown(report);
+
+    expect(report.scorecard.shot_function_coverage_score).toBeLessThan(4);
+    expect(markdown).toContain("missingFunctions90s");
+    expect(markdown).toContain("missingFunctions180s");
+    expect(markdown).toContain("overRepeatedFunctions90s");
+    expect(markdown).toContain("需要重跑 / 人工修正：镜头功能分工不足");
+  });
 });
 
 function makeExecutablePack() {

@@ -4,6 +4,7 @@ import { demoProductionPack } from "@/lib/mock-pipeline/demo-production-pack";
 
 import {
   normalizeProductionPack,
+  normalizeProductionPackWithReport,
   requiredNegativePromptTerms,
   visualStyleLock
 } from "./normalize-production-pack";
@@ -164,5 +165,44 @@ describe("normalizeProductionPack", () => {
       expect(bundle.negativeConstraints).toBeTruthy();
       expect(bundle.forbiddenElements?.length).toBeGreaterThan(0);
     }
+  });
+
+  it("rebalances repeated AI shotFunction output into required coverage", () => {
+    const repeatedFunctions = ["hook_shot", "context_shot", "evidence_shot", "cta_shot"] as const;
+    const { productionPack, normalizationReport } = normalizeProductionPackWithReport({
+      ...demoProductionPack,
+      storyboard: {
+        shots: demoProductionPack.storyboard.shots.map((shot, index) => ({
+          ...shot,
+          versionType: index % 2 === 0 ? "90s" as const : "180s" as const,
+          shotFunction: repeatedFunctions[index % repeatedFunctions.length]
+        }))
+      }
+    }, "standard");
+    const functions90 = new Set(
+      productionPack.storyboard.shots
+        .filter((shot) => shot.versionType === "90s")
+        .map((shot) => shot.shotFunction)
+    );
+    const functions180 = new Set(
+      productionPack.storyboard.shots
+        .filter((shot) => shot.versionType === "180s")
+        .map((shot) => shot.shotFunction)
+    );
+
+    for (const required of ["hook_shot", "context_shot", "evidence_shot", "concept_shot", "data_shot", "risk_shot", "summary_shot"]) {
+      expect(functions90.has(required as never)).toBe(true);
+    }
+    for (const required of ["hook_shot", "context_shot", "evidence_shot", "concept_shot", "transition_shot", "emotional_shot", "data_shot", "risk_shot", "summary_shot", "cta_shot"]) {
+      expect(functions180.has(required as never)).toBe(true);
+    }
+    expect(normalizationReport.changedFields.some((field) => field.reason === "shot_function_rebalance")).toBe(true);
+  });
+
+  it("does not introduce banned placeholder terms while rebalancing shot functions", () => {
+    const { normalizationReport } = normalizeProductionPackWithReport(demoProductionPack, "standard");
+    const serialized = JSON.stringify(normalizationReport.changedFields);
+
+    expect(serialized).not.toMatch(/mock|Batch|demo-data|后续补齐/);
   });
 });

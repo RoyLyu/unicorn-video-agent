@@ -173,6 +173,14 @@ export function ProductionStudioView({
           <span>continuity: {studio.summary.scores.continuityScore}/5</span>
           <span>editing: {studio.summary.scores.editingReadinessScore}/5</span>
           <span>prompt: {studio.summary.scores.promptFieldCompletenessScore}/5</span>
+          <span>shot function: {studio.summary.scores.shotFunctionCoverageScore}/5</span>
+        </div>
+        <div className="metadata-row">
+          <span>90s functions: {formatCountMap(studio.summary.distribution90s)}</span>
+          <span>180s functions: {formatCountMap(studio.summary.distribution180s)}</span>
+          <span>missing 90s: {studio.summary.missingFunctions90s.join(" / ") || "none"}</span>
+          <span>missing 180s: {studio.summary.missingFunctions180s.join(" / ") || "none"}</span>
+          <span>over repeated: {[...studio.summary.overRepeatedFunctions90s, ...studio.summary.overRepeatedFunctions180s].join(" / ") || "none"}</span>
         </div>
         <div className="action-row">
           <button className="ghost-button" type="button" onClick={saveEdits}>批量保存当前页修改</button>
@@ -332,6 +340,14 @@ function Metric({ label, value }: { label: string; value: number }) {
       <strong>{value}</strong>
     </div>
   );
+}
+
+function formatCountMap(values: Record<string, number>) {
+  const entries = Object.entries(values).filter(([, value]) => value > 0);
+
+  return entries.length
+    ? entries.map(([key, value]) => `${key}:${value}`).join(" / ")
+    : "none";
 }
 
 function Editable({

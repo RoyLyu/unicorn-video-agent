@@ -82,6 +82,8 @@ Batch 13B 后，Prompt Generator 输出不再只是几句生成词，而是 shot
 
 Production Studio gate 必须校验 Visual Bible、Continuity、Shot Function coverage、Production Method coverage、Editing Readiness、Prompt Field Completeness 和 Report Field Completeness。任一核心项低于 4 分或报告字段缺失时，结果必须显示“需要重跑 / 人工修正”，并且 Production Studio lock 不允许通过。
 
+Batch 13D 起，Shot Function coverage 是独立硬 gate：90s 必须覆盖 hook、context、evidence、concept、data、risk、summary；180s 必须覆盖 hook、context、evidence、concept、transition、emotional、data、risk、summary、cta。单一 shotFunction 超过该版本 35% 时视为重复过多。normalization 可以基于真实 AI 输出、shot 位置和 density profile 重平衡 shotFunction 标签，但不得改写事实、旁白、visual、prompt 或引入 mock / Batch / demo-data 污染词。
+
 ## Mock Pipeline Tracking Contract
 
 `src/lib/mock-pipeline/*` 中的每个 mock agent 继续保持纯函数。Batch 07/08 的 tracked runner 负责调用这些纯函数，并把 agent run、step、input/output JSON、context snapshot 和 QA result 写入 SQLite。素材下载、AI 生图、生视频、TTS 或外部事实核验都不允许进入 Batch 08。

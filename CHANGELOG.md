@@ -1,5 +1,13 @@
 # Changelog
 
+## Batch 13D - Shot Function Coverage Stabilization
+
+- 新增 shotFunction coverage planner，按 90s / 180s 输出 function distribution、missing functions、over repeated functions、coverage score 和 fix reasons。
+- single-pack prompt 增加 standard profile shotFunction sequencing plan，明确 90s / 180s 推荐分布、连续重复限制和 data/risk/summary/cta 职责。
+- normalization 在保存前执行 deterministic shotFunction rebalance，只重标 function 标签，不改 AI 生成的旁白、visual 或 prompt 文案。
+- Production Studio、Showcase、`production-pack.md` 和 real-run audit 展示 Shot Function Coverage pass/fail、分布、缺失项和重复项。
+- strict audit 继续禁止 fallback/mock 成功；coverage fail 仍写 failed artifacts，不覆盖 latest success。
+
 ## Batch 13C - AI Output Canonicalization Gate
 
 - 新增 AI raw output enum canonicalization，在 JSON.parse 后、`ProductionPackSchema` 严格校验前规范化常见自然语言 enum。

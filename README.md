@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-Batch 13C：AI Output Canonicalization Gate。
+Batch 13D：Shot Function Coverage Stabilization。
 
 当前仓库提供：
 
@@ -37,6 +37,7 @@ Batch 13C：AI Output Canonicalization Gate。
 - shot-level production contract：shotFunction、productionMethod、editing metadata 和 8 类 prompt 信息
 - `production-pack.md` 完整逐镜头 AIGC 制作表、Prompt/Report completeness gate
 - AI raw output enum canonicalization gate：在严格 schema 校验前规范化常见自然语言 enum，未知 enum 仍 fail loudly
+- Shot Function Coverage gate：90s / 180s 分镜必须覆盖必要镜头功能，normalization 可基于真实 AI 输出重平衡 shotFunction
 - 冻结成功 Demo 项目和版权风险替代方案展示
 - fallback/mock 成品门禁：Showcase、Export 和 real-run audit 不再把 fallback 当作成功成品
 - 纯函数 mock Agent pipeline
@@ -47,7 +48,7 @@ Batch 13C：AI Output Canonicalization Gate。
 
 ## MVP 范围
 
-第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 13C 只修复真实 AI 输出进入 schema 前的 enum 规范化：允许把 `hard cut`、`硬切`、`A-roll`、`Motion Graphics` 等常见自然语言 enum 确定性映射为 schema enum；不放宽 `ProductionPackSchema`，不允许未知 enum 静默通过，不调用 AI 重新生成，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
+第一版只做“文章 → 视频号生产包”，不做自动成片。Batch 13D 只修复 shotFunction coverage：允许 normalization 基于真实 AI 返回的 shot、位置、版本和密度 profile 重平衡 `shotFunction` 标签，确保 90s / 180s 都有清晰镜头功能分工；不放宽 strict real output gate，不降低评分标准，不允许 mock/fallback 冒充正式成品，不调用 AI 重新生成，不做 AI 生图、生视频、TTS、Remotion、自动成片、素材下载、登录、云数据库、云部署或视频号发布。
 
 ## 环境变量
 

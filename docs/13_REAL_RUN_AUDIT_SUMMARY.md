@@ -6,14 +6,14 @@
 
 ## 成功项目
 
-- projectId: `34ead3b2-ed7e-4786-81e5-fc9a78a965e4`
-- agentRunId: `dbd65c6b-82ce-4e8d-b6b7-b005f90674e1`
+- projectId: `d0de3657-352b-468b-8304-738229500be1`
+- agentRunId: `149300c8-74e0-4ad3-9767-a3f1b3413ddb`
 - generationMode: `ai`
 - fallbackUsed: `false`
 - Demo-ready: yes
-- Showcase: `/projects/34ead3b2-ed7e-4786-81e5-fc9a78a965e4/showcase`
-- Production Studio: `/projects/34ead3b2-ed7e-4786-81e5-fc9a78a965e4/production-studio`
-- production-pack.md: `/api/projects/34ead3b2-ed7e-4786-81e5-fc9a78a965e4/exports/production-pack.md`
+- Showcase: `/projects/d0de3657-352b-468b-8304-738229500be1/showcase`
+- Production Studio: `/projects/d0de3657-352b-468b-8304-738229500be1/production-studio`
+- production-pack.md: `/api/projects/d0de3657-352b-468b-8304-738229500be1/exports/production-pack.md`
 
 ## Scores
 
@@ -49,6 +49,12 @@
 - continuityBible exists: yes
 - every prompt bundle has 8 production fields: yes
 - shotFunction coverage: pass
+- 90s shotFunction distribution: hook_shot 2 / context_shot 3 / evidence_shot 4 / concept_shot 4 / transition_shot 2 / emotional_shot 1 / data_shot 4 / risk_shot 3 / summary_shot 1
+- 180s shotFunction distribution: hook_shot 3 / context_shot 5 / evidence_shot 7 / concept_shot 7 / transition_shot 5 / emotional_shot 4 / data_shot 7 / risk_shot 5 / summary_shot 3 / cta_shot 2
+- missingFunctions90s: none
+- missingFunctions180s: none
+- overRepeatedFunctions90s: none
+- overRepeatedFunctions180s: none
 - productionMethod coverage: pass
 - editing readiness: pass
 - 如果后续审计失败或出现“需要重跑 / 人工修正”，不要覆盖本冻结项目；只查看 failed artifacts 定位问题。

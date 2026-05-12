@@ -46,7 +46,10 @@ import {
   type ProductionPack
 } from "@/lib/schemas/production-pack";
 
-import { normalizeProductionPack } from "./normalize-production-pack";
+import {
+  normalizeProductionPackWithReport,
+  type ProductionPackNormalizationReport
+} from "./normalize-production-pack";
 import {
   canonicalizeAiOutput,
   type CanonicalizationReport,
@@ -91,6 +94,7 @@ export type RunAiSinglePackPipelineSuccessResult = {
   generationMode: GenerationMode;
   agentMode: "single_pack";
   canonicalizationReport?: CanonicalizationReport;
+  normalizationReport?: ProductionPackNormalizationReport;
   saved: ReturnType<typeof saveProductionPack>;
 };
 
@@ -190,7 +194,7 @@ export async function runAiSinglePackPipeline(
       articleInput,
       canonicalizationReport: canonicalized.report
     });
-    const productionPack = normalizeProductionPack(parsedPack, densityProfile);
+    const { productionPack, normalizationReport } = normalizeProductionPackWithReport(parsedPack, densityProfile);
     const contamination = scanOutputContamination(
       productionPack,
       policy.bannedOutputTerms
@@ -231,7 +235,8 @@ export async function runAiSinglePackPipeline(
         status: "completed",
         errorMessage: null,
         client,
-        canonicalizationReport: canonicalized.report
+        canonicalizationReport: canonicalized.report,
+        normalizationReport
       });
     saveQaResult({ runId: run.id, projectId: saved.project.id, summary: qaSummary }, client);
     completeAgentRun(run.id, client, "completed");
@@ -245,6 +250,7 @@ export async function runAiSinglePackPipeline(
       generationMode: "ai",
       agentMode: "single_pack",
       canonicalizationReport: canonicalized.report,
+      normalizationReport,
       saved
     };
   } catch (error) {
@@ -1016,6 +1022,7 @@ function recordAllSteps(input: {
   errorMessage: string | null;
   client?: DbClient;
   canonicalizationReport?: CanonicalizationReport;
+  normalizationReport?: ProductionPackNormalizationReport;
 }) {
   agentSteps.forEach((stepInfo, index) => {
     const outputJson = stepInfo.output(input.productionPack);
@@ -1032,7 +1039,8 @@ function recordAllSteps(input: {
         inputJson: {
           articleInput: input.articleInput,
           mode: "single_pack",
-          canonicalizationReport: input.canonicalizationReport ?? null
+          canonicalizationReport: input.canonicalizationReport ?? null,
+          normalizationReport: input.normalizationReport ?? null
         },
         outputJson,
         inputSummary: summarizeJson(input.articleInput),
