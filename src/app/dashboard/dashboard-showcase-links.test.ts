@@ -19,6 +19,14 @@ describe("Dashboard showcase links", () => {
     expect(source).toContain("Quick Demo");
   });
 
+  it("adds the internal Product Demo entry to the dashboard", () => {
+    const source = readFileSync("src/app/dashboard/page.tsx", "utf8");
+
+    expect(source).toContain("/product-demo");
+    expect(source).toContain("内部产品入口");
+    expect(source).toContain("最近成功真实 audit projectId");
+  });
+
   it("shows the final demo path on the dashboard", () => {
     const source = readFileSync("src/app/dashboard/page.tsx", "utf8");
 

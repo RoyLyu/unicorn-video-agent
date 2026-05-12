@@ -1,5 +1,14 @@
 # TODO
 
+## Batch 13E
+
+- [x] 新增 `/product-demo` 只读内部产品入口，锚定最新成功真实 audit 项目。
+- [x] Dashboard 增加内部产品入口、系统状态和固定 Mac 运行提示。
+- [x] 新增 `backup:db`、`internal:smoke`、`demo:product` 脚本。
+- [x] 新增固定 Mac 内部 SOP 和 Product Demo Freeze 文档。
+- [x] `.gitignore` 忽略 `backups/` 与 `data/material-candidates/`。
+- [x] 新增 Product Demo、scripts、docs 和 ignore 测试。
+
 ## Batch 13D
 
 - [x] 新增 shotFunction coverage planner，输出 90s / 180s 分布、缺失项、重复项和 coverage score。
