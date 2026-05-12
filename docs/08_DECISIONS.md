@@ -335,3 +335,39 @@
 决定：如果 `production-pack.md` 缺少 AIGC 制作总控、视觉风格 Bible、连续性 Bible、逐镜头 AIGC 制作表或关键 shot/prompt 字段，Production Studio、Showcase 和 real-run audit 必须显示“需要重跑 / 人工修正”。
 
 原因：报告缺字段不是模型质量小问题，而是生产交付无法执行。即使 ProductionPack JSON 内部有数据，导出层漏出字段也不能被视为 ready 成品。
+
+## D057 - 真实 AI 输出允许 deterministic enum canonicalization
+
+决定：Batch 13C 起，真实 AI raw JSON 可以在 `ProductionPackSchema` 校验前执行确定性 enum canonicalization，把已知自然语言变体映射为合法 enum，但不放宽 schema。
+
+原因：MiniMax 会输出接近 schema 的 JSON，但常把 `hard_cut`、`a_roll`、`fast` 等 enum 写成自然语言或中文标签。确定性映射能消除格式噪音，同时保留 strict real output 边界。
+
+## D058 - unknown enum 必须触发 strict failure
+
+决定：canonicalization 只处理显式映射表中的值。未知 enum 保留原值，写入 `unknownEnumFields`，并由 Zod 严格失败；不得静默替换为默认值。
+
+原因：未知 enum 可能代表模型生成了新的制作语义，系统无法安全猜测。静默替换会掩盖真实输出质量问题，并污染 audit 结果。
+
+## D059 - canonicalization report 是审计证据
+
+决定：canonicalization report 记录 changedFields、unknownEnumFields 和 warnings，可进入 Agent Run、API safe response 与 audit failed report，但不得包含 API key、baseURL 或敏感环境配置。
+
+原因：团队需要知道模型原始输出被怎样规范化，也需要定位 strict schema 失败原因；该报告是审计证据，不是配置日志。
+
+## D060 - shotFunction coverage 是内部投产硬 gate
+
+决定：Batch 13D 起，90s / 180s 分镜必须通过 Shot Function Coverage gate。90s 至少覆盖 hook、context、evidence、concept、data、risk、summary；180s 必须覆盖 hook、context、evidence、concept、transition、emotional、data、risk、summary、cta。单一 function 超过该版本 35% 时视为重复过多。
+
+原因：shot 数量和 prompt 对齐不能保证可剪辑节奏。大量重复同一镜头职责会让视频缺少叙事推进、风险段落、数据段落和收束段落。
+
+## D061 - normalization 可以重平衡 shotFunction
+
+决定：normalization 可以基于真实 AI 输出、shot 位置、versionType 和 density profile 重平衡 `shotFunction` 标签，但不得改写事实、旁白、visual、prompt，也不得引入 mock、Batch、demo-data 或占位污染词。
+
+原因：shotFunction 是生产组织标签，常见失败来自模型把多个 source shot 的同一标签循环扩展。确定性重平衡能修复标签分布，同时保留真实 AI 生成的内容主体。
+
+## D062 - Production Studio lock 依赖 shotFunction coverage
+
+决定：Production Studio lock 必须依赖 Shot Function Coverage pass。coverage fail 时，Studio、Showcase、Export 和 audit 都必须显示“需要重跑 / 人工修正：镜头功能分工不足”。
+
+原因：锁版意味着该 ProductionPack 可作为交付版本。若镜头功能分工不足，后续剪辑和 AIGC 制作会缺少结构依据，不能进入 locked 状态。

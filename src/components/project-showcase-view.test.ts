@@ -64,6 +64,12 @@ function createShowcase(): ShowcaseViewModel {
       reportCompletenessScore: 5,
       reportFieldCompleteness: "pass",
       shotFunctionCounts: {},
+      shotFunctionDistribution90s: { hook_shot: 2, context_shot: 3 },
+      shotFunctionDistribution180s: { hook_shot: 3, cta_shot: 2 },
+      missingFunctions90s: [],
+      missingFunctions180s: [],
+      overRepeatedFunctions90s: [],
+      overRepeatedFunctions180s: [],
       productionMethodCounts: {},
       needsFix: false,
       fixReasons: []

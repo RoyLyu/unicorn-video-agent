@@ -34,6 +34,16 @@ describe("real-run audit script surface", () => {
     expect(source).toContain("process.exitCode = 1");
   });
 
+  it("renders canonicalization diagnostics in failed audit reports", () => {
+    const source = readFileSync("scripts/real-run-audit.ts", "utf8");
+
+    expect(source).toContain("schemaFailurePaths");
+    expect(source).toContain("invalidEnumValues");
+    expect(source).toContain("canonicalizationChangedFields");
+    expect(source).toContain("unknownEnumFields");
+    expect(source).toContain("canonicalizationChangedCount");
+  });
+
   it("keeps real audit artifacts out of git", () => {
     const gitignore = readFileSync(".gitignore", "utf8");
 

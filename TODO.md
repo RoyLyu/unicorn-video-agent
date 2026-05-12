@@ -1,5 +1,13 @@
 # TODO
 
+## Batch 13D
+
+- [x] 新增 shotFunction coverage planner，输出 90s / 180s 分布、缺失项、重复项和 coverage score。
+- [x] single-pack prompt 增加 standard profile shotFunction sequencing plan。
+- [x] normalization 基于真实 AI 输出重平衡 shotFunction，不引入 mock / Batch / demo-data 污染词。
+- [x] Production Studio、Showcase、Export 和 audit 接入 Shot Function Coverage diagnostics。
+- [x] 保留 strict real output gate、13C enum canonicalization 和 full Production Report export。
+
 ## Batch 13B
 
 - [x] ProductionPack schema 兼容 `creativeDirection`、`visualStyleBible`、`continuityBible`。
@@ -203,6 +211,9 @@
 
 ## Batch 13B 后续建议
 
+- [x] Batch 13C：新增 AI raw output enum canonicalization gate。
+- [x] Batch 13C：unknown enum 保留原值并触发 strict schema failure。
+- [x] Batch 13C：audit failed report 输出 schemaFailurePaths、invalidEnumValues、canonicalizationChangedFields 和 unknownEnumFields。
 - [x] Batch 13B-Hotfix：`production-pack.md` 输出完整逐镜头 AIGC 制作表。
 - [x] Batch 13B-Hotfix：`prompt-pack.md`、`storyboard.csv`、`rights-check.csv` 输出 production contract 字段。
 - [x] Batch 13B-Hotfix：新增 report completeness gate，并接入 Production Studio、Showcase 和 real-run audit。

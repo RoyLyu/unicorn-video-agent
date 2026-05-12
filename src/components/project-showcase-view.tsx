@@ -78,6 +78,24 @@ export function ProjectShowcaseView({
           <div className="showcase-warning">
             Prompt 字段完整性：{showcase.productionStudioGate.promptFieldCompletenessScore >= 4 ? "pass" : "fail"} / 报告字段完整性：{showcase.productionStudioGate.reportFieldCompleteness}
           </div>
+          <div className="showcase-warning">
+            <strong>Shot Function Coverage：</strong>
+            {showcase.productionStudioGate.shotFunctionCoverageScore >= 4 ? "pass" : "fail"} / 90s:{" "}
+            {formatCountMap(showcase.productionStudioGate.shotFunctionDistribution90s)} / 180s:{" "}
+            {formatCountMap(showcase.productionStudioGate.shotFunctionDistribution180s)}
+            {showcase.productionStudioGate.missingFunctions90s.length ||
+            showcase.productionStudioGate.missingFunctions180s.length ||
+            showcase.productionStudioGate.overRepeatedFunctions90s.length ||
+            showcase.productionStudioGate.overRepeatedFunctions180s.length
+              ? ` / missing: ${[
+                  ...showcase.productionStudioGate.missingFunctions90s,
+                  ...showcase.productionStudioGate.missingFunctions180s
+                ].join(" / ") || "none"} / overRepeated: ${[
+                  ...showcase.productionStudioGate.overRepeatedFunctions90s,
+                  ...showcase.productionStudioGate.overRepeatedFunctions180s
+                ].join(" / ") || "none"}`
+              : null}
+          </div>
           {showcase.productionStudioGate.lockStatus === "locked" ? (
             <div className="showcase-warning showcase-warning--ready">
               Production Studio 已锁版：已锁定交付版本。
@@ -220,6 +238,14 @@ export function ProjectShowcaseView({
       <ShowcaseRiskSummary riskSummary={showcase.riskSummary} />
     </div>
   );
+}
+
+function formatCountMap(values: Record<string, number>) {
+  const entries = Object.entries(values).filter(([, value]) => value > 0);
+
+  return entries.length
+    ? entries.map(([key, value]) => `${key}:${value}`).join(" / ")
+    : "none";
 }
 
 function PromptList({ title, items }: { title: string; items: string[] }) {

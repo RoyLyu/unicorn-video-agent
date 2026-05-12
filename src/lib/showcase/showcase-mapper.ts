@@ -94,6 +94,12 @@ export function mapShowcaseViewModel({
       reportCompletenessScore: productionStudioSummary.scores.reportCompletenessScore,
       reportFieldCompleteness: productionStudioSummary.reportFieldCompleteness,
       shotFunctionCounts: productionStudioSummary.shotFunctionCounts,
+      shotFunctionDistribution90s: productionStudioSummary.distribution90s,
+      shotFunctionDistribution180s: productionStudioSummary.distribution180s,
+      missingFunctions90s: productionStudioSummary.missingFunctions90s,
+      missingFunctions180s: productionStudioSummary.missingFunctions180s,
+      overRepeatedFunctions90s: productionStudioSummary.overRepeatedFunctions90s,
+      overRepeatedFunctions180s: productionStudioSummary.overRepeatedFunctions180s,
       productionMethodCounts: productionStudioSummary.productionMethodCounts
     },
     creativeDirection: {

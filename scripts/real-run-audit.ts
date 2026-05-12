@@ -37,6 +37,14 @@ type AiProductionPackResponse = {
   generationMode: GenerationMode;
   fallbackReason?: string;
   safeErrorSummary?: string;
+  schemaFailurePaths?: string[];
+  invalidEnumValues?: Array<{ path: string; originalValue: string }>;
+  canonicalizationReport?: {
+    changedFields: Array<{ path: string; originalValue: string; canonicalValue: string }>;
+    unknownEnumFields: Array<{ path: string; originalValue: string }>;
+    warnings: string[];
+  };
+  unknownEnumFields?: Array<{ path: string; originalValue: string }>;
 };
 
 const outputDir = path.join(process.cwd(), "tmp", "real-run-audit");
@@ -73,7 +81,8 @@ async function main() {
     const body = await response.text();
     await writeFailedArtifacts({
       reason: `Audit AI request failed with ${response.status}`,
-      responseBody: body
+      responseBody: body,
+      failureDiagnostics: parseFailureDiagnostics(body)
     });
     process.exit(1);
   }
@@ -123,6 +132,8 @@ async function main() {
     productionPackExport
       ? "- production-pack.md generated in memory: yes"
       : "- production-pack.md generated in memory: no",
+    `- canonicalizationChangedCount: ${body.canonicalizationReport?.changedFields.length ?? 0}`,
+    `- unknownEnumFields: ${body.canonicalizationReport?.unknownEnumFields.length ?? 0}`,
     `- report_completeness_score: ${reportCompleteness.reportCompletenessScore}/5`,
     `- report field completeness: ${reportCompleteness.reportFieldCompleteness}`,
     `- missingReportFields: ${reportCompleteness.missingReportFields.join(" / ") || "none"}`
@@ -268,6 +279,7 @@ async function writeFailedArtifacts(input: {
   responseBody: string;
   productionPack?: ProductionPack;
   reportMarkdown?: string;
+  failureDiagnostics?: ReturnType<typeof parseFailureDiagnostics>;
 }) {
   await mkdir(outputDir, { recursive: true });
   const payload = {
@@ -283,6 +295,13 @@ async function writeFailedArtifacts(input: {
     "- latest-production-pack.json was not overwritten.",
     "- latest-qa-report.md was not overwritten.",
     "",
+    "## Canonicalization / Schema Diagnostics",
+    "",
+    `- schemaFailurePaths: ${input.failureDiagnostics?.schemaFailurePaths.join(" / ") || "none"}`,
+    `- invalidEnumValues: ${formatDiagnosticValues(input.failureDiagnostics?.invalidEnumValues)}`,
+    `- canonicalizationChangedFields: ${formatDiagnosticValues(input.failureDiagnostics?.canonicalizationChangedFields)}`,
+    `- unknownEnumFields: ${formatDiagnosticValues(input.failureDiagnostics?.unknownEnumFields)}`,
+    "",
     "## Response",
     "",
     "```json",
@@ -295,6 +314,38 @@ async function writeFailedArtifacts(input: {
   console.error(`Real run audit failed: ${input.reason}`);
   console.error(`Failed response: ${failedProductionPackPath}`);
   console.error(`Failed QA report: ${failedQaReportPath}`);
+}
+
+function parseFailureDiagnostics(responseBody: string) {
+  try {
+    const parsed = JSON.parse(responseBody) as AiProductionPackResponse;
+
+    return {
+      schemaFailurePaths: parsed.schemaFailurePaths ?? [],
+      invalidEnumValues: parsed.invalidEnumValues ?? [],
+      canonicalizationChangedFields: parsed.canonicalizationReport?.changedFields ?? [],
+      unknownEnumFields: parsed.unknownEnumFields ?? parsed.canonicalizationReport?.unknownEnumFields ?? []
+    };
+  } catch {
+    return {
+      schemaFailurePaths: [],
+      invalidEnumValues: [],
+      canonicalizationChangedFields: [],
+      unknownEnumFields: []
+    };
+  }
+}
+
+function formatDiagnosticValues(
+  values: Array<{ path: string; originalValue?: string; canonicalValue?: string }> | undefined
+) {
+  if (!values?.length) {
+    return "none";
+  }
+
+  return values
+    .map((value) => `${value.path}:${value.originalValue ?? ""}${value.canonicalValue ? `->${value.canonicalValue}` : ""}`)
+    .join(" / ");
 }
 
 main().catch((error: unknown) => {

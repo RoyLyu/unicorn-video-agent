@@ -1,5 +1,21 @@
 # Changelog
 
+## Batch 13D - Shot Function Coverage Stabilization
+
+- 新增 shotFunction coverage planner，按 90s / 180s 输出 function distribution、missing functions、over repeated functions、coverage score 和 fix reasons。
+- single-pack prompt 增加 standard profile shotFunction sequencing plan，明确 90s / 180s 推荐分布、连续重复限制和 data/risk/summary/cta 职责。
+- normalization 在保存前执行 deterministic shotFunction rebalance，只重标 function 标签，不改 AI 生成的旁白、visual 或 prompt 文案。
+- Production Studio、Showcase、`production-pack.md` 和 real-run audit 展示 Shot Function Coverage pass/fail、分布、缺失项和重复项。
+- strict audit 继续禁止 fallback/mock 成功；coverage fail 仍写 failed artifacts，不覆盖 latest success。
+
+## Batch 13C - AI Output Canonicalization Gate
+
+- 新增 AI raw output enum canonicalization，在 JSON.parse 后、`ProductionPackSchema` 严格校验前规范化常见自然语言 enum。
+- 支持 `cutType`、`rollType`、`pace`、`shotFunction`、`productionMethod`、`copyrightRisk` / `rightsLevel` / `riskLevel` 等字段的中文、英文、空格和 display label 变体。
+- unknown enum 不会被静默修正，会保留原值并进入 `unknownEnumFields`，strict mode 继续返回 422。
+- single-pack pipeline 成功和失败都携带 safe canonicalization report；Agent Run step、API response 和 audit failed report 可追踪 changed / unknown enum 字段。
+- single-pack prompt 增加紧凑 enum table，明确禁止中文 enum、human-readable enum 和空格形式 enum。
+
 ## Batch 13B-Hotfix - Full AIGC Production Report Export
 
 - `production-pack.md` 从压缩分镜概览升级为主生产报告，新增中文完整章节：AIGC 制作总控、视觉风格 Bible、连续性 Bible、逐镜头 AIGC 制作表。

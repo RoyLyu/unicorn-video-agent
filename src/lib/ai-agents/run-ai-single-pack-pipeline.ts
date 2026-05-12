@@ -1,4 +1,5 @@
 import type { DbClient } from "@/db";
+import { ZodError } from "zod";
 import { syncAgentDefinitions } from "@/db/repositories/agent-definition-repository";
 import {
   bindAgentRunToProject,
@@ -23,6 +24,7 @@ import {
   type AiEnvironment
 } from "@/lib/ai/ai-config";
 import { normalizeAiError } from "@/lib/ai/ai-errors";
+import { AiSchemaError } from "@/lib/ai/ai-errors";
 import {
   readAiPolicy,
   shouldAllowMockFallback,
@@ -44,7 +46,15 @@ import {
   type ProductionPack
 } from "@/lib/schemas/production-pack";
 
-import { normalizeProductionPack } from "./normalize-production-pack";
+import {
+  normalizeProductionPackWithReport,
+  type ProductionPackNormalizationReport
+} from "./normalize-production-pack";
+import {
+  canonicalizeAiOutput,
+  type CanonicalizationReport,
+  type UnknownEnumField
+} from "./canonicalize-ai-output";
 import {
   compactSinglePackProductionPrompt,
   requiredNegativePrompt,
@@ -83,6 +93,8 @@ export type RunAiSinglePackPipelineSuccessResult = {
   fallbackUsed: boolean;
   generationMode: GenerationMode;
   agentMode: "single_pack";
+  canonicalizationReport?: CanonicalizationReport;
+  normalizationReport?: ProductionPackNormalizationReport;
   saved: ReturnType<typeof saveProductionPack>;
 };
 
@@ -101,6 +113,10 @@ export type RunAiSinglePackPipelineFailureResult = {
     | "contaminated_output"
     | "unknown";
   safeErrorSummary: string;
+  schemaFailurePaths?: string[];
+  invalidEnumValues?: UnknownEnumField[];
+  canonicalizationReport?: CanonicalizationReport;
+  unknownEnumFields?: UnknownEnumField[];
 };
 
 export type RunAiSinglePackPipelineResult =
@@ -171,8 +187,14 @@ export async function runAiSinglePackPipeline(
           userInput: { articleInput }
         })
       : await requestChatCompletionJson(config, { articleInput }, densityProfile);
-    const parsedPack = coerceAiProductionPack(parseAiJsonObject(rawText), articleInput);
-    const productionPack = normalizeProductionPack(parsedPack, densityProfile);
+    const parsedJson = parseAiJsonObject(rawText);
+    const canonicalized = canonicalizeAiOutput(parsedJson);
+    const parsedPack = parseCanonicalizedProductionPack({
+      value: canonicalized.value,
+      articleInput,
+      canonicalizationReport: canonicalized.report
+    });
+    const { productionPack, normalizationReport } = normalizeProductionPackWithReport(parsedPack, densityProfile);
     const contamination = scanOutputContamination(
       productionPack,
       policy.bannedOutputTerms
@@ -206,14 +228,16 @@ export async function runAiSinglePackPipeline(
     });
 
     bindAgentRunToProject(run.id, saved.project.id, client);
-    recordAllSteps({
-      runId: run.id,
-      articleInput,
-      productionPack,
-      status: "completed",
-      errorMessage: null,
-      client
-    });
+      recordAllSteps({
+        runId: run.id,
+        articleInput,
+        productionPack,
+        status: "completed",
+        errorMessage: null,
+        client,
+        canonicalizationReport: canonicalized.report,
+        normalizationReport
+      });
     saveQaResult({ runId: run.id, projectId: saved.project.id, summary: qaSummary }, client);
     completeAgentRun(run.id, client, "completed");
 
@@ -225,9 +249,36 @@ export async function runAiSinglePackPipeline(
       fallbackUsed: false,
       generationMode: "ai",
       agentMode: "single_pack",
+      canonicalizationReport: canonicalized.report,
+      normalizationReport,
       saved
     };
   } catch (error) {
+    if (error instanceof AiSchemaError && isSchemaFailureDetails(error.causeValue)) {
+      if (!allowMockFallback) {
+        return failStrictRealOutput({
+          articleInput,
+          runId: run.id,
+          client,
+          failureReason: "schema",
+          errorMessage: error.message,
+          safeErrorSummary: error.message,
+          schemaFailurePaths: error.causeValue.schemaFailurePaths,
+          invalidEnumValues: error.causeValue.invalidEnumValues,
+          canonicalizationReport: error.causeValue.canonicalizationReport,
+          unknownEnumFields: error.causeValue.unknownEnumFields
+        });
+      }
+
+      return saveFallbackPack({
+        articleInput,
+        runId: run.id,
+        client,
+        saveOptions: options.saveOptions,
+        errorMessage: error.message
+      });
+    }
+
     const normalized = normalizeAiError(error);
 
     if (!allowMockFallback) {
@@ -257,6 +308,70 @@ export function isAiSinglePackFailure(
   return "failureReason" in result;
 }
 
+type SchemaFailureDetails = {
+  schemaFailurePaths: string[];
+  invalidEnumValues: UnknownEnumField[];
+  canonicalizationReport: CanonicalizationReport;
+  unknownEnumFields: UnknownEnumField[];
+};
+
+function parseCanonicalizedProductionPack(input: {
+  value: unknown;
+  articleInput: ArticleInput;
+  canonicalizationReport: CanonicalizationReport;
+}) {
+  try {
+    return coerceAiProductionPack(input.value, input.articleInput);
+  } catch (error) {
+    if (!(error instanceof ZodError)) {
+      throw error;
+    }
+
+    const schemaFailurePaths = error.issues.map((issue) => issue.path.join("."));
+    const invalidEnumValues = [
+      ...input.canonicalizationReport.unknownEnumFields,
+      ...error.issues.flatMap((issue) => {
+        const issuePath = issue.path.filter(
+          (segment): segment is string | number =>
+            typeof segment === "string" || typeof segment === "number"
+        );
+        const path = issuePath.join(".");
+        const value = getPathValue(input.value, issuePath);
+
+        if (typeof value !== "string" || !value.trim()) {
+          return [];
+        }
+
+        return [{
+          path,
+          enumName: "schema",
+          originalValue: value,
+          allowedValues: "values" in issue && Array.isArray(issue.values)
+            ? issue.values.map(String)
+            : []
+        }];
+      })
+    ];
+    const details: SchemaFailureDetails = {
+      schemaFailurePaths,
+      invalidEnumValues: dedupeUnknownEnumFields(invalidEnumValues),
+      canonicalizationReport: input.canonicalizationReport,
+      unknownEnumFields: input.canonicalizationReport.unknownEnumFields
+    };
+
+    throw new AiSchemaError(
+      [
+        "schema_error: canonicalization 后仍失败",
+        `schemaFailurePaths=${schemaFailurePaths.join(", ") || "none"}`,
+        `invalidEnumValues=${details.invalidEnumValues.map((field) => `${field.path}:${field.originalValue}`).join(", ") || "none"}`,
+        `canonicalizationChangedFields=${input.canonicalizationReport.changedFields.map((field) => field.path).join(", ") || "none"}`,
+        `unknownEnumFields=${input.canonicalizationReport.unknownEnumFields.map((field) => `${field.path}:${field.originalValue}`).join(", ") || "none"}`
+      ].join("; "),
+      details
+    );
+  }
+}
+
 function failStrictRealOutput(input: {
   articleInput: ArticleInput;
   runId: string;
@@ -264,6 +379,10 @@ function failStrictRealOutput(input: {
   failureReason: RunAiSinglePackPipelineFailureResult["failureReason"];
   errorMessage: string;
   safeErrorSummary: string;
+  schemaFailurePaths?: string[];
+  invalidEnumValues?: UnknownEnumField[];
+  canonicalizationReport?: CanonicalizationReport;
+  unknownEnumFields?: UnknownEnumField[];
 }): RunAiSinglePackPipelineFailureResult {
   recordAgentRunStep(
     {
@@ -271,7 +390,11 @@ function failStrictRealOutput(input: {
       agentSlug: "article-analyst",
       stepOrder: 1,
       status: "failed",
-      inputJson: { articleInput: input.articleInput, mode: "single_pack" },
+      inputJson: {
+        articleInput: input.articleInput,
+        mode: "single_pack",
+        canonicalizationReport: input.canonicalizationReport ?? null
+      },
       outputJson: null,
       inputSummary: summarizeJson(input.articleInput),
       outputSummary: "strict real output blocked",
@@ -287,8 +410,21 @@ function failStrictRealOutput(input: {
     generationMode: "ai",
     agentMode: "single_pack",
     failureReason: input.failureReason,
-    safeErrorSummary: input.safeErrorSummary
+    safeErrorSummary: input.safeErrorSummary,
+    schemaFailurePaths: input.schemaFailurePaths,
+    invalidEnumValues: input.invalidEnumValues,
+    canonicalizationReport: input.canonicalizationReport,
+    unknownEnumFields: input.unknownEnumFields
   };
+}
+
+function isSchemaFailureDetails(value: unknown): value is SchemaFailureDetails {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "schemaFailurePaths" in value &&
+    "canonicalizationReport" in value
+  );
 }
 
 function failureReasonFromErrorCode(
@@ -801,7 +937,11 @@ function normalizeAssetType(value: unknown, index: number) {
 function normalizeRightsLevel(value: unknown) {
   const allowed = ["green", "yellow", "red", "placeholder"];
 
-  return allowed.includes(String(value)) ? String(value) : "placeholder";
+  if (value === undefined || value === null || String(value).trim() === "") {
+    return "placeholder";
+  }
+
+  return allowed.includes(String(value)) ? String(value) : String(value);
 }
 
 function normalizeVersionType(value: unknown) {
@@ -833,6 +973,35 @@ function parseProviderShotNumber(value: unknown, fallback: number) {
   return fallback;
 }
 
+function getPathValue(value: unknown, path: Array<string | number>) {
+  return path.reduce<unknown>((current, segment) => {
+    if (Array.isArray(current) && typeof segment === "number") {
+      return current[segment];
+    }
+
+    if (isRecord(current) && typeof segment === "string") {
+      return current[segment];
+    }
+
+    return undefined;
+  }, value);
+}
+
+function dedupeUnknownEnumFields(fields: UnknownEnumField[]) {
+  const seen = new Set<string>();
+
+  return fields.filter((field) => {
+    const key = `${field.path}:${field.originalValue}`;
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -852,6 +1021,8 @@ function recordAllSteps(input: {
   status: AgentStepStatus;
   errorMessage: string | null;
   client?: DbClient;
+  canonicalizationReport?: CanonicalizationReport;
+  normalizationReport?: ProductionPackNormalizationReport;
 }) {
   agentSteps.forEach((stepInfo, index) => {
     const outputJson = stepInfo.output(input.productionPack);
@@ -865,7 +1036,12 @@ function recordAllSteps(input: {
         agentSlug: stepInfo.slug,
         stepOrder: index + 1,
         status: input.status,
-        inputJson: { articleInput: input.articleInput, mode: "single_pack" },
+        inputJson: {
+          articleInput: input.articleInput,
+          mode: "single_pack",
+          canonicalizationReport: input.canonicalizationReport ?? null,
+          normalizationReport: input.normalizationReport ?? null
+        },
         outputJson,
         inputSummary: summarizeJson(input.articleInput),
         outputSummary: summarizeJson(outputJson),

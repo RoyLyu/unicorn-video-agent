@@ -6,6 +6,13 @@ export const visualStyleLock =
 export const requiredNegativePrompt =
   "fake logo, unreadable text, distorted Chinese characters, artificial face, excessive cyberpunk";
 
+const enumOutputTable = `Enum 输出表：cutType 只能是 hard_cut / dissolve / wipe / match_cut / graphic_match / push / zoom_cut；rollType 只能是 a_roll / b_roll / graphic_roll / transition_roll；pace 只能是 fast / medium / slow；shotFunction 只能是 hook_shot / context_shot / evidence_shot / concept_shot / transition_shot / emotional_shot / data_shot / risk_shot / summary_shot / cta_shot；productionMethod 只能是 text_to_video / image_to_video / text_to_image_edit / motion_graphics / stock_footage / manual_design / compositing；copyrightRisk 和 rightsLevel 只能是 green / yellow / red / placeholder。不要输出中文 enum，不要输出 human-readable enum，不要输出空格形式。`;
+const standardShotFunctionPlan = `shotFunction sequencing plan（standard profile）：
+- 90s 推荐分布：hook_shot：2，context_shot：3，evidence_shot：4，concept_shot：4，data_shot：4，risk_shot：3，transition_shot：2，emotional_shot：1，summary_shot：1。
+- 180s 推荐分布：hook_shot：3，context_shot：5，evidence_shot：7，concept_shot：7，transition_shot：5，emotional_shot：4，data_shot：7，risk_shot：5，summary_shot：3，cta_shot：2。
+- 不要连续 5 个以上相同 shotFunction；每个 narrative beat 至少混合 2 种 shotFunction。
+- data_shot 必须承载数字、结构图、趋势图或信息卡；risk_shot 必须承载反方、风险、监管、海外扩张不确定性或授权风险；summary_shot 必须收束观点；cta_shot 只能出现在 180s 后段或结尾。`;
+
 export function singlePackProductionPrompt(densityProfile: ShotDensityProfile = "standard") {
   const density = getShotDensitySpec(densityProfile);
   const source90 = Math.min(12, Math.max(8, Math.ceil(density.min90s / 3)));
@@ -19,6 +26,7 @@ export function singlePackProductionPrompt(densityProfile: ShotDensityProfile = 
 - 输出必须是可展示生产包，不允许出现内部模板痕迹、批次名、演示数据名或占位补全话术。
 - 不编造真实融资金额、真实投资方、真实客户、真实收入或真实上市进度；标题输入不足时，写成“待人工核验”的行业分析表达。
 - 所有发布和结尾风险提示必须包含“不构成投资建议”。
+- ${enumOutputTable}
 
 结构要求：
 - mode 必须是 "ai"。
@@ -34,6 +42,7 @@ export function singlePackProductionPrompt(densityProfile: ShotDensityProfile = 
 - 每个 micro-shot 平均 2-4 秒；90s id 使用 S90-01...，180s id 使用 S180-01...。
 - 每个 shot 必须有 versionType、shotNumber、shotCode、beat、duration、voiceover、overlayText、visual、camera、composition、motion、visualType、chartNeed、copyrightRisk、replacementPlan、scene、narration、assetType、rightsLevel。
 - 每个 shot 必须有 shotFunction，枚举只允许 hook_shot、context_shot、evidence_shot、concept_shot、transition_shot、emotional_shot、data_shot、risk_shot、summary_shot、cta_shot。
+- ${standardShotFunctionPlan}
 - 每个 shot 必须有 productionMethod 和 methodReason，productionMethod 只允许 text_to_video、image_to_video、text_to_image_edit、motion_graphics、stock_footage、manual_design、compositing。
 - 每个 shot 必须有 subject、environment、lighting、style、continuityAssets。
 - 每个 shot 必须有 editing，包含 beat、cutType、transitionLogic、screenTextTiming、graphicTiming、musicCue、sfxCue、pace、rollType。
@@ -74,6 +83,7 @@ export function compactSinglePackProductionPrompt(densityProfile: ShotDensityPro
 - 不编造真实融资金额、真实投资方、真实客户、真实收入或真实上市进度；标题信息不足时写“待人工核验”。
 - 不输出内部模板痕迹、批次名、演示数据名或占位补全话术。
 - 必须包含“不构成投资建议”。
+- ${enumOutputTable}
 
 必须输出这些顶层字段：
 - analysis：summary 80 字内，keyFacts 3 条，industryData 2 条，risks 2 条。
@@ -89,6 +99,7 @@ export function compactSinglePackProductionPrompt(densityProfile: ShotDensityPro
 
 shot 规则：
 - shotFunction 从 hook_shot、context_shot、evidence_shot、concept_shot、transition_shot、emotional_shot、data_shot、risk_shot、summary_shot、cta_shot 中选。
+- ${standardShotFunctionPlan}
 - productionMethod 从 text_to_video、image_to_video、text_to_image_edit、motion_graphics、stock_footage、manual_design、compositing 中选。
 - editing 包含 beat、cutType、transitionLogic、screenTextTiming、graphicTiming、musicCue、sfxCue、pace、rollType。
 - visual 使用“主体：...；场景：...；镜头：...；构图：...；图表：...”格式，45 字内。

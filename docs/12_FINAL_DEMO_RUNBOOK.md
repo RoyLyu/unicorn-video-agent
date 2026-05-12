@@ -130,6 +130,29 @@ pnpm audit:real-run -- --title "新消费品牌上市背后：中国品牌全球
 - Showcase 顶部显示 `Prompt 字段完整性：pass` 与 `报告字段完整性：pass`。
 - 如果出现“需要重跑 / 人工修正：报告字段缺失”，不要锁版；优先检查 export serializer 和 report completeness gate，而不是重新生成 AI。
 
+## Batch 13C Enum Canonicalization 检查
+
+真实审计如果因为 MiniMax 输出了自然语言 enum 而失败，先查看 failed report 中的 Canonicalization / Schema Diagnostics：
+
+- `canonicalizationChangedFields` 表示系统已把可识别变体规范化为 schema enum，例如 `硬切` 到 `hard_cut`。
+- `unknownEnumFields` 表示无法确定的 enum，必须让 strict audit 失败，不允许静默猜测。
+- `schemaFailurePaths` 与 `invalidEnumValues` 用来定位仍未通过 Zod 的字段。
+- 成功审计报告应显示 `canonicalizationChangedCount` 和 `unknownEnumFields: 0`。
+
+Batch 13C 只允许 deterministic enum canonicalization，不放宽 `ProductionPackSchema`，也不允许 fallback/mock 成为正式成功。
+
+## Batch 13D Shot Function Coverage 检查
+
+如果真实审计显示 `shot_function_coverage_score < 4`，优先检查报告中的 Shot Function Coverage Debug：
+
+- `distribution90s` / `distribution180s` 显示每个版本的镜头功能分布。
+- `missingFunctions90s` / `missingFunctions180s` 显示必需但缺失的 function。
+- `overRepeatedFunctions90s` / `overRepeatedFunctions180s` 显示超过 35% 的重复 function。
+- 90s 必须覆盖 hook、context、evidence、concept、data、risk、summary。
+- 180s 必须覆盖 hook、context、evidence、concept、transition、emotional、data、risk、summary、cta。
+
+Batch 13D 的 normalization 只允许重平衡 shotFunction 标签，不改写真实 AI 的旁白、visual、prompt 或事实表达。如果仍出现“需要重跑 / 人工修正：镜头功能分工不足”，不要锁版，不要更新成功审计摘要。
+
 ## 推荐 5 个标题
 
 1. 新消费品牌上市背后：中国品牌全球化的第二轮机会来了

@@ -68,6 +68,8 @@ Batch 12A 起，真实输出模式不允许 fallback/mock 冒充成功成品。B
 
 单个 AI Agent 失败或 schema 不通过时，只有显式 fast demo 或开发测试才允许 fallback。真实生产和真实审计必须 fail loudly。
 
+Batch 13C 起，真实 AI raw JSON 在严格 Zod 校验前允许执行 deterministic enum canonicalization。该层只把已知自然语言变体映射为合法 enum，例如 `硬切` -> `hard_cut`、`A-roll` -> `a_roll`、`Motion Graphics` -> `motion_graphics`。未知 enum 必须保留原值并进入 `unknownEnumFields`，由 `ProductionPackSchema` 继续 fail，不允许静默替换为默认值。
+
 ## Batch 13B AIGC Production Contract
 
 Batch 13B 后，Prompt Generator 输出不再只是几句生成词，而是 shot-level production contract。真实或 effective ProductionPack 必须包含：
@@ -79,6 +81,8 @@ Batch 13B 后，Prompt Generator 输出不再只是几句生成词，而是 shot
 - 每个 prompt bundle 的 shotCode、duration、subject、environment、camera、lighting、style、negativeConstraints、forbiddenElements 和 replacementPlan。
 
 Production Studio gate 必须校验 Visual Bible、Continuity、Shot Function coverage、Production Method coverage、Editing Readiness、Prompt Field Completeness 和 Report Field Completeness。任一核心项低于 4 分或报告字段缺失时，结果必须显示“需要重跑 / 人工修正”，并且 Production Studio lock 不允许通过。
+
+Batch 13D 起，Shot Function coverage 是独立硬 gate：90s 必须覆盖 hook、context、evidence、concept、data、risk、summary；180s 必须覆盖 hook、context、evidence、concept、transition、emotional、data、risk、summary、cta。单一 shotFunction 超过该版本 35% 时视为重复过多。normalization 可以基于真实 AI 输出、shot 位置和 density profile 重平衡 shotFunction 标签，但不得改写事实、旁白、visual、prompt 或引入 mock / Batch / demo-data 污染词。
 
 ## Mock Pipeline Tracking Contract
 

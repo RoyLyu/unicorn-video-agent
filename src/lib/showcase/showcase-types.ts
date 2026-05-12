@@ -75,6 +75,12 @@ export type ShowcaseProductionStudioGate = {
   reportCompletenessScore: number;
   reportFieldCompleteness: "pass" | "fail";
   shotFunctionCounts: Record<string, number>;
+  shotFunctionDistribution90s: Record<string, number>;
+  shotFunctionDistribution180s: Record<string, number>;
+  missingFunctions90s: string[];
+  missingFunctions180s: string[];
+  overRepeatedFunctions90s: string[];
+  overRepeatedFunctions180s: string[];
   productionMethodCounts: Record<string, number>;
 };
 

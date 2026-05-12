@@ -80,6 +80,10 @@ export async function handleAiProductionPackRequest(
           generationMode: result.generationMode,
           failureReason: result.failureReason,
           safeErrorSummary: result.safeErrorSummary,
+          schemaFailurePaths: result.schemaFailurePaths,
+          invalidEnumValues: result.invalidEnumValues,
+          canonicalizationReport: result.canonicalizationReport,
+          unknownEnumFields: result.unknownEnumFields,
           agentMode: result.agentMode
         },
         { status: 422 }
@@ -99,6 +103,9 @@ export async function handleAiProductionPackRequest(
       fallbackUsed: result.fallbackUsed,
       generationMode: result.generationMode,
       agentMode: "agentMode" in result ? result.agentMode : "sequential",
+      canonicalizationReport: "canonicalizationReport" in result
+        ? result.canonicalizationReport
+        : undefined,
       ...(fallbackSummary ?? {})
     });
   } catch (error) {
